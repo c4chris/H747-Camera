@@ -32,10 +32,19 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "gx_api.h"
+#include "gx_display.h"
+#include "H747_WeighingStation_specifications.h"
+#include "H747_WeighingStation_resources.h"
+#include "stm32h7xx_hal.h"
+#include "main.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
+
+extern TX_EVENT_FLAGS_GROUP cm7_event_group;
 
 /* USER CODE END ET */
 
@@ -58,6 +67,9 @@ UINT App_ThreadX_Init(VOID *memory_ptr);
 
 /* Private defines -----------------------------------------------------------*/
 /* USER CODE BEGIN PD */
+
+#define LCD_FRAME_BUFFER        LCD_LAYER_0_ADDRESS
+#define CLOCK_TIMER             0x01
 
 /* USER CODE END PD */
 

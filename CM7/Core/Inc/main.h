@@ -38,6 +38,11 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
+extern __IO int32_t   front_buffer;
+extern __IO int32_t   pend_buffer;
+extern const uint32_t Buffers[];
+extern DSI_HandleTypeDef hdsi;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -108,6 +113,8 @@ void Error_Handler(void);
 #define FMC_A1_GPIO_Port GPIOF
 #define FMC_A0_Pin GPIO_PIN_0
 #define FMC_A0_GPIO_Port GPIOF
+#define LED3_Pin GPIO_PIN_14
+#define LED3_GPIO_Port GPIOI
 #define FMC_A3_Pin GPIO_PIN_3
 #define FMC_A3_GPIO_Port GPIOF
 #define FMC_BA0_Pin GPIO_PIN_4
@@ -128,6 +135,8 @@ void Error_Handler(void);
 #define FMC_D7_GPIO_Port GPIOE
 #define FMC_SDNWE_Pin GPIO_PIN_5
 #define FMC_SDNWE_GPIO_Port GPIOH
+#define LED4_Pin GPIO_PIN_15
+#define LED4_GPIO_Port GPIOI
 #define FMC_A7_Pin GPIO_PIN_13
 #define FMC_A7_GPIO_Port GPIOF
 #define FMC_A8_Pin GPIO_PIN_14
@@ -183,6 +192,8 @@ void Error_Handler(void);
 #define FMC_D13_Pin GPIO_PIN_8
 #define FMC_D13_GPIO_Port GPIOD
 /* USER CODE BEGIN Private defines */
+
+#define LCD_LAYER_0_ADDRESS  0xD0000000
 
 /* USER CODE END Private defines */
 

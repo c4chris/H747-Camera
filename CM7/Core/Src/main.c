@@ -34,9 +34,10 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#ifndef HSEM_ID_0
 #define HSEM_ID_0 (0U) /* HW semaphore 0*/
-#endif
+#define HSEM_ID_1 (1U) /* HW semaphore 1*/
+#define HSEM_ID_2 (2U) /* HW semaphore 2*/
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -57,6 +58,15 @@ SDRAM_HandleTypeDef hsdram1;
 /* USER CODE BEGIN PV */
 
 volatile uint32_t Notified = 0;
+
+__IO int32_t  front_buffer   = 0;
+__IO int32_t  pend_buffer   = -1;
+
+const uint32_t Buffers[] =
+{
+  LCD_FRAME_BUFFER,
+  LCD_FRAME_BUFFER + (720*576*4),
+};
 
 /* USER CODE END PV */
 
@@ -110,7 +120,7 @@ int main(void)
 
   /* Configure the system clock */
   SystemClock_Config();
-  /* USER CODE BEGIN Boot_Mode_Sequence_2 */
+/* USER CODE BEGIN Boot_Mode_Sequence_2 */
   /* When system initialization is finished, Cortex-M7 will release Cortex-M4 by means of
 	   HSEM notification */
   /*HW semaphore Clock enable*/
@@ -129,7 +139,7 @@ int main(void)
   /* Prepare for sync with CM4 to setup HDMI */
   HAL_HSEM_FastTake(HSEM_ID_1);
 
-  /* USER CODE END Boot_Mode_Sequence_2 */
+/* USER CODE END Boot_Mode_Sequence_2 */
 
   /* USER CODE BEGIN SysInit */
 
@@ -526,6 +536,9 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOF_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOI, LED3_Pin|LED4_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(DSI_Reset_GPIO_Port, DSI_Reset_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin : CEC_CK_MCO1_Pin */
@@ -535,6 +548,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   GPIO_InitStruct.Alternate = GPIO_AF0_MCO;
   HAL_GPIO_Init(CEC_CK_MCO1_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : LED3_Pin LED4_Pin */
+  GPIO_InitStruct.Pin = LED3_Pin|LED4_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
 
   /*Configure GPIO pin : DSI_Reset_Pin */
   GPIO_InitStruct.Pin = DSI_Reset_Pin;
@@ -555,6 +575,34 @@ static void MX_GPIO_Init(void)
 void HAL_HSEM_FreeCallback(uint32_t SemMask)
 {
 	Notified |= SemMask;
+}
+
+/**
+  * @brief  End of Refresh DSI callback.
+  * @param  hdsi: pointer to a DSI_HandleTypeDef structure that contains
+  *               the configuration information for the DSI.
+  * @retval None
+  */
+void HAL_DSI_EndOfRefreshCallback(DSI_HandleTypeDef *hdsi)
+{
+  if(pend_buffer >= 0)
+  { 
+  /* Disable DSI Wrapper */
+    __HAL_DSI_WRAPPER_DISABLE(hdsi);
+    /* Update LTDC configuaration */
+    LTDC_LAYER(&hltdc, 0)->CFBAR = ((uint32_t)Buffers[pend_buffer]);
+    __HAL_LTDC_RELOAD_CONFIG(&hltdc);
+    /* Enable DSI Wrapper */
+    __HAL_DSI_WRAPPER_ENABLE(hdsi);
+    
+    front_buffer = pend_buffer;  
+    pend_buffer = -1;
+    /* Signal we are done */
+    if (tx_event_flags_set(&cm7_event_group, 0x1, TX_OR) != TX_SUCCESS)
+    {
+      Error_Handler();
+    }
+  }
 }
 
 /* USER CODE END 4 */
@@ -589,6 +637,7 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
+  HAL_GPIO_WritePin(LED3_GPIO_Port, LED3_Pin, GPIO_PIN_RESET);
   while (1)
   {
   }

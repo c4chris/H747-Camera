@@ -156,6 +156,9 @@ void HAL_DSI_MspInit(DSI_HandleTypeDef* hdsi)
 
     /* Peripheral clock enable */
     __HAL_RCC_DSI_CLK_ENABLE();
+    /* DSI interrupt Init */
+    HAL_NVIC_SetPriority(DSI_IRQn, 5, 0);
+    HAL_NVIC_EnableIRQ(DSI_IRQn);
   /* USER CODE BEGIN DSI_MspInit 1 */
 
   /* USER CODE END DSI_MspInit 1 */
@@ -178,6 +181,9 @@ void HAL_DSI_MspDeInit(DSI_HandleTypeDef* hdsi)
   /* USER CODE END DSI_MspDeInit 0 */
     /* Peripheral clock disable */
     __HAL_RCC_DSI_CLK_DISABLE();
+
+    /* DSI interrupt DeInit */
+    HAL_NVIC_DisableIRQ(DSI_IRQn);
   /* USER CODE BEGIN DSI_MspDeInit 1 */
 
   /* USER CODE END DSI_MspDeInit 1 */

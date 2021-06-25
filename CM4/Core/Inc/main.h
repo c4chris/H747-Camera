@@ -43,6 +43,10 @@ extern "C" {
 /* Exported constants --------------------------------------------------------*/
 /* USER CODE BEGIN EC */
 
+extern I2C_HandleTypeDef hi2c1;
+extern I2C_HandleTypeDef hi2c4;
+extern UART_HandleTypeDef huart1;
+
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
@@ -78,6 +82,10 @@ void Error_Handler(void);
 #define STLINK_RX_GPIO_Port GPIOA
 #define CEC_CK_MCO1_Pin GPIO_PIN_8
 #define CEC_CK_MCO1_GPIO_Port GPIOA
+#define LED1_Pin GPIO_PIN_12
+#define LED1_GPIO_Port GPIOI
+#define LED2_Pin GPIO_PIN_13
+#define LED2_GPIO_Port GPIOI
 #define OSC_OUT_Pin GPIO_PIN_1
 #define OSC_OUT_GPIO_Port GPIOH
 #define OSC_IN_Pin GPIO_PIN_0
@@ -90,9 +98,11 @@ void Error_Handler(void);
 #define I2C4_SDA_GPIO_Port GPIOD
 /* USER CODE BEGIN Private defines */
 
-#define  ADV7533_MAIN_I2C_ADDR           0x7AU
-#define  ADV7533_CEC_DSI_I2C_ADDR        0x78U
-#define  ADV7533_MAIN_POWER_DOWN_REG     0x41U
+#define ADV7533_MAIN_I2C_ADDR           0x7AU
+#define ADV7533_CEC_DSI_I2C_ADDR        0x78U
+#define ADV7533_MAIN_POWER_DOWN_REG     0x41U
+
+#define I2Cx_TIMEOUT_MAX               0x3000 /* The value of the maximal timeout for I2C waiting loops */
 
 /* USER CODE END Private defines */
 
