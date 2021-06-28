@@ -116,10 +116,10 @@ HAL_StatusTypeDef exit_command_mode(CellTypeDef *, uint8_t *, const uint32_t);
   */
 UINT App_ThreadX_Init(VOID *memory_ptr)
 {
-	UINT ret = TX_SUCCESS;
-	TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
+  UINT ret = TX_SUCCESS;
+  TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
 
-	/* USER CODE BEGIN App_ThreadX_Init */
+  /* USER CODE BEGIN App_ThreadX_Init */
 	CHAR *pointer;
 
 	/*Allocate memory for main_thread_entry*/
@@ -197,9 +197,9 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 	{
 		Error_Handler();
 	}
-	/* USER CODE END App_ThreadX_Init */
+  /* USER CODE END App_ThreadX_Init */
 
-	return ret;
+  return ret;
 }
 
 /* USER CODE BEGIN 1 */

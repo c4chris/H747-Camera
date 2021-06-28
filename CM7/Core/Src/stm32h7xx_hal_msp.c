@@ -97,7 +97,7 @@ void HAL_DMA2D_MspInit(DMA2D_HandleTypeDef* hdma2d)
     /* Peripheral clock enable */
     __HAL_RCC_DMA2D_CLK_ENABLE();
     /* DMA2D interrupt Init */
-    HAL_NVIC_SetPriority(DMA2D_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(DMA2D_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(DMA2D_IRQn);
   /* USER CODE BEGIN DMA2D_MspInit 1 */
 
@@ -157,7 +157,7 @@ void HAL_DSI_MspInit(DSI_HandleTypeDef* hdsi)
     /* Peripheral clock enable */
     __HAL_RCC_DSI_CLK_ENABLE();
     /* DSI interrupt Init */
-    HAL_NVIC_SetPriority(DSI_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(DSI_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(DSI_IRQn);
   /* USER CODE BEGIN DSI_MspInit 1 */
 
@@ -224,9 +224,13 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef* hltdc)
     /* Peripheral clock enable */
     __HAL_RCC_LTDC_CLK_ENABLE();
     /* LTDC interrupt Init */
-    HAL_NVIC_SetPriority(LTDC_IRQn, 5, 0);
+    HAL_NVIC_SetPriority(LTDC_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(LTDC_IRQn);
   /* USER CODE BEGIN LTDC_MspInit 1 */
+
+    /** Toggle Sw reset of LTDC IP */
+    __HAL_RCC_LTDC_FORCE_RESET();
+    __HAL_RCC_LTDC_RELEASE_RESET();
 
   /* USER CODE END LTDC_MspInit 1 */
   }

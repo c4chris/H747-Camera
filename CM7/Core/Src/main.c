@@ -24,6 +24,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "is42s32800j.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -137,7 +139,13 @@ int main(void)
   	Error_Handler();
   }
   /* Prepare for sync with CM4 to setup HDMI */
-  HAL_HSEM_FastTake(HSEM_ID_1);
+  if (HAL_HSEM_FastTake(HSEM_ID_1) != HAL_OK)
+  {
+  	Error_Handler();
+  }
+
+  /* we want to hear from CM4 about when to initialize HDMI */
+  HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_2));
 
 /* USER CODE END Boot_Mode_Sequence_2 */
 
@@ -370,6 +378,13 @@ static void MX_DSIHOST_DSI_Init(void)
   }
   /* USER CODE BEGIN DSIHOST_Init 2 */
 
+  /* Enable the DSI host and wrapper after the LTDC initialization
+   * To avoid any synchronization issue, the DSI shall be started after enabling the LTDC */
+  if (HAL_DSI_Start(&hdsi) != HAL_OK)
+  {
+  	Error_Handler();
+  }
+
   /* USER CODE END DSIHOST_Init 2 */
 
 }
@@ -395,7 +410,7 @@ static void MX_LTDC_Init(void)
   HAL_HSEM_Release(HSEM_ID_1, 0);
 
   /* Now wait until we receive a notification from CM4 */
-  int32_t timeout = 0xFFF;
+  int32_t timeout = 0xFFFF;
   while (Notified != __HAL_HSEM_SEMID_TO_MASK(HSEM_ID_2) && (timeout-- > 0))
   {
   	HAL_Delay(1);
@@ -488,23 +503,23 @@ void MX_FMC_Init(void)
   hsdram1.Instance = FMC_SDRAM_DEVICE;
   /* hsdram1.Init */
   hsdram1.Init.SDBank = FMC_SDRAM_BANK2;
-  hsdram1.Init.ColumnBitsNumber = FMC_SDRAM_COLUMN_BITS_NUM_8;
+  hsdram1.Init.ColumnBitsNumber = FMC_SDRAM_COLUMN_BITS_NUM_9;
   hsdram1.Init.RowBitsNumber = FMC_SDRAM_ROW_BITS_NUM_12;
   hsdram1.Init.MemoryDataWidth = FMC_SDRAM_MEM_BUS_WIDTH_32;
   hsdram1.Init.InternalBankNumber = FMC_SDRAM_INTERN_BANKS_NUM_4;
-  hsdram1.Init.CASLatency = FMC_SDRAM_CAS_LATENCY_2;
+  hsdram1.Init.CASLatency = FMC_SDRAM_CAS_LATENCY_3;
   hsdram1.Init.WriteProtection = FMC_SDRAM_WRITE_PROTECTION_DISABLE;
-  hsdram1.Init.SDClockPeriod = FMC_SDRAM_CLOCK_DISABLE;
-  hsdram1.Init.ReadBurst = FMC_SDRAM_RBURST_DISABLE;
+  hsdram1.Init.SDClockPeriod = FMC_SDRAM_CLOCK_PERIOD_2;
+  hsdram1.Init.ReadBurst = FMC_SDRAM_RBURST_ENABLE;
   hsdram1.Init.ReadPipeDelay = FMC_SDRAM_RPIPE_DELAY_0;
   /* SdramTiming */
-  SdramTiming.LoadToActiveDelay = 16;
-  SdramTiming.ExitSelfRefreshDelay = 16;
-  SdramTiming.SelfRefreshTime = 16;
-  SdramTiming.RowCycleDelay = 16;
-  SdramTiming.WriteRecoveryTime = 16;
-  SdramTiming.RPDelay = 16;
-  SdramTiming.RCDDelay = 16;
+  SdramTiming.LoadToActiveDelay = 2;
+  SdramTiming.ExitSelfRefreshDelay = 7;
+  SdramTiming.SelfRefreshTime = 4;
+  SdramTiming.RowCycleDelay = 7;
+  SdramTiming.WriteRecoveryTime = 3;
+  SdramTiming.RPDelay = 2;
+  SdramTiming.RCDDelay = 2;
 
   if (HAL_SDRAM_Init(&hsdram1, &SdramTiming) != HAL_OK)
   {
@@ -512,6 +527,23 @@ void MX_FMC_Init(void)
   }
 
   /* USER CODE BEGIN FMC_Init 2 */
+
+  static IS42S32800J_Context_t pRegMode;
+
+  pRegMode.TargetBank      = FMC_SDRAM_CMD_TARGET_BANK2;
+  pRegMode.RefreshMode     = IS42S32800J_AUTOREFRESH_MODE_CMD;
+  pRegMode.RefreshRate     = REFRESH_COUNT;
+  pRegMode.BurstLength     = IS42S32800J_BURST_LENGTH_1;
+  pRegMode.BurstType       = IS42S32800J_BURST_TYPE_SEQUENTIAL;
+  pRegMode.CASLatency      = IS42S32800J_CAS_LATENCY_3;
+  pRegMode.OperationMode   = IS42S32800J_OPERATING_MODE_STANDARD;
+  pRegMode.WriteBurstMode  = IS42S32800J_WRITEBURST_MODE_SINGLE;
+
+  /* SDRAM initialization sequence */
+  if(IS42S32800J_Init(&hsdram1, &pRegMode) != IS42S32800J_OK)
+  {
+  	Error_Handler();
+  }
 
   /* USER CODE END FMC_Init 2 */
 }

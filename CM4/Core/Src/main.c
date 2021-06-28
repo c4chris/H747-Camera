@@ -236,7 +236,10 @@ static void MX_I2C4_Init(void)
   /* USER CODE BEGIN I2C4_Init 2 */
 
   /* wait for synchro from CM7 to send some HDMI commands on I2C4 */
-  HAL_HSEM_FastTake(HSEM_ID_2);
+  if (HAL_HSEM_FastTake(HSEM_ID_2) != HAL_OK)
+  {
+  	Error_Handler();
+  }
   int32_t timeout = 0xFFF;
   while (Notified != __HAL_HSEM_SEMID_TO_MASK(HSEM_ID_1) && (timeout-- > 0))
   {

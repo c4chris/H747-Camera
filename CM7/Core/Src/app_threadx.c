@@ -270,7 +270,7 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 			break;
 
 		default:
-			HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin);
+			//HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin);
 			break;
 	}
 	return gx_window_event_process(window, event_ptr);
