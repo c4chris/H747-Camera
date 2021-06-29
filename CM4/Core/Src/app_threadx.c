@@ -347,10 +347,12 @@ void tx_cm4_i2c1_thread_entry(ULONG thread_input)
 			if (res != HAL_OK)
 			{
 				bridgeError[i] += 1;
+#if 0
 				HAL_I2C_DeInit(cell[i].handle);
 				tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
 				HAL_I2C_Init(cell[i].handle);
 				tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
+#endif
 			}
 			else
 			{
@@ -397,10 +399,12 @@ void tx_cm4_i2c4_thread_entry(ULONG thread_input)
 			if (res != HAL_OK)
 			{
 				bridgeError[i] += 1;
+#if 0
 				HAL_I2C_DeInit(cell[i].handle);
 				tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
 				HAL_I2C_Init(cell[i].handle);
 				tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
+#endif
 			}
 			else
 			{
