@@ -42,6 +42,7 @@ extern __IO int32_t   front_buffer;
 extern __IO int32_t   pend_buffer;
 extern const uint32_t Buffers[];
 extern DSI_HandleTypeDef hdsi;
+extern LTDC_HandleTypeDef hltdc;
 
 /* USER CODE END ET */
 

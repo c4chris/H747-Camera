@@ -384,6 +384,7 @@ static void MX_DSIHOST_DSI_Init(void)
   {
   	Error_Handler();
   }
+  HAL_LTDC_ProgramLineEvent(&hltdc, 0);
 
   /* USER CODE END DSIHOST_Init 2 */
 
@@ -635,6 +636,31 @@ void HAL_DSI_EndOfRefreshCallback(DSI_HandleTypeDef *hdsi)
       Error_Handler();
     }
   }
+}
+
+/**
+  * @brief  Line Event callback.
+  * @param  hltdc: pointer to a LTDC_HandleTypeDef structure that contains
+  *                the configuration information for the LTDC.
+  * @retval None
+  */
+void HAL_LTDC_LineEventCallback(LTDC_HandleTypeDef *hltdc)
+{
+  if(pend_buffer >= 0)
+  {
+    LTDC_LAYER(hltdc, 0)->CFBAR = ((uint32_t)Buffers[pend_buffer]);
+    __HAL_LTDC_RELOAD_CONFIG(hltdc);
+
+    front_buffer = pend_buffer;
+    pend_buffer = -1;
+    /* Signal we are done */
+    if (tx_event_flags_set(&cm7_event_group, 0x1, TX_OR) != TX_SUCCESS)
+    {
+      Error_Handler();
+    }
+  }
+
+  //HAL_LTDC_ProgramLineEvent(hltdc, 0);
 }
 
 /* USER CODE END 4 */

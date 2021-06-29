@@ -229,8 +229,8 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef* hltdc)
   /* USER CODE BEGIN LTDC_MspInit 1 */
 
     /** Toggle Sw reset of LTDC IP */
-    __HAL_RCC_LTDC_FORCE_RESET();
-    __HAL_RCC_LTDC_RELEASE_RESET();
+    //__HAL_RCC_LTDC_FORCE_RESET();
+    //__HAL_RCC_LTDC_RELEASE_RESET();
 
   /* USER CODE END LTDC_MspInit 1 */
   }

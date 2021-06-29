@@ -234,6 +234,7 @@ VOID weight_update()
 	uint32_t low[4] = { 950, 950, 950, 950 };
 	uint32_t total = 0;
   /* Set a value to "my_numeric_pix_prompt". */
+#if 0
 	for (unsigned int i = 0; i < 4; i++)
 	{
 		uint32_t weight = (bridgeValue[i] >> 16) & 0x3fff;
@@ -246,6 +247,9 @@ VOID weight_update()
 		total += weight;
 	}
 	total /= 10;
+#endif
+	ULONG ticks = tx_time_get();
+	total = ticks % 10000;
   gx_numeric_pixelmap_prompt_value_set(&main_window.main_window_weight_prompt, total);
 }
 
@@ -335,7 +339,8 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 		pend_buffer = 1 - front_buffer;
 
 		/* Refresh the display */
-		HAL_DSI_Refresh(&hdsi);
+		HAL_LTDC_ProgramLineEvent(&hltdc, 0);
+		//HAL_DSI_Refresh(&hdsi);
 	}
 
 	/* Request that event flags 0 is set. If it is set it should be cleared. If the event
@@ -345,22 +350,23 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 	/* If status equals TX_SUCCESS, actual_events contains the actual events obtained. */
 	if (status == TX_SUCCESS)
 	{
+		/* FIXME - issues with uninitialized offline buffer... copy whole thing for now */
 		/* now refresh offline buffer and switch buffers in canvas  */
 
-		copy_width = dirty_area->gx_rectangle_right - dirty_area->gx_rectangle_left + 1;
-		copy_height = dirty_area->gx_rectangle_bottom - dirty_area->gx_rectangle_top + 1;
+		copy_width = 720; //dirty_area->gx_rectangle_right - dirty_area->gx_rectangle_left + 1;
+		copy_height = 576; //dirty_area->gx_rectangle_bottom - dirty_area->gx_rectangle_top + 1;
 
 		/* Read the update area from the canvas */
 		offset = dirty_area->gx_rectangle_top * canvas->gx_canvas_x_resolution;
 		offset += dirty_area->gx_rectangle_left;
 		get = canvas->gx_canvas_memory;
-		get += offset;
+		//get += offset;
 
 		/* Read the area to be updated from the LCD video memory and copy the updated data from the canvas */
 		put = (ULONG *) Buffers[1 - front_buffer];
 		offset = (canvas->gx_canvas_display_offset_y + dirty_area->gx_rectangle_top) * MAIN_DISPLAY_X_RESOLUTION;
 		offset += canvas->gx_canvas_display_offset_x + dirty_area->gx_rectangle_left;
-		put += offset;
+		//put += offset;
 
 		// RM0388 - pp 780...  not sure about interrupt vs polling yet
     DMA2D->CR = 0x00000000UL; // | DMA2D_CR_TCIE;
