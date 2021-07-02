@@ -440,40 +440,10 @@ UINT MX_USB_Host_Init(void)
     ret = UX_ERROR;
   }
 
-  /* Drive vbus */
-  USBH_DriverVBUS(USB_VBUS_TRUE);
-
   /* Enable USB Global Interrupt*/
   HAL_HCD_Start(&hhcd_USB_OTG_HS);
 
   return ret;
-}
-
-/**
-* @brief  Drive VBUS.
-* @param  state : VBUS state
-*          This parameter can be one of the these values:
-*           1 : VBUS Active
-*           0 : VBUS Inactive
-* @retval Status
-*/
-void USBH_DriverVBUS(uint8_t state)
-{
-
-  if (state == USB_VBUS_TRUE)
-  {
-    /* Drive high Charge pump */
-    /* Add IOE driver control */
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_RESET);
-  }
-  else
-  {
-    /* Drive low Charge pump */
-    /* Add IOE driver control */
-    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_SET);
-  }
-
-  HAL_Delay(200);
 }
 
 void tx_cm7_main_thread_entry(ULONG thread_input)
@@ -558,10 +528,10 @@ void tx_cm7_lcd_thread_entry(ULONG thread_input)
 /*************************************************************************************/
 VOID weight_update()
 {
-	uint32_t low[4] = { 950, 950, 950, 950 };
-	uint32_t total = 0;
   /* Set a value to "my_numeric_pix_prompt". */
+	uint32_t total = 0;
 #if 0
+	uint32_t low[4] = { 950, 950, 950, 950 };
 	for (unsigned int i = 0; i < 4; i++)
 	{
 		uint32_t weight = (bridgeValue[i] >> 16) & 0x3fff;
