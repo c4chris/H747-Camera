@@ -48,15 +48,19 @@
 
 /* USER CODE END PV */
 #if (USE_MEMORY_POOL_ALLOCATION == 1)
-/* USER CODE BEGIN TX_Pool_Buffer */
-/* USER CODE END TX_Pool_Buffer */
-static UCHAR tx_byte_pool_buffer[TX_APP_MEM_POOL_SIZE];
-static TX_BYTE_POOL tx_app_byte_pool;
+
+/* USER CODE BEGIN UX_HOST_Pool_Buffer */
+/* __attribute__((section(".UsbxPoolSection"))) */
+/* USER CODE END UX_HOST_Pool_Buffer */
+static UCHAR  ux_host_byte_pool_buffer[UX_HOST_APP_MEM_POOL_SIZE];
+static TX_BYTE_POOL ux_host_app_byte_pool;
 
 #endif
 
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
+
+extern void Error_Handler(void);
 
 /* USER CODE END PFP */
 
@@ -73,30 +77,33 @@ VOID tx_application_define(VOID *first_unused_memory)
 #if (USE_MEMORY_POOL_ALLOCATION == 1)
   VOID *memory_ptr;
 
-  if (tx_byte_pool_create(&tx_app_byte_pool, "Tx App memory pool", tx_byte_pool_buffer, TX_APP_MEM_POOL_SIZE) != TX_SUCCESS)
+  if (tx_byte_pool_create(&ux_host_app_byte_pool, "Ux App memory pool", ux_host_byte_pool_buffer, UX_HOST_APP_MEM_POOL_SIZE) != TX_SUCCESS)
   {
     /* USER CODE BEGIN TX_Byte_Pool_Error */
+
+    Error_Handler();
 
     /* USER CODE END TX_Byte_Pool_Error */
   }
   else
   {
-    /* USER CODE BEGIN TX_Byte_Pool_Success */
+    /* USER CODE BEGIN UX_HOST_Byte_Pool_Success */
 
-    /* USER CODE END TX_Byte_Pool_Success */
+    /* USER CODE END UX_HOST_Byte_Pool_Success */
 
-    memory_ptr = (VOID *)&tx_app_byte_pool;
+    memory_ptr = (VOID *)&ux_host_app_byte_pool;
 
-    if (App_ThreadX_Init(memory_ptr) != TX_SUCCESS)
+    if (App_USBX_Host_Init(memory_ptr) != UX_SUCCESS)
     {
-          /* USER CODE BEGIN  App_ThreadX_Init_Error */
+      /* USER CODE BEGIN  App_USBX_Host_Init_Error */
 
-          /* USER CODE END  App_ThreadX_Init_Error */
+      Error_Handler();
+
+      /* USER CODE END  App_USBX_Host_Init_Error */
     }
-      /* USER CODE BEGIN  App_ThreadX_Init_Success */
+    /* USER CODE BEGIN  App_USBX_Host_Init_Success */
 
-      /* USER CODE END  App_ThreadX_Init_Success */
-
+    /* USER CODE END  App_USBX_Host_Init_Success */
   }
 
 #else

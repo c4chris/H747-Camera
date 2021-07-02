@@ -96,8 +96,6 @@ void Error_Handler(void);
 #define FMC_D27_GPIO_Port GPIOI
 #define FMC_SDCAS_Pin GPIO_PIN_15
 #define FMC_SDCAS_GPIO_Port GPIOG
-#define BL_CTRL_Pin GPIO_PIN_12
-#define BL_CTRL_GPIO_Port GPIOJ
 #define FMC_D2_Pin GPIO_PIN_0
 #define FMC_D2_GPIO_Port GPIOD
 #define FMC_D21_Pin GPIO_PIN_13
