@@ -57,13 +57,11 @@
 /* USER CODE BEGIN PV */
 extern HCD_HandleTypeDef                 hhcd_USB_OTG_HS;
 TX_THREAD                                ux_app_thread;
-TX_THREAD                                keyboard_app_thread;
 TX_THREAD                                mouse_app_thread;
 TX_QUEUE                                 ux_app_MsgQueue;
 UX_HOST_CLASS_HID                        *hid;
 UX_HOST_CLASS_HID_CLIENT                 *hid_client;
 UX_HOST_CLASS_HID_MOUSE                  *mouse;
-UX_HOST_CLASS_HID_KEYBOARD               *keyboard;
 
 __ALIGN_BEGIN ux_app_devInfotypeDef       ux_dev_info  __ALIGN_END;
 
@@ -90,7 +88,6 @@ __attribute__((section(".sram3.bridgeValue"))) volatile uint32_t bridgeValue[4];
 /* Private function prototypes -----------------------------------------------*/
 /* USER CODE BEGIN PFP */
 
-extern void MX_USB_OTG_HS_HCD_Init(void);
 extern void Error_Handler(void);
 
 void tx_cm7_main_thread_entry(ULONG thread_input);
@@ -153,21 +150,6 @@ UINT App_USBX_Host_Init(VOID *memory_ptr)
 
   /* Create the HID mouse App thread. */
   if (tx_thread_create(&mouse_app_thread, "thread 1", hid_mouse_thread_entry, 0,
-                       pointer, USBX_APP_STACK_SIZE, 30, 30, 1,
-                       TX_AUTO_START) != TX_SUCCESS)
-  {
-    ret = TX_THREAD_ERROR;
-  }
-
-  /* Allocate the stack for thread 2. */
-  if (tx_byte_allocate(byte_pool, (VOID **) &pointer,
-                       USBX_APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
-  {
-    ret = TX_POOL_ERROR;
-  }
-
-  /* Create the HID Keyboard App thread. */
-  if (tx_thread_create(&keyboard_app_thread, "thread 1", hid_keyboard_thread_entry, 0,
                        pointer, USBX_APP_STACK_SIZE, 30, 30, 1,
                        TX_AUTO_START) != TX_SUCCESS)
   {
@@ -282,15 +264,6 @@ void  usbx_app_thread_entry(ULONG arg)
           USBH_UsrLog("Mouse is ready...\n");
           break;
 
-        case Keyboard_Device :
-          keyboard = hid_client-> ux_host_class_hid_client_local_instance;
-          USBH_UsrLog("HID_Keyboard_Device");
-          USBH_UsrLog("PID: %#x ", (UINT)keyboard ->ux_host_class_hid_keyboard_hid->ux_host_class_hid_device->ux_device_descriptor.idProduct);
-          USBH_UsrLog("VID: %#x ", (UINT)keyboard ->ux_host_class_hid_keyboard_hid->ux_host_class_hid_device->ux_device_descriptor.idVendor);
-          USBH_UsrLog("USB HID Host Keyboard App...");
-          USBH_UsrLog("keyboard is ready...\n");
-          break;
-
         case Unknown_Device :
           USBH_ErrLog("Unsupported USB device");
           break;
@@ -303,7 +276,6 @@ void  usbx_app_thread_entry(ULONG arg)
     {
       /* clear hid_client local instance */
       mouse = NULL;
-      keyboard = NULL;
     }
   }
 }
@@ -351,18 +323,6 @@ UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *Current_class, VOID *Cur
           {
             /* update HID device Type */
             ux_dev_info.Device_Type = Mouse_Device;
-
-            /* put a message queue to usbx_app_thread_entry */
-            tx_queue_send(&ux_app_MsgQueue, &ux_dev_info, TX_NO_WAIT);
-          }
-
-          /* Check the HID_client if this is a HID keyboard device. */
-          else if (ux_utility_memory_compare(hid_client -> ux_host_class_hid_client_name,
-                                             _ux_system_host_class_hid_client_keyboard_name,
-                                             ux_utility_string_length_get(_ux_system_host_class_hid_client_keyboard_name)) == UX_SUCCESS)
-          {
-            /* update HID device Type */
-            ux_dev_info.Device_Type = Keyboard_Device;
 
             /* put a message queue to usbx_app_thread_entry */
             tx_queue_send(&ux_app_MsgQueue, &ux_dev_info, TX_NO_WAIT);
@@ -451,8 +411,6 @@ VOID ux_host_error_callback(UINT system_level, UINT system_context, UINT error_c
 UINT MX_USB_Host_Init(void)
 {
   UINT ret = UX_SUCCESS;
-  /* USER CODE BEGIN USB_Host_Init_PreTreatment_0 */
-  /* USER CODE END USB_Host_Init_PreTreatment_0 */
 
   /* The code below is required for installing the host portion of USBX. */
   if (ux_host_stack_initialize(ux_host_event_callback) != UX_SUCCESS)
@@ -474,16 +432,6 @@ UINT MX_USB_Host_Init(void)
     ret = UX_ERROR;
   }
 
-  /* Register HID Mouse client */
-  if (ux_host_class_hid_client_register(_ux_system_host_class_hid_client_keyboard_name,
-                                        ux_host_class_hid_keyboard_entry) != UX_SUCCESS)
-  {
-    ret = UX_ERROR;
-  }
-
-  /* Initialize the LL driver */
-  MX_USB_OTG_HS_HCD_Init();
-
   /* Register all the USB host controllers available in this system.  */
   if (ux_host_stack_hcd_register(_ux_system_host_hcd_stm32_name,
                                  _ux_hcd_stm32_initialize, USB_OTG_HS_PERIPH_BASE,
@@ -498,12 +446,6 @@ UINT MX_USB_Host_Init(void)
   /* Enable USB Global Interrupt*/
   HAL_HCD_Start(&hhcd_USB_OTG_HS);
 
-  /* USER CODE BEGIN USB_Host_Init_PreTreatment_1 */
-  /* USER CODE END USB_Host_Init_PreTreatment_1 */
-
-
-  /* USER CODE BEGIN USB_Host_Init_PostTreatment */
-  /* USER CODE END USB_Host_Init_PostTreatment */
   return ret;
 }
 
@@ -517,25 +459,18 @@ UINT MX_USB_Host_Init(void)
 */
 void USBH_DriverVBUS(uint8_t state)
 {
-  /* USER CODE BEGIN 0 */
-
-  /* USER CODE END 0*/
 
   if (state == USB_VBUS_TRUE)
   {
     /* Drive high Charge pump */
     /* Add IOE driver control */
-    /* USER CODE BEGIN DRIVE_HIGH_CHARGE_FOR_HS */
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_RESET);
-    /* USER CODE END DRIVE_HIGH_CHARGE_FOR_HS */
   }
   else
   {
     /* Drive low Charge pump */
     /* Add IOE driver control */
-    /* USER CODE BEGIN DRIVE_LOW_CHARGE_FOR_HS */
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_10, GPIO_PIN_SET);
-    /* USER CODE END DRIVE_LOW_CHARGE_FOR_HS */
   }
 
   HAL_Delay(200);
