@@ -6,7 +6,7 @@
 /*  Studio User Guide, or visit our web site at azure.com/rtos                 */
 /*                                                                             */
 /*  GUIX Studio Revision 6.1.7.0                                               */
-/*  Date (dd.mm.yyyy): 25. 6.2021   Time (hh:mm): 19:32                        */
+/*  Date (dd.mm.yyyy):  3. 7.2021   Time (hh:mm): 09:54                        */
 /*******************************************************************************/
 
 
@@ -33,7 +33,7 @@ GX_CONST GX_COLOR main_display_default_theme_color_table[] =
     0xff000000,
     0xffbababa,
     0xff7d7d7d,
-    0xffffffff,
+    0xff000000,
     0xffe2e2e2,
     0xff000000,
     0xffc0c0c0,

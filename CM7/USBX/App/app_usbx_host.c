@@ -83,6 +83,10 @@ __attribute__((section(".sram3.bridgeStale"))) volatile unsigned int bridgeStale
 __attribute__((section(".sram3.bridgeBadstatus"))) volatile unsigned int bridgeBadstatus[4];
 __attribute__((section(".sram3.bridgeValue"))) volatile uint32_t bridgeValue[4];
 
+char textBuffer[20*64];
+UINT lineEnd[20];
+UINT curLine;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -231,6 +235,8 @@ UINT App_USBX_Host_Init(VOID *memory_ptr)
   */
 void  usbx_app_thread_entry(ULONG arg)
 {
+  printf("Starting CM7 Run on %s and %s\n", _tx_version_id, _ux_version_id);
+
   /* Initialize USBX_Host */
   MX_USB_Host_Init();
 
@@ -523,6 +529,55 @@ void tx_cm7_lcd_thread_entry(ULONG thread_input)
 
   /* Let GUIX run. */
   gx_system_start();
+}
+
+/*************************************************************************************/
+static void shiftLines(void)
+{
+	/* we need to remove the first line by shifting everything up */
+	if (curLine < 1)
+		return;
+	curLine -= 1;
+	UINT shift = lineEnd[0];
+	memmove(textBuffer, textBuffer + shift, lineEnd[curLine] - shift);
+	for (unsigned int i = 0; i < curLine; i++)
+		lineEnd[i] = lineEnd[i + 1] - shift;
+}
+
+int _write(int file, char *ptr, int len)
+{
+	if (len <= 0)
+		return len;
+	int cur = 0;
+	while (cur < len)
+	{
+		UINT pos = lineEnd[curLine];
+		UINT ll = pos;
+		if (curLine > 0)
+			ll -= lineEnd[curLine - 1];
+		if (ll + 1 == 64 || ptr[cur] == '\n')
+		{
+			/* we have or need a new line */
+			textBuffer[pos] = '\n';
+			if (ptr[cur] == '\n')
+				cur += 1;
+			lineEnd[curLine] += 1;
+			curLine += 1;
+			if (curLine > 19)
+				shiftLines();
+			lineEnd[curLine] = lineEnd[curLine - 1];
+		}
+		else
+		{
+			textBuffer[pos] = ptr[cur];
+			cur += 1;
+			lineEnd[curLine] += 1;
+		}
+	}
+	/* add terminating 0 to the string; we should have room */
+	textBuffer[lineEnd[curLine]] = 0;
+	gx_multi_line_text_view_text_set(&main_window.main_window_text_view, textBuffer);
+	return len;
 }
 
 /*************************************************************************************/

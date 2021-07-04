@@ -6,7 +6,7 @@
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
 /*  GUIX Studio Revision 6.1.7.0                                               */
-/*  Date (dd.mm.yyyy): 25. 6.2021   Time (hh:mm): 19:32                        */
+/*  Date (dd.mm.yyyy):  3. 7.2021   Time (hh:mm): 09:54                        */
 /*******************************************************************************/
 
 
@@ -146,6 +146,26 @@ UINT gx_studio_numeric_scroll_wheel_create(GX_CONST GX_STUDIO_WIDGET *info, GX_W
     }
     return status;
 }
+
+UINT gx_studio_multi_line_text_view_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent)
+{
+    UINT status;
+    GX_MULTI_LINE_TEXT_VIEW *view = (GX_MULTI_LINE_TEXT_VIEW *) control_block;
+    GX_ML_TEXT_VIEW_PROPERTIES *props = (GX_ML_TEXT_VIEW_PROPERTIES *) info->properties;
+    status = gx_multi_line_text_view_create(view, info->widget_name, parent, props->string_id, info->style, info->widget_id, &info->size);
+    if (status == GX_SUCCESS)
+    {
+        gx_multi_line_text_view_font_set(view, props->font_id);
+#if defined(GUIX_5_4_0_COMPATIBILITY)
+        gx_multi_line_text_view_text_color_set(view, props->normal_text_color_id, props->selected_text_color_id);
+#else
+        gx_multi_line_text_view_text_color_set(view, props->normal_text_color_id, props->selected_text_color_id, props->disabled_text_color_id);
+#endif
+        gx_multi_line_text_view_whitespace_set(view, props->whitespace);
+        gx_multi_line_text_view_line_space_set(view, props->line_space);
+    }
+    return status;
+}
 GX_WINDOW_PROPERTIES main_window_properties =
 {
     0                                        /* wallpaper pixelmap id          */
@@ -184,6 +204,40 @@ GX_NUMERIC_SCROLL_WHEEL_PROPERTIES main_window_numeric_scroll_wheel_properties =
     0,                                       /* start val                      */
     9,                                       /* end val                        */
 };
+GX_ML_TEXT_VIEW_PROPERTIES main_window_text_view_properties =
+{
+    GX_STRING_ID_STRING_3,                   /* string id                      */
+    GX_FONT_ID_TEXT_INPUT,                   /* font id                        */
+    GX_COLOR_ID_TEXT_INPUT_TEXT,             /* normal text color              */
+    GX_COLOR_ID_TEXT_INPUT_TEXT,             /* selected text color            */
+    GX_COLOR_ID_DISABLED_TEXT,               /* disabled text color            */
+    0,                                       /* whitespace                     */
+    2                                        /* line_space                     */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_text_view_define =
+{
+    "text_view",
+    GX_TYPE_MULTI_LINE_TEXT_VIEW,            /* widget type                    */
+    GX_ID_NONE,                              /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_THIN|GX_STYLE_ENABLED|GX_STYLE_TEXT_LEFT,   /* style flags */
+    0,                                       /* status flags                   */
+    sizeof(GX_MULTI_LINE_TEXT_VIEW),         /* control block size             */
+    GX_COLOR_ID_TEXT_INPUT_FILL,             /* normal color id                */
+    GX_COLOR_ID_WINDOW_FILL,                 /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_multi_line_text_view_create,     /* create function              */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {0, 176, 639, 575},                      /* widget size                    */
+    GX_NULL,                                 /* no next widget                 */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_text_view), /* control block */
+    (void *) &main_window_text_view_properties /* extended properties          */
+};
 
 GX_CONST GX_STUDIO_WIDGET main_window_numeric_scroll_wheel_define =
 {
@@ -202,8 +256,8 @@ GX_CONST GX_STUDIO_WIDGET main_window_numeric_scroll_wheel_define =
     gx_studio_numeric_scroll_wheel_create,     /* create function              */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {30, 217, 129, 456},                     /* widget size                    */
-    GX_NULL,                                 /* no next widget                 */
+    {657, 136, 697, 375},                    /* widget size                    */
+    &main_window_text_view_define,           /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_numeric_scroll_wheel), /* control block */
     (void *) &main_window_numeric_scroll_wheel_properties /* extended properties */
@@ -226,7 +280,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_button_define =
     gx_studio_button_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {562, 219, 681, 338},                    /* widget size                    */
+    {649, 35, 702, 83},                      /* widget size                    */
     &main_window_numeric_scroll_wheel_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_button), /* control block  */
@@ -250,7 +304,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_weight_prompt_define =
     gx_studio_numeric_pixelmap_prompt_create,     /* create function           */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) weight_prompt_event, /* event function override */
-    {1, 0, 637, 184},                        /* widget size                    */
+    {0, 0, 639, 175},                        /* widget size                    */
     &main_window_button_define,              /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_weight_prompt), /* control block */

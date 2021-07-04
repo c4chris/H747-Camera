@@ -6,7 +6,7 @@
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
 /*  GUIX Studio Revision 6.1.7.0                                               */
-/*  Date (dd.mm.yyyy): 25. 6.2021   Time (hh:mm): 19:32                        */
+/*  Date (dd.mm.yyyy):  3. 7.2021   Time (hh:mm): 09:54                        */
 /*******************************************************************************/
 
 
@@ -107,6 +107,17 @@ typedef struct
     int                 end_val;
 } GX_NUMERIC_SCROLL_WHEEL_PROPERTIES;
 
+typedef struct
+{
+    GX_RESOURCE_ID string_id;
+    GX_RESOURCE_ID font_id;
+    GX_RESOURCE_ID normal_text_color_id;
+    GX_RESOURCE_ID selected_text_color_id;
+    GX_RESOURCE_ID disabled_text_color_id;
+    GX_UBYTE       whitespace;
+    GX_BYTE        line_space;
+} GX_ML_TEXT_VIEW_PROPERTIES;
+
 
 /* Declare top-level control blocks                                            */
 
@@ -116,6 +127,7 @@ typedef struct MAIN_WINDOW_CONTROL_BLOCK_STRUCT
     GX_NUMERIC_PIXELMAP_PROMPT main_window_weight_prompt;
     GX_BUTTON main_window_button;
     GX_NUMERIC_SCROLL_WHEEL main_window_numeric_scroll_wheel;
+    GX_MULTI_LINE_TEXT_VIEW main_window_text_view;
 } MAIN_WINDOW_CONTROL_BLOCK;
 
 
@@ -160,6 +172,7 @@ UINT gx_studio_button_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control
 UINT gx_studio_numeric_pixelmap_prompt_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);
 UINT gx_studio_window_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);
 UINT gx_studio_numeric_scroll_wheel_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);
+UINT gx_studio_multi_line_text_view_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);
 GX_WIDGET *gx_studio_widget_create(GX_BYTE *storage, GX_CONST GX_STUDIO_WIDGET *definition, GX_WIDGET *parent);
 UINT gx_studio_named_widget_create(char *name, GX_WIDGET *parent, GX_WIDGET **new_widget);
 UINT gx_studio_display_configure(USHORT display, UINT (*driver)(GX_DISPLAY *), GX_UBYTE language, USHORT theme, GX_WINDOW_ROOT **return_root);

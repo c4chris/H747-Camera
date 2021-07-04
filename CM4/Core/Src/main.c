@@ -34,11 +34,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#if defined ( __GNUC__)
 #define PUTCHAR_PROTOTYPE int __io_putchar(int ch)
-#else
-#define PUTCHAR_PROTOTYPE int fputc(int ch, FILE *f)
-#endif
 
 #define HSEM_ID_0 (0U) /* HW semaphore 0*/
 #define HSEM_ID_1 (1U) /* HW semaphore 1*/
