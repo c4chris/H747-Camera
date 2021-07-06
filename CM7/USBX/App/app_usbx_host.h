@@ -77,6 +77,7 @@ void  USBH_DriverVBUS(uint8_t state);
 void  usbx_app_thread_entry(ULONG arg);
 void  hid_mouse_thread_entry(ULONG arg);
 void  hid_keyboard_thread_entry(ULONG arg);
+void  hid_touchscreen_thread_entry(ULONG arg);
 VOID  ux_host_error_callback(UINT system_level, UINT system_context, UINT error_code);
 UINT  ux_host_event_callback(ULONG event, UX_HOST_CLASS *p_host_class, VOID *p_instance);
 /* USER CODE END EFP */
@@ -101,6 +102,7 @@ typedef enum
 {
   Mouse_Device = 1,
   Keyboard_Device,
+	Touchscreen_Device,
   Unknown_Device,
 } HID_Device_Type;
 

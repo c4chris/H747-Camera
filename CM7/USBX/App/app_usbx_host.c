@@ -30,21 +30,38 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
+/* Define HID Touchscreen Class structure.  */
+
+typedef struct HOST_CLASS_HID_TOUCHSCREEN_STRUCT
+{
+    ULONG             host_class_hid_touchscreen_state;
+    UX_HOST_CLASS_HID *host_class_hid_touchscreen_hid;
+    USHORT            host_class_hid_touchscreen_id;
+    ULONG             host_class_hid_touchscreen_x_position;
+    ULONG             host_class_hid_touchscreen_y_position;
+    ULONG             host_class_hid_touchscreen_buttons;
+} HOST_CLASS_HID_TOUCHSCREEN;
+
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define USBX_APP_STACK_SIZE                          1024
-#define USBX_MEMORY_SIZE                             (64 * 1024)
-#define APP_QUEUE_SIZE                               5
+#define USBX_APP_STACK_SIZE                  1024
+#define USBX_MEMORY_SIZE                     (64 * 1024)
+#define APP_QUEUE_SIZE                       5
 
-#define DEFAULT_STACK_SIZE                           (1 * 1024)
+#define DEFAULT_STACK_SIZE                   (1 * 1024)
 /* fx_sd_thread priority */
-#define DEFAULT_THREAD_PRIO                          10
+#define DEFAULT_THREAD_PRIO                  10
 
 /* fx_sd_thread preemption priority */
-#define DEFAULT_PREEMPTION_THRESHOLD                 DEFAULT_THREAD_PRIO
+#define DEFAULT_PREEMPTION_THRESHOLD         DEFAULT_THREAD_PRIO
+
+#define COLUMNS                              80
+#define LINES                                20
+
+#define HOST_CLASS_HID_DIGITIZER_TOUCHSCREEN 0x04
 
 /* USER CODE END PD */
 
@@ -58,10 +75,12 @@
 extern HCD_HandleTypeDef                 hhcd_USB_OTG_HS;
 TX_THREAD                                ux_app_thread;
 TX_THREAD                                mouse_app_thread;
+TX_THREAD                                touchscreen_app_thread;
 TX_QUEUE                                 ux_app_MsgQueue;
 UX_HOST_CLASS_HID                        *hid;
 UX_HOST_CLASS_HID_CLIENT                 *hid_client;
 UX_HOST_CLASS_HID_MOUSE                  *mouse;
+HOST_CLASS_HID_TOUCHSCREEN               *touchscreen;
 
 __ALIGN_BEGIN ux_app_devInfotypeDef       ux_dev_info  __ALIGN_END;
 
@@ -83,9 +102,11 @@ __attribute__((section(".sram3.bridgeStale"))) volatile unsigned int bridgeStale
 __attribute__((section(".sram3.bridgeBadstatus"))) volatile unsigned int bridgeBadstatus[4];
 __attribute__((section(".sram3.bridgeValue"))) volatile uint32_t bridgeValue[4];
 
-char textBuffer[20*64];
-UINT lineEnd[20];
+char textBuffer[LINES*COLUMNS];
+UINT lineEnd[LINES];
 UINT curLine;
+
+UCHAR system_host_class_hid_client_touchscreen_name[] = "host_class_hid_client_touchscreen";
 
 /* USER CODE END PV */
 
@@ -154,6 +175,21 @@ UINT App_USBX_Host_Init(VOID *memory_ptr)
 
   /* Create the HID mouse App thread. */
   if (tx_thread_create(&mouse_app_thread, "thread 1", hid_mouse_thread_entry, 0,
+                       pointer, USBX_APP_STACK_SIZE, 30, 30, 1,
+                       TX_AUTO_START) != TX_SUCCESS)
+  {
+    ret = TX_THREAD_ERROR;
+  }
+
+  /* Allocate the stack for touchscreen thread. */
+  if (tx_byte_allocate(byte_pool, (VOID **) &pointer,
+                       USBX_APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
+  {
+    ret = TX_POOL_ERROR;
+  }
+
+  /* Create the HID touchscreen App thread. */
+  if (tx_thread_create(&touchscreen_app_thread, "thread 2", hid_touchscreen_thread_entry, 0,
                        pointer, USBX_APP_STACK_SIZE, 30, 30, 1,
                        TX_AUTO_START) != TX_SUCCESS)
   {
@@ -262,12 +298,21 @@ void  usbx_app_thread_entry(ULONG arg)
       switch (ux_dev_info.Device_Type)
       {
         case Mouse_Device :
-          mouse = hid_client-> ux_host_class_hid_client_local_instance;
+          mouse = hid_client->ux_host_class_hid_client_local_instance;
           USBH_UsrLog("HID_Mouse_Device");
-          USBH_UsrLog("PID: %#x ", (UINT)mouse ->ux_host_class_hid_mouse_hid->ux_host_class_hid_device->ux_device_descriptor.idProduct);
-          USBH_UsrLog("VID: %#x ", (UINT)mouse ->ux_host_class_hid_mouse_hid->ux_host_class_hid_device->ux_device_descriptor.idVendor);
+          USBH_UsrLog("PID: %#x ", (UINT)mouse->ux_host_class_hid_mouse_hid->ux_host_class_hid_device->ux_device_descriptor.idProduct);
+          USBH_UsrLog("VID: %#x ", (UINT)mouse->ux_host_class_hid_mouse_hid->ux_host_class_hid_device->ux_device_descriptor.idVendor);
           USBH_UsrLog("USB HID Host Mouse App...");
           USBH_UsrLog("Mouse is ready...\n");
+          break;
+
+        case Touchscreen_Device :
+          touchscreen = hid_client->ux_host_class_hid_client_local_instance;
+          USBH_UsrLog("HID_Touchscreen_Device");
+          USBH_UsrLog("PID: %#x ", (UINT)touchscreen->host_class_hid_touchscreen_hid->ux_host_class_hid_device->ux_device_descriptor.idProduct);
+          USBH_UsrLog("VID: %#x ", (UINT)touchscreen->host_class_hid_touchscreen_hid->ux_host_class_hid_device->ux_device_descriptor.idVendor);
+          USBH_UsrLog("USB HID Host Touchscreen App...");
+          USBH_UsrLog("Touchscreen is ready...\n");
           break;
 
         case Unknown_Device :
@@ -282,6 +327,7 @@ void  usbx_app_thread_entry(ULONG arg)
     {
       /* clear hid_client local instance */
       mouse = NULL;
+      touchscreen = NULL;
     }
   }
 }
@@ -316,13 +362,13 @@ UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *Current_class, VOID *Cur
           /* Get current Hid Instance */
           hid = Current_instance;
           /* Get the HID Client */
-          hid_client = hid ->ux_host_class_hid_client;
+          hid_client = hid->ux_host_class_hid_client;
 
           if (hid->ux_host_class_hid_client->ux_host_class_hid_client_status != (ULONG) UX_HOST_CLASS_INSTANCE_LIVE)
           {
             ux_dev_info.Device_Type = Unknown_Device;
           }
-          /* Check the HID_client if this is a HID mouse device. */
+          /* Check the HID_client if this is a HID mouse or touchscreen device. */
           if (ux_utility_memory_compare(hid_client -> ux_host_class_hid_client_name,
                                         _ux_system_host_class_hid_client_mouse_name,
                                         ux_utility_string_length_get(_ux_system_host_class_hid_client_mouse_name)) == UX_SUCCESS)
@@ -332,7 +378,16 @@ UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *Current_class, VOID *Cur
 
             /* put a message queue to usbx_app_thread_entry */
             tx_queue_send(&ux_app_MsgQueue, &ux_dev_info, TX_NO_WAIT);
-          }
+          } else if (ux_utility_memory_compare(hid_client->ux_host_class_hid_client_name,
+																							 system_host_class_hid_client_touchscreen_name,
+																							 ux_utility_string_length_get(system_host_class_hid_client_touchscreen_name)) == UX_SUCCESS)
+	          {
+	            /* update HID device Type */
+	            ux_dev_info.Device_Type = Touchscreen_Device;
+
+	            /* put a message queue to usbx_app_thread_entry */
+	            tx_queue_send(&ux_app_MsgQueue, &ux_dev_info, TX_NO_WAIT);
+	          }
           else
           {
             ux_dev_info.Device_Type = Unknown_Device;
@@ -408,6 +463,228 @@ VOID ux_host_error_callback(UINT system_level, UINT system_context, UINT error_c
   }
 }
 
+VOID host_class_hid_touchscreen_callback(UX_HOST_CLASS_HID_REPORT_CALLBACK *callback)
+{
+	UX_HOST_CLASS_HID_CLIENT   *hid_client;
+	HOST_CLASS_HID_TOUCHSCREEN *touchscreen_instance;
+
+	/* Get the HID client instance that issued the callback.  */
+	hid_client = callback->ux_host_class_hid_report_callback_client;
+
+	/* Get the touchscreen local instance */
+	touchscreen_instance = (HOST_CLASS_HID_TOUCHSCREEN *) hid_client->ux_host_class_hid_client_local_instance;
+
+	/* Analyze the usage we have received.  */
+	switch (callback->ux_host_class_hid_report_callback_usage)
+	{
+		/* X/Y Axis movement.  */
+		case    UX_HOST_CLASS_HID_MOUSE_AXIS_X      :
+			/* Add the deplacement to the position.  */
+			touchscreen_instance->host_class_hid_touchscreen_x_position = callback->ux_host_class_hid_report_callback_value;
+			break;
+
+		case    UX_HOST_CLASS_HID_MOUSE_AXIS_Y      :
+			/* Add the deplacement to the position.  */
+			touchscreen_instance->host_class_hid_touchscreen_y_position = callback->ux_host_class_hid_report_callback_value;
+			break;
+
+			/* Buttons.  */
+		case    UX_HOST_CLASS_HID_MOUSE_BUTTON_1    :
+			/* Check the state of button 1.  */
+			if (callback -> ux_host_class_hid_report_callback_value == UX_TRUE)
+				touchscreen_instance->host_class_hid_touchscreen_buttons |= UX_HOST_CLASS_HID_MOUSE_BUTTON_1_PRESSED;
+			else
+				touchscreen_instance->host_class_hid_touchscreen_buttons &= (ULONG)~UX_HOST_CLASS_HID_MOUSE_BUTTON_1_PRESSED;
+			break;
+
+		default :
+			/* We have received a Usage we don't know about. Ignore it.  */
+			printf("Received callback %08lx\n", callback->ux_host_class_hid_report_callback_usage);
+			break;
+	}
+
+	/* Return to caller.  */
+	return;
+}
+
+UINT  host_class_hid_touchscreen_activate(UX_HOST_CLASS_HID_CLIENT_COMMAND *command)
+{
+	UX_HOST_CLASS_HID_REPORT_CALLBACK call_back;
+	UX_HOST_CLASS_HID_REPORT_GET_ID   report_id;
+	UX_HOST_CLASS_HID                 *hid;
+	UX_HOST_CLASS_HID_CLIENT          *hid_client;
+	HOST_CLASS_HID_TOUCHSCREEN        *touchscreen_instance;
+	UINT                              status;
+
+	/* Get the instance to the HID class.  */
+	hid = command->ux_host_class_hid_client_command_instance;
+
+	/* And of the HID client.  */
+	hid_client = hid->ux_host_class_hid_client;
+
+	/* Get some memory for both the HID class instance of this client
+     and for the callback.  */
+	touchscreen_instance = (HOST_CLASS_HID_TOUCHSCREEN *) _ux_utility_memory_allocate(UX_NO_ALIGN, UX_REGULAR_MEMORY,
+																																										 sizeof(HOST_CLASS_HID_TOUCHSCREEN));
+	if(touchscreen_instance == UX_NULL)
+		return(UX_MEMORY_INSUFFICIENT);
+
+	/* Attach the touchscreen instance to the client instance.  */
+	hid_client->ux_host_class_hid_client_local_instance = (VOID *) touchscreen_instance;
+
+	/* Save the HID instance in the client instance.  */
+	touchscreen_instance->host_class_hid_touchscreen_hid = hid;
+
+	/* The instance is live now.  */
+	touchscreen_instance->host_class_hid_touchscreen_state = UX_HOST_CLASS_INSTANCE_LIVE;
+
+	/* Get the report ID for the touchscreen. The touchscreen is a INPUT report.
+     This should be 0 but in case. */
+	report_id.ux_host_class_hid_report_get_report = UX_NULL;
+	report_id.ux_host_class_hid_report_get_type = UX_HOST_CLASS_HID_REPORT_TYPE_INPUT;
+	status = _ux_host_class_hid_report_id_get(hid, &report_id);
+
+	/* The report ID should exist.  */
+	if (status == UX_SUCCESS)
+	{
+		/* print what we have */
+		UX_HOST_CLASS_HID_REPORT *r = report_id.ux_host_class_hid_report_get_report;
+		printf("ux_host_class_hid_report_id: %08lx\n", r->ux_host_class_hid_report_id);
+		printf("ux_host_class_hid_report_type: %08lx\n", r->ux_host_class_hid_report_type);
+		printf("ux_host_class_hid_report_field: %08lx\n", (ULONG) r->ux_host_class_hid_report_field);
+		printf("ux_host_class_hid_report_number_item: %08lx\n", r->ux_host_class_hid_report_number_item);
+		printf("ux_host_class_hid_report_byte_length: %08lx\n", r->ux_host_class_hid_report_byte_length);
+		printf("ux_host_class_hid_report_bit_length: %08lx\n", r->ux_host_class_hid_report_bit_length);
+		printf("ux_host_class_hid_report_callback_flags: %08lx\n", r->ux_host_class_hid_report_callback_flags);
+		printf("ux_host_class_hid_report_callback_buffer: %08lx\n", (ULONG) r->ux_host_class_hid_report_callback_buffer);
+		printf("ux_host_class_hid_report_callback_length: %08lx\n", r->ux_host_class_hid_report_callback_length);
+		printf("ux_host_class_hid_report_next_report: %08lx\n", (ULONG) r->ux_host_class_hid_report_next_report);
+		/* Save the touchscreen report ID. */
+		touchscreen_instance->host_class_hid_touchscreen_id = (USHORT)report_id.ux_host_class_hid_report_get_id;
+
+		/* Set the idle rate of the touchscreen to 0. This way a report is generated only when there is an activity.  */
+		status = _ux_host_class_hid_idle_set(hid, 0, touchscreen_instance->host_class_hid_touchscreen_id);
+
+		/* FIXME ? Check for error, accept protocol error since it's optional for mouse.  */
+		if (status == UX_TRANSFER_STALLED)
+			status = UX_SUCCESS;
+	}
+
+	/* If we are OK, go on.  */
+	if (status == UX_SUCCESS)
+	{
+		/* Initialize the report callback.  */
+		call_back.ux_host_class_hid_report_callback_id =       touchscreen_instance->host_class_hid_touchscreen_id;
+		call_back.ux_host_class_hid_report_callback_function = host_class_hid_touchscreen_callback;
+		call_back.ux_host_class_hid_report_callback_buffer =   UX_NULL;
+		call_back.ux_host_class_hid_report_callback_flags =    UX_HOST_CLASS_HID_REPORT_INDIVIDUAL_USAGE;
+		call_back.ux_host_class_hid_report_callback_length =   0;
+
+		/* Register the report call back when data comes it on this report.  */
+		status =  _ux_host_class_hid_report_callback_register(hid, &call_back);
+	}
+
+	/* If we are OK, go on.  */
+	if (status == UX_SUCCESS)
+	{
+		/* Start the periodic report.  */
+		status =  _ux_host_class_hid_periodic_report_start(hid);
+
+		if (status == UX_SUCCESS)
+		{
+			/* If all is fine and the device is mounted, we may need to inform the application
+         if a function has been programmed in the system structure.  */
+			if (_ux_system_host->ux_system_host_change_function != UX_NULL)
+			{
+				/* Call system change function.  */
+				_ux_system_host->ux_system_host_change_function(UX_HID_CLIENT_INSERTION, hid->ux_host_class_hid_class, (VOID *) hid_client);
+			}
+
+			/* Return completion status.  */
+			return(status);
+		}
+	}
+
+	/* We are here if there is error.  */
+
+	/* Detach the client instance.  */
+	hid_client->ux_host_class_hid_client_local_instance = UX_NULL;
+
+	/* Free mouse client instance.  */
+	_ux_utility_memory_free(touchscreen_instance);
+
+	/* Return completion status.  */
+	return(status);
+}
+
+UINT host_class_hid_touchscreen_deactivate(UX_HOST_CLASS_HID_CLIENT_COMMAND *command)
+{
+	UX_HOST_CLASS_HID        *hid;
+	UX_HOST_CLASS_HID_CLIENT *hid_client;
+	UINT                     status;
+
+	/* Get the instance to the HID class.  */
+	hid = command->ux_host_class_hid_client_command_instance;
+
+	/* Stop the periodic report.  */
+	status = _ux_host_class_hid_periodic_report_stop(hid);
+
+	/* Get the HID client pointer.  */
+	hid_client = hid->ux_host_class_hid_client;
+
+	/* Now free the instance memory.  */
+	_ux_utility_memory_free(hid_client->ux_host_class_hid_client_local_instance);
+
+	/* We may need to inform the application
+     if a function has been programmed in the system structure.  */
+	if (_ux_system_host->ux_system_host_change_function != UX_NULL)
+	{
+		/* Call system change function.  */
+		_ux_system_host->ux_system_host_change_function(UX_HID_CLIENT_REMOVAL, hid->ux_host_class_hid_class, (VOID *) hid_client);
+	}
+
+	/* Return completion status.  */
+	return(status);
+}
+
+UINT host_class_hid_touchscreen_entry(UX_HOST_CLASS_HID_CLIENT_COMMAND *command)
+{
+	UINT status;
+
+	/* The command request will tell us we need to do here, either a enumeration
+     query, an activation or a deactivation.  */
+	switch (command -> ux_host_class_hid_client_command_request)
+	{
+		case UX_HOST_CLASS_COMMAND_QUERY:
+			/* The query command is used to let the HID class know if we want to own
+         this device or not.  */
+			if ((command->ux_host_class_hid_client_command_page == UX_HOST_CLASS_HID_PAGE_DIGITIZER)
+					&& (command->ux_host_class_hid_client_command_usage == HOST_CLASS_HID_DIGITIZER_TOUCHSCREEN))
+			{
+				printf("Accepting Digitizer\n");
+				return(UX_SUCCESS);
+			}
+			else
+				return(UX_NO_CLASS_MATCH);
+
+		case UX_HOST_CLASS_COMMAND_ACTIVATE:
+			/* The activate command is used by the HID class to start the HID client.  */
+			status = host_class_hid_touchscreen_activate(command);
+			/* Return completion status.  */
+			return(status);
+
+		case UX_HOST_CLASS_COMMAND_DEACTIVATE:
+			/* The deactivate command is used by the HID class when it received a deactivate
+         command from the USBX stack and there was a HID client attached to the HID instance.  */
+			status = host_class_hid_touchscreen_deactivate(command);
+			/* Return completion status.  */
+			return(status);
+	}
+
+	/* Return error status.  */
+	return(UX_ERROR);
+}
+
 /**
   * @brief MX_USB_Host_Init
   *        Initialization of USB device.
@@ -431,6 +708,14 @@ UINT MX_USB_Host_Init(void)
     ret = UX_ERROR;
   }
 
+  /* https://eleccelerator.com/tutorial-about-usb-hid-report-descriptors/ */
+  /* Register HID TouchScreen client */
+  if (ux_host_class_hid_client_register(system_host_class_hid_client_touchscreen_name,
+                                        host_class_hid_touchscreen_entry) != UX_SUCCESS)
+  {
+    ret = UX_ERROR;
+  }
+
   /* Register HID Mouse client */
   if (ux_host_class_hid_client_register(_ux_system_host_class_hid_client_mouse_name,
                                         ux_host_class_hid_mouse_entry) != UX_SUCCESS)
@@ -450,6 +735,42 @@ UINT MX_USB_Host_Init(void)
   HAL_HCD_Start(&hhcd_USB_OTG_HS);
 
   return ret;
+}
+
+void  hid_touchscreen_thread_entry(ULONG arg)
+{
+	ULONG value = 0;
+	ULONG old_Pos_x = 0;
+	ULONG old_Pos_y = 0;
+	ULONG Pos_x = 0;
+	ULONG Pos_y = 0;
+
+	while (1)
+	{
+		/* start if the hid client is a touchscreen and connected */
+		if ((ux_dev_info.Device_Type == Touchscreen_Device) && (ux_dev_info.Dev_state == Device_connected))
+		{
+			Pos_x = touchscreen->host_class_hid_touchscreen_x_position;
+			Pos_y = touchscreen->host_class_hid_touchscreen_y_position;
+
+			if ((Pos_x != old_Pos_x) || (Pos_y != old_Pos_y))
+			{
+				USBH_UsrLog("Pos_x = %ld Pos_y= %ld", Pos_x, Pos_y);
+
+				/* update (x,y)old position */
+				old_Pos_x = Pos_x;
+				old_Pos_y = Pos_y;
+			}
+
+			/* get buttons value */
+			if (value != touchscreen->host_class_hid_touchscreen_buttons)
+			{
+				value = touchscreen->host_class_hid_touchscreen_buttons;
+				USBH_UsrLog("Button status = %02lx", value);
+			}
+		}
+		tx_thread_sleep(10);
+  }
 }
 
 void tx_cm7_main_thread_entry(ULONG thread_input)
@@ -555,7 +876,7 @@ int _write(int file, char *ptr, int len)
 		UINT ll = pos;
 		if (curLine > 0)
 			ll -= lineEnd[curLine - 1];
-		if (ll + 1 == 64 || ptr[cur] == '\n')
+		if (ll + 1 == COLUMNS || ptr[cur] == '\n')
 		{
 			/* we have or need a new line */
 			textBuffer[pos] = '\n';
@@ -563,7 +884,7 @@ int _write(int file, char *ptr, int len)
 				cur += 1;
 			lineEnd[curLine] += 1;
 			curLine += 1;
-			if (curLine > 19)
+			if (curLine > (LINES - 1))
 				shiftLines();
 			lineEnd[curLine] = lineEnd[curLine - 1];
 		}
