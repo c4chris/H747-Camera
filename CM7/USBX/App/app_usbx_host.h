@@ -38,6 +38,7 @@ extern "C" {
 #include "stm32h7xx_hal.h"
 #include "ux_host_class_hid.h"
 #include "ux_host_class_hid_mouse.h"
+#include "ux_host_stack.h"
 #include "gx_api.h"
 #include "gx_display.h"
 #include "H747_WeighingStation_specifications.h"

@@ -308,11 +308,11 @@ void  usbx_app_thread_entry(ULONG arg)
 
         case Touchscreen_Device :
           touchscreen = hid_client->ux_host_class_hid_client_local_instance;
-          USBH_UsrLog("HID_Touchscreen_Device");
-          USBH_UsrLog("PID: %#x ", (UINT)touchscreen->host_class_hid_touchscreen_hid->ux_host_class_hid_device->ux_device_descriptor.idProduct);
-          USBH_UsrLog("VID: %#x ", (UINT)touchscreen->host_class_hid_touchscreen_hid->ux_host_class_hid_device->ux_device_descriptor.idVendor);
-          USBH_UsrLog("USB HID Host Touchscreen App...");
-          USBH_UsrLog("Touchscreen is ready...\n");
+          USBH_UsrLog("HID_Touchscreen_Device - VID: %#x - PID: %#x",
+											(UINT)touchscreen->host_class_hid_touchscreen_hid->ux_host_class_hid_device->ux_device_descriptor.idVendor,
+											(UINT)touchscreen->host_class_hid_touchscreen_hid->ux_host_class_hid_device->ux_device_descriptor.idProduct);
+          //USBH_UsrLog("USB HID Host Touchscreen App...");
+          //USBH_UsrLog("Touchscreen is ready...\n");
           break;
 
         case Unknown_Device :
@@ -499,7 +499,7 @@ VOID host_class_hid_touchscreen_callback(UX_HOST_CLASS_HID_REPORT_CALLBACK *call
 
 		default :
 			/* We have received a Usage we don't know about. Ignore it.  */
-			printf("Received callback %08lx\n", callback->ux_host_class_hid_report_callback_usage);
+			//printf("Received callback %08lx\n", callback->ux_host_class_hid_report_callback_usage);
 			break;
 	}
 
@@ -540,6 +540,7 @@ UINT  host_class_hid_touchscreen_activate(UX_HOST_CLASS_HID_CLIENT_COMMAND *comm
 
 	/* Get the report ID for the touchscreen. The touchscreen is a INPUT report.
      This should be 0 but in case. */
+	/* FIXME - there seems to be several reports, maybe we should get the all ? */
 	report_id.ux_host_class_hid_report_get_report = UX_NULL;
 	report_id.ux_host_class_hid_report_get_type = UX_HOST_CLASS_HID_REPORT_TYPE_INPUT;
 	status = _ux_host_class_hid_report_id_get(hid, &report_id);
@@ -549,21 +550,66 @@ UINT  host_class_hid_touchscreen_activate(UX_HOST_CLASS_HID_CLIENT_COMMAND *comm
 	{
 		/* print what we have */
 		UX_HOST_CLASS_HID_REPORT *r = report_id.ux_host_class_hid_report_get_report;
-		printf("ux_host_class_hid_report_id: %08lx\n", r->ux_host_class_hid_report_id);
-		printf("ux_host_class_hid_report_type: %08lx\n", r->ux_host_class_hid_report_type);
-		printf("ux_host_class_hid_report_field: %08lx\n", (ULONG) r->ux_host_class_hid_report_field);
-		printf("ux_host_class_hid_report_number_item: %08lx\n", r->ux_host_class_hid_report_number_item);
-		printf("ux_host_class_hid_report_byte_length: %08lx\n", r->ux_host_class_hid_report_byte_length);
-		printf("ux_host_class_hid_report_bit_length: %08lx\n", r->ux_host_class_hid_report_bit_length);
-		printf("ux_host_class_hid_report_callback_flags: %08lx\n", r->ux_host_class_hid_report_callback_flags);
-		printf("ux_host_class_hid_report_callback_buffer: %08lx\n", (ULONG) r->ux_host_class_hid_report_callback_buffer);
-		printf("ux_host_class_hid_report_callback_length: %08lx\n", r->ux_host_class_hid_report_callback_length);
-		printf("ux_host_class_hid_report_next_report: %08lx\n", (ULONG) r->ux_host_class_hid_report_next_report);
+		printf("ux_host_class_hid_report_id: %08lx (%u)\n", r->ux_host_class_hid_report_id, (USHORT)report_id.ux_host_class_hid_report_get_id);
+		//printf("ux_host_class_hid_report_type: %08lx\n", r->ux_host_class_hid_report_type);
+		//printf("ux_host_class_hid_report_field: %08lx\n", (ULONG) r->ux_host_class_hid_report_field);
+		//printf("ux_host_class_hid_report_number_item: %08lx\n", r->ux_host_class_hid_report_number_item);
+		//printf("ux_host_class_hid_report_byte_length: %08lx\n", r->ux_host_class_hid_report_byte_length);
+		//printf("ux_host_class_hid_report_bit_length: %08lx\n", r->ux_host_class_hid_report_bit_length);
+		//printf("ux_host_class_hid_report_callback_flags: %08lx\n", r->ux_host_class_hid_report_callback_flags);
+		//printf("ux_host_class_hid_report_callback_buffer: %08lx\n", (ULONG) r->ux_host_class_hid_report_callback_buffer);
+		//printf("ux_host_class_hid_report_callback_length: %08lx\n", r->ux_host_class_hid_report_callback_length);
+		//printf("ux_host_class_hid_report_next_report: %08lx\n", (ULONG) r->ux_host_class_hid_report_next_report);
+
 		/* Save the touchscreen report ID. */
 		touchscreen_instance->host_class_hid_touchscreen_id = (USHORT)report_id.ux_host_class_hid_report_get_id;
 
-		/* Set the idle rate of the touchscreen to 0. This way a report is generated only when there is an activity.  */
+		while (r->ux_host_class_hid_report_next_report != UX_NULL)
+		{
+			status = _ux_host_class_hid_report_id_get(hid, &report_id);
+			r = report_id.ux_host_class_hid_report_get_report;
+			printf("%u ux_host_class_hid_report_id: %08lx\n", status, r->ux_host_class_hid_report_id);
+			//printf("%u ux_host_class_hid_report_type: %08lx\n", status, r->ux_host_class_hid_report_type);
+			//printf("%u ux_host_class_hid_report_field: %08lx\n", status, (ULONG) r->ux_host_class_hid_report_field);
+			//printf("%u ux_host_class_hid_report_number_item: %08lx\n", status, r->ux_host_class_hid_report_number_item);
+			//printf("%u ux_host_class_hid_report_byte_length: %08lx\n", status, r->ux_host_class_hid_report_byte_length);
+		}
+
+		report_id.ux_host_class_hid_report_get_report = UX_NULL;
+		report_id.ux_host_class_hid_report_get_type = UX_HOST_CLASS_HID_REPORT_TYPE_FEATURE;
+		status = _ux_host_class_hid_report_id_get(hid, &report_id);
+
+		/* The report ID should exist.  */
+		if (status == UX_SUCCESS)
+		{
+			/* print what we have */
+			UX_HOST_CLASS_HID_REPORT *r = report_id.ux_host_class_hid_report_get_report;
+			printf("F ux_host_class_hid_report_id: %08lx (%u)\n", r->ux_host_class_hid_report_id, (USHORT)report_id.ux_host_class_hid_report_get_id);
+			//printf("ux_host_class_hid_report_type: %08lx\n", r->ux_host_class_hid_report_type);
+			//printf("ux_host_class_hid_report_field: %08lx\n", (ULONG) r->ux_host_class_hid_report_field);
+			//printf("ux_host_class_hid_report_number_item: %08lx\n", r->ux_host_class_hid_report_number_item);
+			//printf("ux_host_class_hid_report_byte_length: %08lx\n", r->ux_host_class_hid_report_byte_length);
+			//printf("ux_host_class_hid_report_bit_length: %08lx\n", r->ux_host_class_hid_report_bit_length);
+			//printf("ux_host_class_hid_report_callback_flags: %08lx\n", r->ux_host_class_hid_report_callback_flags);
+			//printf("ux_host_class_hid_report_callback_buffer: %08lx\n", (ULONG) r->ux_host_class_hid_report_callback_buffer);
+			//printf("ux_host_class_hid_report_callback_length: %08lx\n", r->ux_host_class_hid_report_callback_length);
+			//printf("ux_host_class_hid_report_next_report: %08lx\n", (ULONG) r->ux_host_class_hid_report_next_report);
+
+			while (r->ux_host_class_hid_report_next_report != UX_NULL)
+			{
+				status = _ux_host_class_hid_report_id_get(hid, &report_id);
+				r = report_id.ux_host_class_hid_report_get_report;
+				printf("F%u ux_host_class_hid_report_id: %08lx\n", status, r->ux_host_class_hid_report_id);
+				//printf("%u ux_host_class_hid_report_type: %08lx\n", status, r->ux_host_class_hid_report_type);
+				//printf("%u ux_host_class_hid_report_field: %08lx\n", status, (ULONG) r->ux_host_class_hid_report_field);
+				//printf("%u ux_host_class_hid_report_number_item: %08lx\n", status, r->ux_host_class_hid_report_number_item);
+				//printf("%u ux_host_class_hid_report_byte_length: %08lx\n", status, r->ux_host_class_hid_report_byte_length);
+			}
+		}
+
+		/* Set the idle rate of the touchscreen to 0.  */
 		status = _ux_host_class_hid_idle_set(hid, 0, touchscreen_instance->host_class_hid_touchscreen_id);
+		printf("idle_set status = %u\n", status);
 
 		/* FIXME ? Check for error, accept protocol error since it's optional for mouse.  */
 		if (status == UX_TRANSFER_STALLED)
@@ -589,6 +635,7 @@ UINT  host_class_hid_touchscreen_activate(UX_HOST_CLASS_HID_CLIENT_COMMAND *comm
 	{
 		/* Start the periodic report.  */
 		status =  _ux_host_class_hid_periodic_report_start(hid);
+		printf("periodic_report_start status = %u\n", status);
 
 		if (status == UX_SUCCESS)
 		{
@@ -750,23 +797,35 @@ void  hid_touchscreen_thread_entry(ULONG arg)
 		/* start if the hid client is a touchscreen and connected */
 		if ((ux_dev_info.Device_Type == Touchscreen_Device) && (ux_dev_info.Dev_state == Device_connected))
 		{
-			Pos_x = touchscreen->host_class_hid_touchscreen_x_position;
-			Pos_y = touchscreen->host_class_hid_touchscreen_y_position;
-
-			if ((Pos_x != old_Pos_x) || (Pos_y != old_Pos_y))
+			/* Ensure the instance is valid.  */
+			UX_HOST_CLASS_HID   *hid = touchscreen->host_class_hid_touchscreen_hid;
+			UINT status = _ux_host_stack_class_instance_verify(_ux_system_host_class_hid_name, (VOID *) hid);
+			if (status != UX_SUCCESS)
 			{
-				USBH_UsrLog("Pos_x = %ld Pos_y= %ld", Pos_x, Pos_y);
-
-				/* update (x,y)old position */
-				old_Pos_x = Pos_x;
-				old_Pos_y = Pos_y;
+				/* Error trap. */
+				_ux_system_error_handler(UX_SYSTEM_LEVEL_THREAD, UX_SYSTEM_CONTEXT_CLASS, UX_HOST_CLASS_INSTANCE_UNKNOWN);
+				USBH_UsrLog("Error in verify %u %lx %s", status, (ULONG) hid, _ux_system_host_class_hid_name);
 			}
-
-			/* get buttons value */
-			if (value != touchscreen->host_class_hid_touchscreen_buttons)
+			else
 			{
-				value = touchscreen->host_class_hid_touchscreen_buttons;
-				USBH_UsrLog("Button status = %02lx", value);
+				Pos_x = touchscreen->host_class_hid_touchscreen_x_position;
+				Pos_y = touchscreen->host_class_hid_touchscreen_y_position;
+
+				if ((Pos_x != old_Pos_x) || (Pos_y != old_Pos_y))
+				{
+					USBH_UsrLog("Pos_x = %ld Pos_y= %ld", Pos_x, Pos_y);
+
+					/* update (x,y)old position */
+					old_Pos_x = Pos_x;
+					old_Pos_y = Pos_y;
+				}
+
+				/* get buttons value */
+				if (value != touchscreen->host_class_hid_touchscreen_buttons)
+				{
+					value = touchscreen->host_class_hid_touchscreen_buttons;
+					USBH_UsrLog("Button status = %02lx", value);
+				}
 			}
 		}
 		tx_thread_sleep(10);
@@ -787,7 +846,7 @@ void tx_cm7_main_thread_entry(ULONG thread_input)
   	ULONG ticks = tx_time_get();
   	if (ticks >= toggleTicks)
   	{
-		HAL_GPIO_TogglePin(LED4_GPIO_Port, LED4_Pin);
+  		HAL_GPIO_TogglePin(LED4_GPIO_Port, LED4_Pin);
   		toggleTicks = ticks + TX_TIMER_TICKS_PER_SECOND;
   	}
 #if 0
