@@ -348,6 +348,8 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hhcd)
     __HAL_RCC_USB_OTG_HS_CLK_ENABLE();
     __HAL_RCC_USB_OTG_HS_ULPI_CLK_ENABLE();
     /* USB_OTG_HS interrupt Init */
+    HAL_NVIC_SetPriority(OTG_HS_EP1_IN_IRQn, 0, 0);
+    HAL_NVIC_EnableIRQ(OTG_HS_EP1_IN_IRQn);
     HAL_NVIC_SetPriority(OTG_HS_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(OTG_HS_IRQn);
   /* USER CODE BEGIN USB_OTG_HS_MspInit 1 */
@@ -400,6 +402,7 @@ void HAL_HCD_MspDeInit(HCD_HandleTypeDef* hhcd)
     HAL_GPIO_DeInit(GPIOA, ULPI_CK_Pin|ULPI_D0_Pin);
 
     /* USB_OTG_HS interrupt DeInit */
+    HAL_NVIC_DisableIRQ(OTG_HS_EP1_IN_IRQn);
     HAL_NVIC_DisableIRQ(OTG_HS_IRQn);
   /* USER CODE BEGIN USB_OTG_HS_MspDeInit 1 */
 
