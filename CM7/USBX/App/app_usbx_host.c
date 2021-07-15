@@ -37,11 +37,10 @@ typedef struct HOST_CLASS_HID_TOUCHSCREEN_STRUCT
     ULONG             host_class_hid_touchscreen_state;
     UX_HOST_CLASS_HID *host_class_hid_touchscreen_hid;
     USHORT            host_class_hid_touchscreen_id;
-    ULONG             host_class_hid_touchscreen_x_position;
-    ULONG             host_class_hid_touchscreen_y_position;
-    ULONG             host_class_hid_touchscreen_buttons;
-    ULONG             data[4];
-    ULONG             len;
+    ULONG             Tip;
+    ULONG             X;
+    ULONG             Y;
+    ULONG             other;
     ULONG             event;
 } HOST_CLASS_HID_TOUCHSCREEN;
 
@@ -468,7 +467,7 @@ VOID host_class_hid_touchscreen_callback(UX_HOST_CLASS_HID_REPORT_CALLBACK *call
 {
 	UX_HOST_CLASS_HID_CLIENT   *hid_client;
 	HOST_CLASS_HID_TOUCHSCREEN *touchscreen_instance;
-	UCHAR                      *report_buffer;
+	UCHAR                      *rb;
 
 	/* Get the HID client instance that issued the callback.  */
 	hid_client = callback->ux_host_class_hid_report_callback_client;
@@ -477,9 +476,13 @@ VOID host_class_hid_touchscreen_callback(UX_HOST_CLASS_HID_REPORT_CALLBACK *call
 	touchscreen_instance = (HOST_CLASS_HID_TOUCHSCREEN *) hid_client->ux_host_class_hid_client_local_instance;
 
 	/* Get the report buffer.  */
-	report_buffer = (UCHAR *) callback->ux_host_class_hid_report_callback_buffer;
-	touchscreen_instance->len = callback->ux_host_class_hid_report_callback_actual_length;
-	memcpy(touchscreen_instance->data, report_buffer, sizeof(ULONG) * 4);
+	rb = (UCHAR *) callback->ux_host_class_hid_report_callback_buffer;
+	if (rb[0] == 0x4) {
+		touchscreen_instance->Tip = rb[1];
+		touchscreen_instance->X = rb[2] | (rb[3] << 8);
+		touchscreen_instance->Y = rb[4] | (rb[5] << 8);
+		touchscreen_instance->other = rb[6] | (rb[7] << 8) | (rb[8] << 16) | (rb[9] << 24);
+	}
 	touchscreen_instance->event += 1;
 
 	/* Return to caller.  */
@@ -713,65 +716,49 @@ void  hid_touchscreen_thread_entry(ULONG arg)
 	ULONG old_Pos_y = 0;
 	ULONG Pos_x = 0;
 	ULONG Pos_y = 0;
+	//ULONG lastEvent = 0;
 
 	while (1)
 	{
 		/* start if the hid client is a touchscreen and connected */
 		if ((ux_dev_info.Device_Type == Touchscreen_Device) && (ux_dev_info.Dev_state == Device_connected))
 		{
-			/* Ensure the instance is valid.  */
-			UINT status = _ux_host_stack_class_instance_verify(_ux_system_host_class_hid_name, (VOID *) hid);
-			if (status != UX_SUCCESS)
+			Pos_x = touchscreen->X * 720 / 16384;
+			Pos_y = touchscreen->Y * 576 / 9600;
+
+			if ((Pos_x != old_Pos_x) || (Pos_y != old_Pos_y) || value != touchscreen->Tip)
 			{
-				/* Error trap. */
-				_ux_system_error_handler(UX_SYSTEM_LEVEL_THREAD, UX_SYSTEM_CONTEXT_CLASS, UX_HOST_CLASS_INSTANCE_UNKNOWN);
-				USBH_UsrLog("Error in verify %u %lx %s", status, (ULONG) hid, _ux_system_host_class_hid_name);
-			}
-			else
-			{
-    		//UX_HCD_STM32 *hcd_stm32 = (UX_HCD_STM32 *) _ux_system_host->ux_system_host_hcd_array->ux_hcd_controller_hardware;
-    		//HCD_HandleTypeDef *hcd_handle = hcd_stm32->hcd_handle;
-    		//printf("S:%08lx", hcd_handle->Instance->GOTGCTL);
-    		//printf(" C:%08lx", hcd_handle->Instance->GAHBCFG);
-    		//printf(" U:%08lx", hcd_handle->Instance->GUSBCFG);
-    		//printf(" R:%08lx", hcd_handle->Instance->GRSTCTL);
-    		//printf(" I:%08lx", hcd_handle->Instance->GINTSTS);
-    		//printf("\n");
-    		printf("CB %8lu (%2lu):", touchscreen->event, touchscreen->len);
-    		for (UINT i = 0; i < 4; i++)
-    			printf(" %08lx", touchscreen->data[i]);
-    		printf("\n");
-
-				Pos_x = touchscreen->host_class_hid_touchscreen_x_position;
-				Pos_y = touchscreen->host_class_hid_touchscreen_y_position;
-
-				if ((Pos_x != old_Pos_x) || (Pos_y != old_Pos_y))
+				GX_EVENT e = {0};
+				//e.gx_event_display_handle = LCD_FRAME_BUFFER;
+				e.gx_event_payload.gx_event_pointdata.gx_point_x = Pos_x;
+				e.gx_event_payload.gx_event_pointdata.gx_point_y = Pos_y;
+				if (touchscreen->Tip == 0)
 				{
-					USBH_UsrLog("Pos_x = %ld Pos_y= %ld", Pos_x, Pos_y);
-
-					/* update (x,y)old position */
-					old_Pos_x = Pos_x;
-					old_Pos_y = Pos_y;
+					e.gx_event_type = GX_EVENT_PEN_UP; // pen UP
 				}
-
-				/* get buttons value */
-				if (value != touchscreen->host_class_hid_touchscreen_buttons)
+				else if (value == 0)
 				{
-					value = touchscreen->host_class_hid_touchscreen_buttons;
-					USBH_UsrLog("Button status = %02lx", value);
+					e.gx_event_type = GX_EVENT_PEN_DOWN; // pen DOWN
 				}
+				else
+					e.gx_event_type = GX_EVENT_PEN_DRAG; // pen DRAG
+				/* Push the event to event pool. */
+				if (e.gx_event_type == GX_EVENT_PEN_DRAG)
+					gx_system_event_fold(&e);
+				else
+					gx_system_event_send(&e);
+				/* update (x,y)old position */
+				old_Pos_x = Pos_x;
+				old_Pos_y = Pos_y;
+				value = touchscreen->Tip;
 			}
 		}
-		tx_thread_sleep(100);
-  }
+		tx_thread_sleep(10);
+	}
 }
 
 void tx_cm7_main_thread_entry(ULONG thread_input)
 {
-#if 0
-	uint16_t curTouch[4];
-	uint16_t prevTouch[4] = {0};
-#endif
 	ULONG toggleTicks = tx_time_get();
 
   /* Infinite Loop */
@@ -783,38 +770,6 @@ void tx_cm7_main_thread_entry(ULONG thread_input)
   		HAL_GPIO_TogglePin(LED4_GPIO_Port, LED4_Pin);
   		toggleTicks = ticks + TX_TIMER_TICKS_PER_SECOND;
   	}
-#if 0
-  	if (touchData[3] != prevTouch[3])
-  	{
-  		/* Send a pen event for processing. */
-  		GX_EVENT e = {0};
-  		//e.gx_event_display_handle = LCD_FRAME_BUFFER;
-    	curTouch[0] = touchData[0];
-    	curTouch[1] = touchData[1];
-    	curTouch[2] = touchData[2];
-    	curTouch[3] = touchData[3];
-  		e.gx_event_payload.gx_event_pointdata.gx_point_x = curTouch[2];       // Y value of touchscreen driver
-  		e.gx_event_payload.gx_event_pointdata.gx_point_y = 480 - curTouch[1]; // X value of touchscreen driver, but reversed
-  		if (curTouch[0] == 0)
-  		{
-    		e.gx_event_type = GX_EVENT_PEN_UP; // pen UP
-  			//BSP_LED_Off(LED_RED);
-  		}
-  		else if (prevTouch[0] == 0)
-  		{
-    		e.gx_event_type = GX_EVENT_PEN_DOWN; // pen DOWN
-  			//BSP_LED_On(LED_RED);
-  		}
-  		else
-    		e.gx_event_type = GX_EVENT_PEN_DRAG; // pen DRAG
-  		/* Push the event to event pool. */
-  		if (e.gx_event_type == GX_EVENT_PEN_DRAG)
-    		gx_system_event_fold(&e);
-  		else
-  			gx_system_event_send(&e);
-  		memcpy(prevTouch, curTouch, sizeof(curTouch));
-  	}
-#endif
   	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 5);
   }
 }
