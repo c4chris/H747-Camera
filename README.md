@@ -26,3 +26,9 @@ GUIX was added as a git submodule
 The display is generated from GUIX Studio and the large font is also generated
 by GS from the Cascadia Code font available here :
 https://github.com/microsoft/cascadia-code/releases
+
+## board and touchscreen HDMI display view
+
+![Board and touchscreen display view](board_screen.jpg)
+
+![Board view](board.jpg)
