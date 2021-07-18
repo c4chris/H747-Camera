@@ -854,7 +854,6 @@ VOID weight_update()
 {
   /* Set a value to "my_numeric_pix_prompt". */
 	uint32_t total = 0;
-#if 0
 	uint32_t low[4] = { 950, 950, 950, 950 };
 	for (unsigned int i = 0; i < 4; i++)
 	{
@@ -868,9 +867,6 @@ VOID weight_update()
 		total += weight;
 	}
 	total /= 10;
-#endif
-	ULONG ticks = tx_time_get();
-	total = ticks % 10000;
   gx_numeric_pixelmap_prompt_value_set(&main_window.main_window_weight_prompt, total);
 }
 

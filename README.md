@@ -32,3 +32,15 @@ https://github.com/microsoft/cascadia-code/releases
 ![Board and touchscreen display view](board_screen.jpg)
 
 ![Board view](board.jpg)
+
+---
+
+## I2C interface boards
+
+The small interface boards design is available on Open Source Hardware Lab
+
+https://oshwlab.com/ciseli/i2c_dual_interface
+
+The FFC interface board design is also available on Open Source Hardware Lab
+
+https://oshwlab.com/ciseli/ffc_interface
