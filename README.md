@@ -27,6 +27,15 @@ The display is generated from GUIX Studio and the large font is also generated
 by GS from the Cascadia Code font available here :
 https://github.com/microsoft/cascadia-code/releases
 
+## Complete setup
+
+Here we see the H747 discovery board with HDMI interface, FFC interface board,
+2 x 60 cm flat cables, 2 small I2C interface boards each attached to 2 load
+cells (hidden under the black Lego board).  The HDMI touchscreen monitor is
+connected via HDMI cable (for the display) and USB (for the touchscreen)
+
+![complete setup](setup.jpg)
+
 ## board and touchscreen HDMI display view
 
 ![Board and touchscreen display view](board_screen.jpg)
