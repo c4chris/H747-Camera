@@ -41,8 +41,8 @@ extern "C" {
 #include "ux_host_stack.h"
 #include "gx_api.h"
 #include "gx_display.h"
-#include "H747_WeighingStation_specifications.h"
-#include "H747_WeighingStation_resources.h"
+#include "H747_Camera_specifications.h"
+#include "H747_Camera_resources.h"
 #include "main.h"
 
 /* USER CODE END Includes */

@@ -11,7 +11,7 @@
 
 
 #include "gx_api.h"
-#include "H747_WeighingStation_resources.h"
+#include "H747_Camera_resources.h"
 
 /* Color Table                                                                 */
 

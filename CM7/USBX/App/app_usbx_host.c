@@ -776,13 +776,13 @@ void tx_cm7_main_thread_entry(ULONG thread_input)
 
 void tx_cm7_lcd_thread_entry(ULONG thread_input)
 {
-  extern GX_STUDIO_DISPLAY_INFO H747_WeighingStation_display_table[]; // meh...
+  extern GX_STUDIO_DISPLAY_INFO H747_Camera_display_table[]; // meh...
 
   /* Initialize GUIX. */
   gx_system_initialize();
 
   /* Configure the main display. */
-  H747_WeighingStation_display_table[MAIN_DISPLAY].canvas_memory = (GX_COLOR *) Buffers[0]; // I think...
+  H747_Camera_display_table[MAIN_DISPLAY].canvas_memory = (GX_COLOR *) Buffers[0]; // I think...
   gx_studio_display_configure(MAIN_DISPLAY,                         /* Display to configure*/
 															stm32h7_graphics_driver_setup_32argb, /* Driver to use */
                               LANGUAGE_ENGLISH,                     /* Language to install */

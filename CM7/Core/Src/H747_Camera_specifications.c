@@ -12,8 +12,8 @@
 
 #define GUIX_STUDIO_GENERATED_FILE
 #include <stddef.h>
-#include "H747_WeighingStation_resources.h"
-#include "H747_WeighingStation_specifications.h"
+#include "H747_Camera_resources.h"
+#include "H747_Camera_specifications.h"
 
 static GX_WIDGET *gx_studio_nested_widget_create(GX_BYTE *control, GX_CONST GX_STUDIO_WIDGET *definition, GX_WIDGET *parent);
 MAIN_WINDOW_CONTROL_BLOCK main_window;
@@ -23,7 +23,7 @@ GX_CANVAS  main_display_canvas_control_block;
 extern GX_CONST GX_THEME *main_display_theme_table[];
 extern GX_CONST GX_STRING *main_display_language_table[];
 
-GX_STUDIO_DISPLAY_INFO H747_WeighingStation_display_table[1] =
+GX_STUDIO_DISPLAY_INFO H747_Camera_display_table[1] =
 {
     {
     "main_display",
@@ -334,7 +334,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_define =
     0,                                       /* control block                  */
     (void *) &main_window_properties         /* extended properties            */
 };
-GX_CONST GX_STUDIO_WIDGET_ENTRY H747_WeighingStation_widget_table[] =
+GX_CONST GX_STUDIO_WIDGET_ENTRY H747_Camera_widget_table[] =
 {
     { &main_window_define, (GX_WIDGET *) &main_window },
     {GX_NULL, GX_NULL}
@@ -437,7 +437,7 @@ GX_WIDGET *gx_studio_widget_create(GX_BYTE *control, GX_CONST GX_STUDIO_WIDGET *
 UINT gx_studio_named_widget_create(char *name, GX_WIDGET *parent, GX_WIDGET **new_widget)
 {
     UINT status = GX_FAILURE;
-    GX_CONST GX_STUDIO_WIDGET_ENTRY *entry = H747_WeighingStation_widget_table;
+    GX_CONST GX_STUDIO_WIDGET_ENTRY *entry = H747_Camera_widget_table;
     GX_WIDGET *widget = GX_NULL;
 
     while(entry->widget_information)
@@ -468,7 +468,7 @@ UINT gx_studio_display_configure(USHORT display, UINT (*driver)(GX_DISPLAY *),
     GX_CONST GX_THEME *theme_ptr;
     GX_RECTANGLE size;
 
-    GX_STUDIO_DISPLAY_INFO *display_info = &H747_WeighingStation_display_table[display];
+    GX_STUDIO_DISPLAY_INFO *display_info = &H747_Camera_display_table[display];
 
 
 /* create the requested display                                                */

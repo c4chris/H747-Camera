@@ -5,7 +5,7 @@
 <project_version>55</project_version>
 <guix_version>60106</guix_version>
 <studio_version>6010700</studio_version>
-<project_name>H747_WeighingStation</project_name>
+<project_name>H747_Camera</project_name>
 <source_path>CM7\Core\Src</source_path>
 <header_path>CM7\Core\Inc</header_path>
 <resource_path>CM7\Core\Src</resource_path>

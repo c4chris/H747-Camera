@@ -51,7 +51,7 @@
                             							
                             <targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform.1649852812" isAbstract="false" osList="all" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform"/>
                             							
-                            <builder buildPath="${workspace_loc:/H747-WeighingStation_CM7}/Debug" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder.584575521" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder"/>
+                            <builder buildPath="${workspace_loc:/H747-Camera_CM7}/Debug" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder.584575521" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder"/>
                             							
                             <tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.1969320083" name="MCU GCC Assembler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler">
                                 								
@@ -245,7 +245,7 @@
                             							
                             <targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.ELF" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform.969641254" isAbstract="false" osList="all" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.targetplatform"/>
                             							
-                            <builder buildPath="${workspace_loc:/H747-WeighingStation_CM7}/Release" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder.86673386" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder"/>
+                            <builder buildPath="${workspace_loc:/H747-Camera_CM7}/Release" id="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder.86673386" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Gnu Make Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.builder"/>
                             							
                             <tool id="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler.1192393969" name="MCU GCC Assembler" superClass="com.st.stm32cube.ide.mcu.gnu.managedbuild.tool.assembler">
                                 								
@@ -391,7 +391,7 @@
     	
     <storageModule moduleId="cdtBuildSystem" version="4.0.0">
         		
-        <project id="H747-WeighingStation_CM7.null.681863776" name="H747-WeighingStation_CM7"/>
+        <project id="H747-Camera_CM7.null.681863776" name="H747-Camera_CM7"/>
         	
     </storageModule>
     	
