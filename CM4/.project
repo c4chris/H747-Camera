@@ -45,6 +45,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32H7xx_HAL_Driver/stm32h7xx_hal_dcmi.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dcmi.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32H7xx_HAL_Driver/stm32h7xx_hal_dma.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma.c</locationURI>
@@ -425,16 +430,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_semaphore_put_notify.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_context_restore.S</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_context_restore.S</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_context_save.S</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_context_save.S</locationURI>
-		</link>
-		<link>
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_create.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_thread_create.c</locationURI>
@@ -465,11 +460,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_thread_initialize.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_interrupt_control.S</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_interrupt_control.S</locationURI>
-		</link>
-		<link>
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_preemption_change.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_thread_preemption_change.c</locationURI>
@@ -495,11 +485,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_thread_resume.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_schedule.S</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_schedule.S</locationURI>
-		</link>
-		<link>
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_shell_entry.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_thread_shell_entry.c</locationURI>
@@ -513,11 +498,6 @@
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_stack_analyze.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_thread_stack_analyze.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_stack_build.S</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_stack_build.S</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_stack_error_handler.c</name>
@@ -543,11 +523,6 @@
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_system_resume.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_thread_system_resume.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_system_return.S</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_system_return.S</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_system_suspend.c</name>
@@ -628,11 +603,6 @@
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_timer_initialize.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_timer_initialize.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_timer_interrupt.S</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_timer_interrupt.S</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_timer_system_activate.c</name>

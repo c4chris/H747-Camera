@@ -36,9 +36,7 @@
 #define  __RTE_COMPONENTS_H__
 
 /* Defines ------------------------------------------------------------------*/
-/* STMicroelectronics.X-CUBE-AZRTOS-H7.1.0.0 */
-#define STM32H747I_DISCO
-#define AZURTOS_RTOS_APP
+/* STMicroelectronics.X-CUBE-AZRTOS-H7.2.0.0 */
 #define THREADX_ENABLED
 
 #endif /* __RTE_COMPONENTS_H__ */

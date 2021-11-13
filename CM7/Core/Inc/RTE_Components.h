@@ -36,12 +36,7 @@
 #define  __RTE_COMPONENTS_H__
 
 /* Defines ------------------------------------------------------------------*/
-/* STMicroelectronics.X-CUBE-AZRTOS-H7.1.0.0 */
-#define USBXHOST_ENABLED
-#define UX_HOST_CONTROLLERS_ENABLED
-#define STM32H747I_DISCO
-#define AZURTOS_RTOS_APP
-#define IS42S32800J_SDRAM
+/* STMicroelectronics.X-CUBE-AZRTOS-H7.2.0.0 */
 #define IS42S32800G_SDRAM
 #define THREADX_ENABLED
 

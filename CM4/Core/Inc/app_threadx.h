@@ -53,7 +53,7 @@ extern "C" {
 
 /* Exported functions prototypes ---------------------------------------------*/
 UINT App_ThreadX_Init(VOID *memory_ptr);
-
+void MX_ThreadX_Init(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
@@ -71,5 +71,3 @@ UINT App_ThreadX_Init(VOID *memory_ptr);
 }
 #endif
 #endif /* __APP_THREADX_H__ */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

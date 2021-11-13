@@ -1,4 +1,3 @@
-
 /* USER CODE BEGIN Header */
 /**
   ******************************************************************************
@@ -31,7 +30,6 @@ extern "C" {
 #include "app_azure_rtos_config.h"
 
 #include "app_threadx.h"
-
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -53,8 +51,6 @@ extern "C" {
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
-void MX_AZURE_RTOS_Init(void);
-void MX_AZURE_RTOS_Process(void);
 /* USER CODE BEGIN EFP */
 
 /* USER CODE END EFP */
@@ -69,5 +65,3 @@ void MX_AZURE_RTOS_Process(void);
 #endif
 
 #endif /* APP_AZURE_RTOS_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

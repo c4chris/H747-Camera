@@ -19,7 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "app_azure_rtos.h"
+#include "app_threadx.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -53,9 +53,9 @@ DMA2D_HandleTypeDef hdma2d;
 
 DSI_HandleTypeDef hdsi;
 
-LTDC_HandleTypeDef hltdc;
+I2C_HandleTypeDef hi2c4;
 
-HCD_HandleTypeDef hhcd_USB_OTG_HS;
+LTDC_HandleTypeDef hltdc;
 
 SDRAM_HandleTypeDef hsdram1;
 
@@ -68,8 +68,8 @@ __IO int32_t  pend_buffer   = -1;
 
 const uint32_t Buffers[] =
 {
-  LCD_FRAME_BUFFER,
-  LCD_FRAME_BUFFER + (720*576*4),
+		LCD_LAYER_0_ADDRESS,
+		LCD_LAYER_0_ADDRESS + (800*480*4),
 };
 
 /* USER CODE END PV */
@@ -82,9 +82,9 @@ static void MX_DMA2D_Init(void);
 static void MX_FMC_Init(void);
 static void MX_LTDC_Init(void);
 static void MX_DSIHOST_DSI_Init(void);
-static void MX_USB_OTG_HS_HCD_Init(void);
+static void MX_I2C4_Init(void);
 /* USER CODE BEGIN PFP */
-
+static int32_t OTM8009A_Init(uint32_t, uint32_t);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -163,19 +163,18 @@ int main(void)
   MX_FMC_Init();
   MX_LTDC_Init();
   MX_DSIHOST_DSI_Init();
-  MX_USB_OTG_HS_HCD_Init();
-  MX_AZURE_RTOS_Init();
+  MX_I2C4_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
 
+  MX_ThreadX_Init();
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
 
-  MX_AZURE_RTOS_Process();
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -301,9 +300,9 @@ static void MX_DSIHOST_DSI_Init(void)
   /* USER CODE END DSIHOST_Init 1 */
   hdsi.Instance = DSI;
   hdsi.Init.AutomaticClockLaneControl = DSI_AUTO_CLK_LANE_CTRL_DISABLE;
-  hdsi.Init.TXEscapeCkdiv = 3;
+  hdsi.Init.TXEscapeCkdiv = 4;
   hdsi.Init.NumberOfLanes = DSI_TWO_DATA_LANES;
-  PLLInit.PLLNDIV = 65;
+  PLLInit.PLLNDIV = 100;
   PLLInit.PLLIDF = DSI_PLL_IN_DIV5;
   PLLInit.PLLODF = DSI_PLL_OUT_DIV1;
   if (HAL_DSI_Init(&hdsi, &PLLInit) != HAL_OK)
@@ -323,12 +322,12 @@ static void MX_DSIHOST_DSI_Init(void)
   {
     Error_Handler();
   }
-  PhyTimings.ClockLaneHS2LPTime = 0x14;
-  PhyTimings.ClockLaneLP2HSTime = 0x14;
-  PhyTimings.DataLaneHS2LPTime = 0x0a;
-  PhyTimings.DataLaneLP2HSTime = 0x0a;
+  PhyTimings.ClockLaneHS2LPTime = 28;
+  PhyTimings.ClockLaneLP2HSTime = 32;
+  PhyTimings.DataLaneHS2LPTime = 15;
+  PhyTimings.DataLaneLP2HSTime = 24;
   PhyTimings.DataLaneMaxReadTime = 0;
-  PhyTimings.StopWaitTime = 0;
+  PhyTimings.StopWaitTime = 10;
   if (HAL_DSI_ConfigPhyTimer(&hdsi, &PhyTimings) != HAL_OK)
   {
     Error_Handler();
@@ -348,23 +347,23 @@ static void MX_DSIHOST_DSI_Init(void)
   VidCfg.VirtualChannelID = 0;
   VidCfg.ColorCoding = DSI_RGB888;
   VidCfg.LooselyPacked = DSI_LOOSELY_PACKED_DISABLE;
-  VidCfg.Mode = DSI_VID_MODE_NB_PULSES;
-  VidCfg.PacketSize = 720;
-  VidCfg.NumberOfChunks = 1;
+  VidCfg.Mode = DSI_VID_MODE_BURST;
+  VidCfg.PacketSize = 800;
+  VidCfg.NumberOfChunks = 0;
   VidCfg.NullPacketSize = 0;
   VidCfg.HSPolarity = DSI_HSYNC_ACTIVE_LOW;
   VidCfg.VSPolarity = DSI_VSYNC_ACTIVE_LOW;
   VidCfg.DEPolarity = DSI_DATA_ENABLE_ACTIVE_HIGH;
-  VidCfg.HorizontalSyncActive = 96;
-  VidCfg.HorizontalBackPorch = 102;
-  VidCfg.HorizontalLine = 1296;
-  VidCfg.VerticalSyncActive = 5;
-  VidCfg.VerticalBackPorch = 39;
-  VidCfg.VerticalFrontPorch = 5;
-  VidCfg.VerticalActive = 576;
-  VidCfg.LPCommandEnable = DSI_LP_COMMAND_DISABLE;
-  VidCfg.LPLargestPacketSize = 0;
-  VidCfg.LPVACTLargestPacketSize = 0;
+  VidCfg.HorizontalSyncActive = 4;
+  VidCfg.HorizontalBackPorch = 74;
+  VidCfg.HorizontalLine = 1898;
+  VidCfg.VerticalSyncActive = 1;
+  VidCfg.VerticalBackPorch = 15;
+  VidCfg.VerticalFrontPorch = 16;
+  VidCfg.VerticalActive = 480;
+  VidCfg.LPCommandEnable = DSI_LP_COMMAND_ENABLE;
+  VidCfg.LPLargestPacketSize = 4;
+  VidCfg.LPVACTLargestPacketSize = 4;
   VidCfg.LPHorizontalFrontPorchEnable = DSI_LP_HFP_DISABLE;
   VidCfg.LPHorizontalBackPorchEnable = DSI_LP_HBP_DISABLE;
   VidCfg.LPVerticalActiveEnable = DSI_LP_VACT_DISABLE;
@@ -388,9 +387,57 @@ static void MX_DSIHOST_DSI_Init(void)
   {
   	Error_Handler();
   }
+  HAL_DSI_ConfigFlowControl(&hdsi, DSI_FLOW_CONTROL_BTA);
+  OTM8009A_Init(OTM8009A_FORMAT_RGB888, OTM8009A_ORIENTATION_LANDSCAPE);
   HAL_LTDC_ProgramLineEvent(&hltdc, 0);
 
   /* USER CODE END DSIHOST_Init 2 */
+
+}
+
+/**
+  * @brief I2C4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C4_Init(void)
+{
+
+  /* USER CODE BEGIN I2C4_Init 0 */
+
+  /* USER CODE END I2C4_Init 0 */
+
+  /* USER CODE BEGIN I2C4_Init 1 */
+
+  /* USER CODE END I2C4_Init 1 */
+  hi2c4.Instance = I2C4;
+  hi2c4.Init.Timing = 0x009034B6;
+  hi2c4.Init.OwnAddress1 = 0;
+  hi2c4.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c4.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c4.Init.OwnAddress2 = 0;
+  hi2c4.Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+  hi2c4.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c4.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Analogue filter
+  */
+  if (HAL_I2CEx_ConfigAnalogFilter(&hi2c4, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /** Configure Digital filter
+  */
+  if (HAL_I2CEx_ConfigDigitalFilter(&hi2c4, 0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C4_Init 2 */
+
+  /* USER CODE END I2C4_Init 2 */
 
 }
 
@@ -405,26 +452,13 @@ static void MX_LTDC_Init(void)
   /* USER CODE BEGIN LTDC_Init 0 */
 
 	/* Activate XRES active low */
-	HAL_GPIO_WritePin(DSI_Reset_GPIO_Port , DSI_Reset_Pin, GPIO_PIN_RESET);
+	HAL_GPIO_WritePin(LCD_RESET_GPIO_Port , LCD_RESET_Pin, GPIO_PIN_RESET);
 	HAL_Delay(20);/* wait 20 ms */
-	HAL_GPIO_WritePin(DSI_Reset_GPIO_Port , DSI_Reset_Pin, GPIO_PIN_SET);/* Deactivate XRES */
+	HAL_GPIO_WritePin(LCD_RESET_GPIO_Port , LCD_RESET_Pin, GPIO_PIN_SET);/* Deactivate XRES */
 	HAL_Delay(10);/* Wait for 10ms after releasing XRES before sending commands */
 
-	/* Request that CM4 performs the setup of HDMI on I2C4 */
-  /* Release HSEM in order to notify the CPU2 (CM4) */
-  HAL_HSEM_Release(HSEM_ID_1, 0);
-
-  /* Now wait until we receive a notification from CM4 */
-  int32_t timeout = 0xFFFF;
-  while (Notified != __HAL_HSEM_SEMID_TO_MASK(HSEM_ID_2) && (timeout-- > 0))
-  {
-  	HAL_Delay(1);
-  }
-  if ( timeout < 0 )
-  {
-  	Error_Handler();
-  }
-  /* init is now done */
+	/* Assert back-light LCD_BL_CTRL pin */
+	HAL_GPIO_WritePin(LCD_BL_CTRL_GPIO_Port, LCD_BL_CTRL_Pin, GPIO_PIN_SET);
 
   /* USER CODE END LTDC_Init 0 */
 
@@ -438,14 +472,14 @@ static void MX_LTDC_Init(void)
   hltdc.Init.VSPolarity = LTDC_VSPOLARITY_AL;
   hltdc.Init.DEPolarity = LTDC_DEPOLARITY_AL;
   hltdc.Init.PCPolarity = LTDC_PCPOLARITY_IPC;
-  hltdc.Init.HorizontalSync = 63;
-  hltdc.Init.VerticalSync = 4;
-  hltdc.Init.AccumulatedHBP = 131;
-  hltdc.Init.AccumulatedVBP = 43;
-  hltdc.Init.AccumulatedActiveW = 851;
-  hltdc.Init.AccumulatedActiveH = 619;
-  hltdc.Init.TotalWidth = 863;
-  hltdc.Init.TotalHeigh = 624;
+  hltdc.Init.HorizontalSync = 1;
+  hltdc.Init.VerticalSync = 0;
+  hltdc.Init.AccumulatedHBP = 35;
+  hltdc.Init.AccumulatedVBP = 15;
+  hltdc.Init.AccumulatedActiveW = 835;
+  hltdc.Init.AccumulatedActiveH = 495;
+  hltdc.Init.TotalWidth = 869;
+  hltdc.Init.TotalHeigh = 511;
   hltdc.Init.Backcolor.Blue = 0;
   hltdc.Init.Backcolor.Green = 0;
   hltdc.Init.Backcolor.Red = 0;
@@ -454,17 +488,17 @@ static void MX_LTDC_Init(void)
     Error_Handler();
   }
   pLayerCfg.WindowX0 = 0;
-  pLayerCfg.WindowX1 = 720;
+  pLayerCfg.WindowX1 = 800;
   pLayerCfg.WindowY0 = 0;
-  pLayerCfg.WindowY1 = 576;
+  pLayerCfg.WindowY1 = 480;
   pLayerCfg.PixelFormat = LTDC_PIXEL_FORMAT_ARGB8888;
   pLayerCfg.Alpha = 255;
   pLayerCfg.Alpha0 = 0;
   pLayerCfg.BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
   pLayerCfg.BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
   pLayerCfg.FBStartAdress = LCD_LAYER_0_ADDRESS;
-  pLayerCfg.ImageWidth = 720;
-  pLayerCfg.ImageHeight = 576;
+  pLayerCfg.ImageWidth = 800;
+  pLayerCfg.ImageHeight = 480;
   pLayerCfg.Backcolor.Blue = 0;
   pLayerCfg.Backcolor.Green = 0;
   pLayerCfg.Backcolor.Red = 0;
@@ -475,39 +509,6 @@ static void MX_LTDC_Init(void)
   /* USER CODE BEGIN LTDC_Init 2 */
 
   /* USER CODE END LTDC_Init 2 */
-
-}
-
-/**
-  * @brief USB_OTG_HS Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USB_OTG_HS_HCD_Init(void)
-{
-
-  /* USER CODE BEGIN USB_OTG_HS_Init 0 */
-
-  /* USER CODE END USB_OTG_HS_Init 0 */
-
-  /* USER CODE BEGIN USB_OTG_HS_Init 1 */
-
-  /* USER CODE END USB_OTG_HS_Init 1 */
-  hhcd_USB_OTG_HS.Instance = USB_OTG_HS;
-  hhcd_USB_OTG_HS.Init.Host_channels = 16;
-  hhcd_USB_OTG_HS.Init.speed = HCD_SPEED_FULL;
-  hhcd_USB_OTG_HS.Init.dma_enable = DISABLE;
-  hhcd_USB_OTG_HS.Init.phy_itface = USB_OTG_ULPI_PHY;
-  hhcd_USB_OTG_HS.Init.Sof_enable = DISABLE;
-  hhcd_USB_OTG_HS.Init.low_power_enable = DISABLE;
-  hhcd_USB_OTG_HS.Init.use_external_vbus = ENABLE;
-  if (HAL_HCD_Init(&hhcd_USB_OTG_HS) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USB_OTG_HS_Init 2 */
-
-  /* USER CODE END USB_OTG_HS_Init 2 */
 
 }
 
@@ -597,20 +598,39 @@ static void MX_GPIO_Init(void)
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOI_CLK_ENABLE();
-  __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOK_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOJ_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE();
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LCD_BL_CTRL_GPIO_Port, LCD_BL_CTRL_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOI, LED3_Pin|LED4_Pin, GPIO_PIN_SET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(DSI_Reset_GPIO_Port, DSI_Reset_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LCD_RESET_GPIO_Port, LCD_RESET_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pins : JOY_RIGHT_Pin JOY_LEFT_Pin JOY_UP_Pin JOY_DOWN_Pin
+                           TOUCH_INT_Pin JOY_SEL_Pin */
+  GPIO_InitStruct.Pin = JOY_RIGHT_Pin|JOY_LEFT_Pin|JOY_UP_Pin|JOY_DOWN_Pin
+                          |TOUCH_INT_Pin|JOY_SEL_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOK, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : LCD_BL_CTRL_Pin */
+  GPIO_InitStruct.Pin = LCD_BL_CTRL_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(LCD_BL_CTRL_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : CEC_CK_MCO1_Pin */
   GPIO_InitStruct.Pin = CEC_CK_MCO1_Pin;
@@ -627,16 +647,334 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOI, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : DSI_Reset_Pin */
-  GPIO_InitStruct.Pin = DSI_Reset_Pin;
+  /*Configure GPIO pin : LCD_RESET_Pin */
+  GPIO_InitStruct.Pin = LCD_RESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(LCD_RESET_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : LCD_TE_Pin */
+  GPIO_InitStruct.Pin = LCD_TE_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(DSI_Reset_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(LCD_TE_GPIO_Port, &GPIO_InitStruct);
 
 }
 
 /* USER CODE BEGIN 4 */
+
+/**
+  * @brief  Initializes the LCD KoD display part by communication in DSI mode in Video Mode
+  *         with IC Display Driver OTM8009A (see IC Driver specification for more information).
+  * @param  ColorCoding   Color Code
+  * @param  Orientation   Display orientation
+  * @retval Component status
+  */
+static int32_t
+OTM8009A_Init(uint32_t ColorCoding, uint32_t Orientation)
+{
+  int32_t ret;
+  uint8_t Id;
+  static uint8_t lcd_reg_data1[]  = {0x80,0x09,0x01};
+  static uint8_t lcd_reg_data2[]  = {0x80,0x09};
+  static uint8_t lcd_reg_data3[]  = {0x00,0x09,0x0F,0x0E,0x07,0x10,0x0B,0x0A,0x04,0x07,0x0B,0x08,0x0F,0x10,0x0A,0x01};
+  static uint8_t lcd_reg_data4[]  = {0x00,0x09,0x0F,0x0E,0x07,0x10,0x0B,0x0A,0x04,0x07,0x0B,0x08,0x0F,0x10,0x0A,0x01};
+  static uint8_t lcd_reg_data5[]  = {0x79,0x79};
+  static uint8_t lcd_reg_data6[]  = {0x00,0x01};
+  static uint8_t lcd_reg_data7[]  = {0x85,0x01,0x00,0x84,0x01,0x00};
+  static uint8_t lcd_reg_data8[]  = {0x18,0x04,0x03,0x39,0x00,0x00,0x00,0x18,0x03,0x03,0x3A,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data9[]  = {0x18,0x02,0x03,0x3B,0x00,0x00,0x00,0x18,0x01,0x03,0x3C,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data10[] = {0x01,0x01,0x20,0x20,0x00,0x00,0x01,0x02,0x00,0x00};
+  static uint8_t lcd_reg_data11[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data12[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data13[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data14[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data15[] = {0x00,0x04,0x04,0x04,0x04,0x04,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data16[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x04,0x04,0x04,0x04,0x04,0x00,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data17[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data18[] = {0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+  static uint8_t lcd_reg_data19[] = {0x00,0x26,0x09,0x0B,0x01,0x25,0x00,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data20[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x26,0x0A,0x0C,0x02};
+  static uint8_t lcd_reg_data21[] = {0x25,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data22[] = {0x00,0x25,0x0C,0x0A,0x02,0x26,0x00,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data23[] = {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x25,0x0B,0x09,0x01};
+  static uint8_t lcd_reg_data24[] = {0x26,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+  static uint8_t lcd_reg_data25[] = {0xFF,0xFF,0xFF};
+
+  /*
+    * CASET value (Column Address Set) : X direction LCD GRAM boundaries
+    * depending on LCD orientation mode and PASET value (Page Address Set) : Y direction
+    * LCD GRAM boundaries depending on LCD orientation mode
+    * XS[15:0] = 0x000 = 0, XE[15:0] = 0x31F = 799 for landscape mode : apply to CASET
+    * YS[15:0] = 0x000 = 0, YE[15:0] = 0x31F = 799 for portrait mode : apply to PASET
+    */
+  static uint8_t LcdRegData27[] = {0x00, 0x00, 0x03, 0x1F};
+  /*
+    * XS[15:0] = 0x000 = 0, XE[15:0] = 0x1DF = 479 for portrait mode : apply to CASET
+    * YS[15:0] = 0x000 = 0, YE[15:0] = 0x1DF = 479 for landscape mode : apply to PASET
+   */
+  static uint8_t LcdRegData28[] = {0x00, 0x00, 0x01, 0xDF};
+
+  static const uint8_t short_reg_data[] = {
+    0x00,0x00,0x80,0x30,0x8A,0x40,0xB1,0xA9,0x91,0x34,0xB4,0x50,0x4E,0x81,0x66,0xA1,0x08,
+    0x92,0x01,0x95,0x94,0x33,0xA3,0x1B,0x82,0x83,0x83,0x0E,0xA6,0xA0,0xB0,0xC0,0xD0,0x90,
+    0xE0,0xF0,0x00,OTM8009A_COLMOD_RGB565,OTM8009A_COLMOD_RGB888,0x7F,0x2C,0x02,0xFF,0x00,
+    0x00,0x00,0x66,0xB6,0x06,0xB1,0x06};
+
+  /* try to read ID */
+  ret = HAL_DSI_Read(&hdsi, 0, &Id, 0, DSI_DCS_SHORT_PKT_READ, OTM8009A_CMD_ID1, &Id);
+  /* No checks at this point...  */
+
+  /* Enable CMD2 to access vendor specific commands                               */
+  /* Enter in command 2 mode and set EXTC to enable address shift function (0x00) */ 
+  ret = HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[1]);
+  
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 3, (uint32_t)0xFF, lcd_reg_data1);
+  
+  /* Enter ORISE Command 2 */
+  /* Shift address to 0x80 */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[2]);
+  
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 2, (uint32_t)0xFF, lcd_reg_data2);
+  
+  /////////////////////////////////////////////////////////////////////
+  /* SD_PCH_CTRL - 0xC480h - 129th parameter - Default 0x00          */
+  /* Set SD_PT                                                       */
+  /* -> Source output level during porch and non-display area to GND */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[2]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC4, (uint32_t)short_reg_data[3]);
+  
+  HAL_Delay(10);
+  /* Not documented */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[4]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC4, (uint32_t)short_reg_data[5]);
+  HAL_Delay(10);
+  /////////////////////////////////////////////////////////////////////
+  
+  /* PWR_CTRL4 - 0xC4B0h - 178th parameter - Default 0xA8 */
+  /* Set gvdd_en_test                                     */
+  /* -> enable GVDD test mode !!!                         */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[6]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC5, (uint32_t)short_reg_data[7]);
+  
+  /* PWR_CTRL2 - 0xC590h - 146th parameter - Default 0x79      */
+  /* Set pump 4 vgh voltage                                    */
+  /* -> from 15.0v down to 13.0v                               */
+  /* Set pump 5 vgh voltage                                    */
+  /* -> from -12.0v downto -9.0v                               */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[8]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC5, (uint32_t)short_reg_data[9]);
+  
+  /* P_DRV_M - 0xC0B4h - 181th parameter - Default 0x00 */
+  /* -> Column inversion                                */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[10]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC0, (uint32_t)short_reg_data[11]);
+  
+  /* VCOMDC - 0xD900h - 1st parameter - Default 0x39h */
+  /* VCOM Voltage settings                            */
+  /* -> from -1.0000v downto -1.2625v                 */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[1]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xD9, (uint32_t)short_reg_data[12]);
+  
+  /* Oscillator adjustment for Idle/Normal mode (LPDT only) set to 65Hz (default is 60Hz) */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[13]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC1, (uint32_t)short_reg_data[14]);
+  
+  /* Video mode internal */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[15]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC1, (uint32_t)short_reg_data[16]);
+  
+  /* PWR_CTRL2 - 0xC590h - 147h parameter - Default 0x00 */
+  /* Set pump 4&5 x6                                     */
+  /* -> ONLY VALID when PUMP4_EN_ASDM_HV = "0"           */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[17]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC5, (uint32_t)short_reg_data[18]);
+  
+  /* PWR_CTRL2 - 0xC590h - 150th parameter - Default 0x33h */
+  /* Change pump4 clock ratio                              */
+  /* -> from 1 line to 1/2 line                            */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[19]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC5, (uint32_t)short_reg_data[9]);
+  
+  /* GVDD/NGVDD settings */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[1]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 2, (uint32_t)0xD8, lcd_reg_data5);
+  
+  /* PWR_CTRL2 - 0xC590h - 149th parameter - Default 0x33h */
+  /* Rewrite the default value !                           */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[20]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC5, (uint32_t)short_reg_data[21]);
+  
+  /* Panel display timing Setting 3 */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[22]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC0, (uint32_t)short_reg_data[23]);
+  
+  /* Power control 1 */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[24]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC5, (uint32_t)short_reg_data[25]);
+  
+  /* Source driver precharge */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[13]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC4, (uint32_t)short_reg_data[26]);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[15]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC1, (uint32_t)short_reg_data[27]);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[28]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 2, (uint32_t)0xB3, lcd_reg_data6);
+  
+  /* GOAVST */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[2]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 6, (uint32_t)0xCE, lcd_reg_data7);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[29]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 14, (uint32_t)0xCE, lcd_reg_data8);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[30]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 14, (uint32_t)0xCE, lcd_reg_data9);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[31]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 10, (uint32_t)0xCF, lcd_reg_data10);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[32]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xCF, (uint32_t)short_reg_data[45]);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[2]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 10, (uint32_t)0xCB, lcd_reg_data11);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[33]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 15, (uint32_t)0xCB, lcd_reg_data12);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[29]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 15, (uint32_t)0xCB, lcd_reg_data13);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[30]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 10, (uint32_t)0xCB, lcd_reg_data14);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[31]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 15, (uint32_t)0xCB, lcd_reg_data15);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[32]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 15, (uint32_t)0xCB, lcd_reg_data16);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[34]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 10, (uint32_t)0xCB, lcd_reg_data17);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[35]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 10, (uint32_t)0xCB, lcd_reg_data18);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[2]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 10, (uint32_t)0xCC, lcd_reg_data19);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[33]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 15, (uint32_t)0xCC, lcd_reg_data20);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[29]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 15, (uint32_t)0xCC, lcd_reg_data21);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[30]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 10, (uint32_t)0xCC, lcd_reg_data22);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[31]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 15, (uint32_t)0xCC, lcd_reg_data23);
+  
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[32]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 15, (uint32_t)0xCC, lcd_reg_data24);
+  
+  /////////////////////////////////////////////////////////////////////////////
+  /* PWR_CTRL1 - 0xc580h - 130th parameter - default 0x00 */
+  /* Pump 1 min and max DM                                */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[13]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC5, (uint32_t)short_reg_data[46]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[47]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xF5, (uint32_t)short_reg_data[48]);
+  /////////////////////////////////////////////////////////////////////////////
+  
+  /* CABC LEDPWM frequency adjusted to 19,5kHz */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[49]);
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, 0xC6, (uint32_t)short_reg_data[50]);
+  
+  /* Exit CMD2 mode */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[1]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 3, (uint32_t)0xFF, lcd_reg_data25);
+  
+  /*************************************************************************** */
+  /* Standard DCS Initialization TO KEEP CAN BE DONE IN HSDT                   */
+  /*************************************************************************** */
+  
+  /* NOP - goes back to DCS std command ? */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[1]);
+  
+  /* Gamma correction 2.2+ table (HSDT possible) */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[1]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 16, (uint32_t)0xE1, lcd_reg_data3);
+  
+  /* Gamma correction 2.2- table (HSDT possible) */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[1]);
+  ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 16, (uint32_t)0xE2, lcd_reg_data4);
+  
+  /* Send Sleep Out command to display : no parameter */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_SLPOUT, (uint32_t)short_reg_data[36]);
+  
+  /* Wait for sleep out exit */
+  HAL_Delay(120);
+  
+  switch(ColorCoding)
+  {
+  case OTM8009A_FORMAT_RBG565 :
+    /* Set Pixel color format to RGB565 */
+    ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_COLMOD, (uint32_t)short_reg_data[37]);
+    break;
+  case OTM8009A_FORMAT_RGB888 :
+    /* Set Pixel color format to RGB888 */
+    ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_COLMOD, (uint32_t)short_reg_data[38]);
+    break;
+  default :
+    break;
+  }
+  
+  /* Send command to configure display in landscape orientation mode. By default
+  the orientation mode is portrait  */
+  if(Orientation == OTM8009A_ORIENTATION_LANDSCAPE)
+  {
+    ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_MADCTR, (uint32_t)OTM8009A_MADCTR_MODE_LANDSCAPE);
+    ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 4, (uint32_t)OTM8009A_CMD_CASET, LcdRegData27);
+    ret += HAL_DSI_LongWrite(&hdsi, 0, DSI_DCS_LONG_PKT_WRITE, 4, (uint32_t)OTM8009A_CMD_PASET, LcdRegData28);
+   }
+  
+  /** CABC : Content Adaptive Backlight Control section start >> */
+  /* Note : defaut is 0 (lowest Brightness], 0xFF is highest Brightness, try 0x7F : intermediate value */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_WRDISBV, (uint32_t)short_reg_data[39]);
+  
+  /* defaut is 0, try 0x2C - Brightness Control Block, Display Dimming & BackLight on */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_WRCTRLD, (uint32_t)short_reg_data[40]);
+  
+  /* defaut is 0, try 0x02 - image Content based Adaptive Brightness [Still Picture] */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_WRCABC, (uint32_t)short_reg_data[41]);
+  
+  /* defaut is 0 (lowest Brightness], 0xFF is highest Brightness */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_WRCABCMB, (uint32_t)short_reg_data[42]);
+  
+  /** CABC : Content Adaptive Backlight Control section end << */
+  
+  /* Send Command Display On */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_DISPON, (uint32_t)short_reg_data[43]);
+  
+  /* NOP command */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_NOP, (uint32_t)short_reg_data[1]);
+  
+  /* Send Command GRAM memory write (no parameters) : this initiates frame write via other DSI commands sent by */
+  /* DSI host from LTDC incoming pixels in video mode */
+  ret += HAL_DSI_ShortWrite(&hdsi, 0, DSI_DCS_SHORT_PKT_WRITE_P1, OTM8009A_CMD_RAMWR, (uint32_t)short_reg_data[44]);
+  
+  if(ret != HAL_OK)
+  {
+    ret = HAL_ERROR;
+  }
+  
+  return ret;
+}
 
 /**
   * @brief Semaphore Released Callback.
@@ -703,7 +1041,7 @@ void HAL_LTDC_LineEventCallback(LTDC_HandleTypeDef *hltdc)
 
 /* USER CODE END 4 */
 
- /**
+/**
   * @brief  Period elapsed callback in non blocking mode
   * @note   This function is called  when TIM6 interrupt took place, inside
   * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
