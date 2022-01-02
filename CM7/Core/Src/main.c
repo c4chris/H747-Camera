@@ -57,6 +57,7 @@ I2C_HandleTypeDef hi2c4;
 
 LTDC_HandleTypeDef hltdc;
 
+MDMA_HandleTypeDef hmdma_mdma_channel40_sw_0;
 SDRAM_HandleTypeDef hsdram1;
 
 /* USER CODE BEGIN PV */
@@ -82,6 +83,7 @@ static void MX_DMA2D_Init(void);
 static void MX_FMC_Init(void);
 static void MX_LTDC_Init(void);
 static void MX_DSIHOST_DSI_Init(void);
+static void MX_MDMA_Init(void);
 static void MX_I2C4_Init(void);
 /* USER CODE BEGIN PFP */
 static int32_t OTM8009A_Init(uint32_t, uint32_t);
@@ -163,6 +165,7 @@ int main(void)
   MX_FMC_Init();
   MX_LTDC_Init();
   MX_DSIHOST_DSI_Init();
+  MX_MDMA_Init();
   MX_I2C4_Init();
   /* USER CODE BEGIN 2 */
 
@@ -210,7 +213,7 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLM = 5;
   RCC_OscInitStruct.PLL.PLLN = 160;
   RCC_OscInitStruct.PLL.PLLP = 2;
-  RCC_OscInitStruct.PLL.PLLQ = 16;
+  RCC_OscInitStruct.PLL.PLLQ = 3;
   RCC_OscInitStruct.PLL.PLLR = 2;
   RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
   RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
@@ -293,7 +296,8 @@ static void MX_DSIHOST_DSI_Init(void)
   DSI_PLLInitTypeDef PLLInit = {0};
   DSI_HOST_TimeoutTypeDef HostTimeouts = {0};
   DSI_PHY_TimerTypeDef PhyTimings = {0};
-  DSI_VidCfgTypeDef VidCfg = {0};
+  DSI_LPCmdTypeDef LPCmd = {0};
+  DSI_CmdCfgTypeDef CmdCfg = {0};
 
   /* USER CODE BEGIN DSIHOST_Init 1 */
 
@@ -323,9 +327,9 @@ static void MX_DSIHOST_DSI_Init(void)
     Error_Handler();
   }
   PhyTimings.ClockLaneHS2LPTime = 28;
-  PhyTimings.ClockLaneLP2HSTime = 32;
+  PhyTimings.ClockLaneLP2HSTime = 33;
   PhyTimings.DataLaneHS2LPTime = 15;
-  PhyTimings.DataLaneLP2HSTime = 24;
+  PhyTimings.DataLaneLP2HSTime = 25;
   PhyTimings.DataLaneMaxReadTime = 0;
   PhyTimings.StopWaitTime = 10;
   if (HAL_DSI_ConfigPhyTimer(&hdsi, &PhyTimings) != HAL_OK)
@@ -344,34 +348,35 @@ static void MX_DSIHOST_DSI_Init(void)
   {
     Error_Handler();
   }
-  VidCfg.VirtualChannelID = 0;
-  VidCfg.ColorCoding = DSI_RGB888;
-  VidCfg.LooselyPacked = DSI_LOOSELY_PACKED_DISABLE;
-  VidCfg.Mode = DSI_VID_MODE_BURST;
-  VidCfg.PacketSize = 800;
-  VidCfg.NumberOfChunks = 0;
-  VidCfg.NullPacketSize = 0;
-  VidCfg.HSPolarity = DSI_HSYNC_ACTIVE_LOW;
-  VidCfg.VSPolarity = DSI_VSYNC_ACTIVE_LOW;
-  VidCfg.DEPolarity = DSI_DATA_ENABLE_ACTIVE_HIGH;
-  VidCfg.HorizontalSyncActive = 4;
-  VidCfg.HorizontalBackPorch = 74;
-  VidCfg.HorizontalLine = 1898;
-  VidCfg.VerticalSyncActive = 1;
-  VidCfg.VerticalBackPorch = 15;
-  VidCfg.VerticalFrontPorch = 16;
-  VidCfg.VerticalActive = 480;
-  VidCfg.LPCommandEnable = DSI_LP_COMMAND_ENABLE;
-  VidCfg.LPLargestPacketSize = 4;
-  VidCfg.LPVACTLargestPacketSize = 4;
-  VidCfg.LPHorizontalFrontPorchEnable = DSI_LP_HFP_DISABLE;
-  VidCfg.LPHorizontalBackPorchEnable = DSI_LP_HBP_DISABLE;
-  VidCfg.LPVerticalActiveEnable = DSI_LP_VACT_DISABLE;
-  VidCfg.LPVerticalFrontPorchEnable = DSI_LP_VFP_DISABLE;
-  VidCfg.LPVerticalBackPorchEnable = DSI_LP_VBP_DISABLE;
-  VidCfg.LPVerticalSyncActiveEnable = DSI_LP_VSYNC_DISABLE;
-  VidCfg.FrameBTAAcknowledgeEnable = DSI_FBTAA_DISABLE;
-  if (HAL_DSI_ConfigVideoMode(&hdsi, &VidCfg) != HAL_OK)
+  LPCmd.LPGenShortWriteNoP = DSI_LP_GSW0P_DISABLE;
+  LPCmd.LPGenShortWriteOneP = DSI_LP_GSW1P_DISABLE;
+  LPCmd.LPGenShortWriteTwoP = DSI_LP_GSW2P_DISABLE;
+  LPCmd.LPGenShortReadNoP = DSI_LP_GSR0P_DISABLE;
+  LPCmd.LPGenShortReadOneP = DSI_LP_GSR1P_DISABLE;
+  LPCmd.LPGenShortReadTwoP = DSI_LP_GSR2P_DISABLE;
+  LPCmd.LPGenLongWrite = DSI_LP_GLW_DISABLE;
+  LPCmd.LPDcsShortWriteNoP = DSI_LP_DSW0P_DISABLE;
+  LPCmd.LPDcsShortWriteOneP = DSI_LP_DSW1P_DISABLE;
+  LPCmd.LPDcsShortReadNoP = DSI_LP_DSR0P_DISABLE;
+  LPCmd.LPDcsLongWrite = DSI_LP_DLW_DISABLE;
+  LPCmd.LPMaxReadPacket = DSI_LP_MRDP_DISABLE;
+  LPCmd.AcknowledgeRequest = DSI_ACKNOWLEDGE_DISABLE;
+  if (HAL_DSI_ConfigCommand(&hdsi, &LPCmd) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  CmdCfg.VirtualChannelID = 0;
+  CmdCfg.ColorCoding = DSI_RGB888;
+  CmdCfg.CommandSize = 800;
+  CmdCfg.TearingEffectSource = DSI_TE_DSILINK;
+  CmdCfg.TearingEffectPolarity = DSI_TE_RISING_EDGE;
+  CmdCfg.HSPolarity = DSI_HSYNC_ACTIVE_LOW;
+  CmdCfg.VSPolarity = DSI_VSYNC_ACTIVE_LOW;
+  CmdCfg.DEPolarity = DSI_DATA_ENABLE_ACTIVE_HIGH;
+  CmdCfg.VSyncPol = DSI_VSYNC_FALLING;
+  CmdCfg.AutomaticRefresh = DSI_AR_DISABLE;
+  CmdCfg.TEAcknowledgeRequest = DSI_TE_ACKNOWLEDGE_ENABLE;
+  if (HAL_DSI_ConfigAdaptedCommandMode(&hdsi, &CmdCfg) != HAL_OK)
   {
     Error_Handler();
   }
@@ -473,13 +478,13 @@ static void MX_LTDC_Init(void)
   hltdc.Init.DEPolarity = LTDC_DEPOLARITY_AL;
   hltdc.Init.PCPolarity = LTDC_PCPOLARITY_IPC;
   hltdc.Init.HorizontalSync = 1;
-  hltdc.Init.VerticalSync = 0;
-  hltdc.Init.AccumulatedHBP = 35;
-  hltdc.Init.AccumulatedVBP = 15;
-  hltdc.Init.AccumulatedActiveW = 835;
-  hltdc.Init.AccumulatedActiveH = 495;
-  hltdc.Init.TotalWidth = 869;
-  hltdc.Init.TotalHeigh = 511;
+  hltdc.Init.VerticalSync = 1;
+  hltdc.Init.AccumulatedHBP = 2;
+  hltdc.Init.AccumulatedVBP = 2;
+  hltdc.Init.AccumulatedActiveW = 802;
+  hltdc.Init.AccumulatedActiveH = 482;
+  hltdc.Init.TotalWidth = 803;
+  hltdc.Init.TotalHeigh = 483;
   hltdc.Init.Backcolor.Blue = 0;
   hltdc.Init.Backcolor.Green = 0;
   hltdc.Init.Backcolor.Red = 0;
@@ -523,6 +528,47 @@ static void MX_DMA_Init(void)
 
 }
 
+/**
+  * Enable MDMA controller clock
+  * Configure MDMA for global transfers
+  *   hmdma_mdma_channel40_sw_0
+  */
+static void MX_MDMA_Init(void)
+{
+
+  /* MDMA controller clock enable */
+  __HAL_RCC_MDMA_CLK_ENABLE();
+  /* Local variables */
+
+  /* Configure MDMA channel MDMA_Channel0 */
+  /* Configure MDMA request hmdma_mdma_channel40_sw_0 on MDMA_Channel0 */
+  hmdma_mdma_channel40_sw_0.Instance = MDMA_Channel0;
+  hmdma_mdma_channel40_sw_0.Init.Request = MDMA_REQUEST_SW;
+  hmdma_mdma_channel40_sw_0.Init.TransferTriggerMode = MDMA_BLOCK_TRANSFER;
+  hmdma_mdma_channel40_sw_0.Init.Priority = MDMA_PRIORITY_HIGH;
+  hmdma_mdma_channel40_sw_0.Init.Endianness = MDMA_LITTLE_ENDIANNESS_PRESERVE;
+  hmdma_mdma_channel40_sw_0.Init.SourceInc = MDMA_SRC_INC_WORD;
+  hmdma_mdma_channel40_sw_0.Init.DestinationInc = MDMA_DEST_INC_WORD;
+  hmdma_mdma_channel40_sw_0.Init.SourceDataSize = MDMA_SRC_DATASIZE_WORD;
+  hmdma_mdma_channel40_sw_0.Init.DestDataSize = MDMA_DEST_DATASIZE_WORD;
+  hmdma_mdma_channel40_sw_0.Init.DataAlignment = MDMA_DATAALIGN_PACKENABLE;
+  hmdma_mdma_channel40_sw_0.Init.BufferTransferLength = 128;
+  hmdma_mdma_channel40_sw_0.Init.SourceBurst = MDMA_SOURCE_BURST_SINGLE;
+  hmdma_mdma_channel40_sw_0.Init.DestBurst = MDMA_DEST_BURST_SINGLE;
+  hmdma_mdma_channel40_sw_0.Init.SourceBlockAddressOffset = 0;
+  hmdma_mdma_channel40_sw_0.Init.DestBlockAddressOffset = 0;
+  if (HAL_MDMA_Init(&hmdma_mdma_channel40_sw_0) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /* MDMA interrupt initialization */
+  /* MDMA_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(MDMA_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(MDMA_IRQn);
+
+}
+
 /* FMC initialization function */
 void MX_FMC_Init(void)
 {
@@ -546,7 +592,7 @@ void MX_FMC_Init(void)
   hsdram1.Init.RowBitsNumber = FMC_SDRAM_ROW_BITS_NUM_12;
   hsdram1.Init.MemoryDataWidth = FMC_SDRAM_MEM_BUS_WIDTH_32;
   hsdram1.Init.InternalBankNumber = FMC_SDRAM_INTERN_BANKS_NUM_4;
-  hsdram1.Init.CASLatency = FMC_SDRAM_CAS_LATENCY_3;
+  hsdram1.Init.CASLatency = FMC_SDRAM_CAS_LATENCY_2;
   hsdram1.Init.WriteProtection = FMC_SDRAM_WRITE_PROTECTION_DISABLE;
   hsdram1.Init.SDClockPeriod = FMC_SDRAM_CLOCK_PERIOD_2;
   hsdram1.Init.ReadBurst = FMC_SDRAM_RBURST_ENABLE;
@@ -1095,4 +1141,3 @@ void assert_failed(uint8_t *file, uint32_t line)
 }
 #endif /* USE_FULL_ASSERT */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

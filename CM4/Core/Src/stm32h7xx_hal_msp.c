@@ -345,8 +345,72 @@ void HAL_UART_MspDeInit(UART_HandleTypeDef* huart)
 
 }
 
+static uint32_t FMC_Initialized = 0;
+
+static void HAL_FMC_MspInit(void){
+  /* USER CODE BEGIN FMC_MspInit 0 */
+
+  /* USER CODE END FMC_MspInit 0 */
+  if (FMC_Initialized) {
+    return;
+  }
+  FMC_Initialized = 1;
+  RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
+
+  /** Initializes the peripherals clock
+  */
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_FMC;
+    PeriphClkInitStruct.FmcClockSelection = RCC_FMCCLKSOURCE_D1HCLK;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
+    {
+      Error_Handler();
+    }
+
+  /* Peripheral clock enable */
+  __HAL_RCC_FMC_CLK_ENABLE();
+  /* USER CODE BEGIN FMC_MspInit 1 */
+
+  /* USER CODE END FMC_MspInit 1 */
+}
+
+void HAL_SDRAM_MspInit(SDRAM_HandleTypeDef* hsdram){
+  /* USER CODE BEGIN SDRAM_MspInit 0 */
+
+  /* USER CODE END SDRAM_MspInit 0 */
+  HAL_FMC_MspInit();
+  /* USER CODE BEGIN SDRAM_MspInit 1 */
+
+  /* USER CODE END SDRAM_MspInit 1 */
+}
+
+static uint32_t FMC_DeInitialized = 0;
+
+static void HAL_FMC_MspDeInit(void){
+  /* USER CODE BEGIN FMC_MspDeInit 0 */
+
+  /* USER CODE END FMC_MspDeInit 0 */
+  if (FMC_DeInitialized) {
+    return;
+  }
+  FMC_DeInitialized = 1;
+  /* Peripheral clock enable */
+  __HAL_RCC_FMC_CLK_DISABLE();
+  /* USER CODE BEGIN FMC_MspDeInit 1 */
+
+  /* USER CODE END FMC_MspDeInit 1 */
+}
+
+void HAL_SDRAM_MspDeInit(SDRAM_HandleTypeDef* hsdram){
+  /* USER CODE BEGIN SDRAM_MspDeInit 0 */
+
+  /* USER CODE END SDRAM_MspDeInit 0 */
+  HAL_FMC_MspDeInit();
+  /* USER CODE BEGIN SDRAM_MspDeInit 1 */
+
+  /* USER CODE END SDRAM_MspDeInit 1 */
+}
+
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
 
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

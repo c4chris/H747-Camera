@@ -56,6 +56,7 @@ void DebugMon_Handler(void);
 void TIM6_DAC_IRQHandler(void);
 void LTDC_IRQHandler(void);
 void DMA2D_IRQHandler(void);
+void MDMA_IRQHandler(void);
 void DSI_IRQHandler(void);
 void HSEM1_IRQHandler(void);
 /* USER CODE BEGIN EFP */
@@ -67,5 +68,3 @@ void HSEM1_IRQHandler(void);
 #endif
 
 #endif /* __STM32H7xx_IT_H */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
