@@ -140,14 +140,6 @@ int main(void)
   {
   	Error_Handler();
   }
-  /* Prepare for sync with CM4 to setup HDMI */
-  if (HAL_HSEM_FastTake(HSEM_ID_1) != HAL_OK)
-  {
-  	Error_Handler();
-  }
-
-  /* we want to hear from CM4 about when to initialize HDMI */
-  HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_2));
 
 /* USER CODE END Boot_Mode_Sequence_2 */
 
