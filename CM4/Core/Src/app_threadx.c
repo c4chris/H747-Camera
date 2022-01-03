@@ -32,13 +32,6 @@
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
 
-typedef struct _cell_t {
-	I2C_HandleTypeDef *handle;
-	volatile uint8_t address;
-	GPIO_TypeDef *gpio;
-	uint16_t pin;
-} CellTypeDef;
-
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -63,7 +56,6 @@ typedef struct _cell_t {
 
 /* Define ThreadX global data structures.  */
 TX_THREAD       cm4_main_thread;
-TX_THREAD       cm4_i2c1_thread;
 TX_THREAD       cm4_i2c4_thread;
 TX_THREAD       cm4_uart_thread;
 
@@ -74,23 +66,10 @@ volatile unsigned int u2tc;
 volatile unsigned int u2htc;
 volatile unsigned int u2ec;
 volatile unsigned int u2ic;
-__attribute__((section(".sram3.bridgeError"))) volatile unsigned int bridgeError[4];
-__attribute__((section(".sram3.bridgeCount"))) volatile unsigned int bridgeCount[4];
-__attribute__((section(".sram3.bridgeStale"))) volatile unsigned int bridgeStale[4];
-__attribute__((section(".sram3.bridgeBadstatus"))) volatile unsigned int bridgeBadstatus[4];
-__attribute__((section(".sram3.bridgeValue"))) volatile uint32_t bridgeValue[4];
+__attribute__((section(".sram3.touchData"))) volatile uint16_t touchData[4], touchData2[4];
 unsigned char dbgBuf[256];
 unsigned char input[64];
 unsigned char u2tx[256];
-volatile uint8_t setZero[4];
-volatile uint8_t setZero3;
-volatile uint8_t setZero4;
-CellTypeDef cell[4] = {
-		{&hi2c4, 0x28 << 1, NE4_A_GPIO_Port, NE4_A_Pin},
-		{&hi2c4, 0x36 << 1, NE4_B_GPIO_Port, NE4_B_Pin},
-		{&hi2c1, 0x28 << 1, NE1_A_GPIO_Port, NE1_A_Pin},
-		{&hi2c1, 0x36 << 1, NE1_B_GPIO_Port, NE1_B_Pin}
-};
 
 /* USER CODE END PV */
 
@@ -98,15 +77,9 @@ CellTypeDef cell[4] = {
 /* USER CODE BEGIN PFP */
 
 void tx_cm4_main_thread_entry(ULONG thread_input);
-void tx_cm4_i2c1_thread_entry(ULONG thread_input);
 void tx_cm4_i2c4_thread_entry(ULONG thread_input);
 void tx_cm4_uart_thread_entry(ULONG thread_input);
 void Error_Handler(void);
-
-HAL_StatusTypeDef read_cell(CellTypeDef *, uint8_t, uint8_t *, const uint32_t);
-HAL_StatusTypeDef powerup_and_read(unsigned int, uint8_t *, const uint32_t);
-HAL_StatusTypeDef write_word(CellTypeDef *, uint8_t *, uint8_t, uint8_t, uint8_t, const uint32_t);
-HAL_StatusTypeDef exit_command_mode(CellTypeDef *, uint8_t *, const uint32_t);
 
 /* USER CODE END PFP */
 
@@ -121,87 +94,69 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
 
   /* USER CODE BEGIN App_ThreadX_MEM_POOL */
-  (void)byte_pool;
+
+  CHAR *pointer;
+
   /* USER CODE END App_ThreadX_MEM_POOL */
 
   /* USER CODE BEGIN App_ThreadX_Init */
-	CHAR *pointer;
 
-	/*Allocate memory for main_thread_entry*/
-	ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
+  /*Allocate memory for main_thread_entry*/
+  ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
 
-	/* Check DEFAULT_STACK_SIZE allocation*/
-	if (ret != TX_SUCCESS)
-	{
-		Error_Handler();
-	}
+  /* Check DEFAULT_STACK_SIZE allocation*/
+  if (ret != TX_SUCCESS)
+  {
+	  Error_Handler();
+  }
 
-	/* Create the main thread.  */
-	ret = tx_thread_create(&cm4_main_thread, "tx_cm4_main_thread", tx_cm4_main_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
-												 DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
+  /* Create the main thread.  */
+  ret = tx_thread_create(&cm4_main_thread, "tx_cm4_main_thread", tx_cm4_main_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
+		  DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
 
-	/* Check main thread creation */
-	if (ret != TX_SUCCESS)
-	{
-		Error_Handler();
-	}
+  /* Check main thread creation */
+  if (ret != TX_SUCCESS)
+  {
+	  Error_Handler();
+  }
 
-	/*Allocate memory for i2c1_thread_entry*/
-	ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
+  /*Allocate memory for i2c4_thread_entry*/
+  ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
 
-	/* Check DEFAULT_STACK_SIZE allocation*/
-	if (ret != TX_SUCCESS)
-	{
-		Error_Handler();
-	}
+  /* Check DEFAULT_STACK_SIZE allocation*/
+  if (ret != TX_SUCCESS)
+  {
+	  Error_Handler();
+  }
 
-	/* Create the i2c1 thread.  */
-	ret = tx_thread_create(&cm4_i2c1_thread, "tx_cm4_i2c1_thread", tx_cm4_i2c1_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
-												 DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
+  /* Create the i2c4 thread.  */
+  ret = tx_thread_create(&cm4_i2c4_thread, "tx_cm4_i2c4_thread", tx_cm4_i2c4_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
+		  DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
 
-	/* Check i2c1 thread creation */
-	if (ret != TX_SUCCESS)
-	{
-		Error_Handler();
-	}
+  /* Check i2c4 thread creation */
+  if (ret != TX_SUCCESS)
+  {
+	  Error_Handler();
+  }
 
-	/*Allocate memory for i2c4_thread_entry*/
-	ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
+  /*Allocate memory for uart_thread_entry*/
+  ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
 
-	/* Check DEFAULT_STACK_SIZE allocation*/
-	if (ret != TX_SUCCESS)
-	{
-		Error_Handler();
-	}
+  /* Check DEFAULT_STACK_SIZE allocation*/
+  if (ret != TX_SUCCESS)
+  {
+	  Error_Handler();
+  }
 
-	/* Create the i2c4 thread.  */
-	ret = tx_thread_create(&cm4_i2c4_thread, "tx_cm4_i2c4_thread", tx_cm4_i2c4_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
-												 DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
+  /* Create the uart thread.  */
+  ret = tx_thread_create(&cm4_uart_thread, "tx_cm4_uart_thread", tx_cm4_uart_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
+		  DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
 
-	/* Check i2c4 thread creation */
-	if (ret != TX_SUCCESS)
-	{
-		Error_Handler();
-	}
-
-	/*Allocate memory for uart_thread_entry*/
-	ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
-
-	/* Check DEFAULT_STACK_SIZE allocation*/
-	if (ret != TX_SUCCESS)
-	{
-		Error_Handler();
-	}
-
-	/* Create the uart thread.  */
-	ret = tx_thread_create(&cm4_uart_thread, "tx_cm4_uart_thread", tx_cm4_uart_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
-												 DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
-
-	/* Check uart thread creation */
-	if (ret != TX_SUCCESS)
-	{
-		Error_Handler();
-	}
+  /* Check uart thread creation */
+  if (ret != TX_SUCCESS)
+  {
+	  Error_Handler();
+  }
   /* USER CODE END App_ThreadX_Init */
 
   return ret;
@@ -253,195 +208,51 @@ int UART_Receive(unsigned char *dest, const unsigned char *rx, UART_HandleTypeDe
 	return 0;
 }
 
-HAL_StatusTypeDef read_cell(CellTypeDef *cell, uint8_t a, uint8_t *dataBuf, const uint32_t I2C_Timeout)
-{
-	dataBuf[0] = a;
-	dataBuf[1] = 0;
-	dataBuf[2] = 0;
-	HAL_I2C_Master_Transmit(cell->handle, cell->address, dataBuf, 3, I2C_Timeout);
-	memset(dataBuf, 0, 3);
-	return HAL_I2C_Master_Receive(cell->handle, cell->address | 1, dataBuf, 3, I2C_Timeout);
-}
-
-HAL_StatusTypeDef powerup_and_read(unsigned int c, uint8_t *dataBuf, const uint32_t I2C_Timeout)
-{
-	dataBuf[0] = 0xA0;
-	dataBuf[1] = 0;
-	dataBuf[2] = 0;
-	// we power up both sides, and then power off the side we do not want to talk to
-	// this seems to do the trick - when powering up only one side we get no answer
-	unsigned int o = c ^ 1;
-	HAL_GPIO_WritePin(cell[c].gpio, cell[c].pin, GPIO_PIN_RESET);
-	HAL_GPIO_WritePin(cell[o].gpio, cell[o].pin, GPIO_PIN_RESET);
-	HAL_Delay(3);
-	HAL_GPIO_WritePin(cell[o].gpio, cell[o].pin, GPIO_PIN_SET);
-	HAL_I2C_Master_Transmit(cell[c].handle, cell[c].address, dataBuf, 3, I2C_Timeout);
-	return read_cell(cell + c, 2, dataBuf, I2C_Timeout);
-}
-
-HAL_StatusTypeDef write_word(CellTypeDef *cell, uint8_t *dataBuf, uint8_t a, uint8_t d1, uint8_t d2, const uint32_t I2C_Timeout)
-{
-	dataBuf[0] = 0x40 | a;
-	dataBuf[1] = d1;
-	dataBuf[2] = d2;
-	HAL_StatusTypeDef res = HAL_I2C_Master_Transmit(cell->handle, cell->address, dataBuf, 3, I2C_Timeout);
-	HAL_Delay(15); // wait 15 ms according to DS
-	return res;
-}
-
-HAL_StatusTypeDef exit_command_mode(CellTypeDef *cell, uint8_t *dataBuf, const uint32_t I2C_Timeout)
-{
-	dataBuf[0] = 0x80;
-	dataBuf[1] = 0;
-	dataBuf[2] = 0;
-	HAL_StatusTypeDef res = HAL_I2C_Master_Transmit(cell->handle, cell->address, dataBuf, 3, I2C_Timeout);
-	HAL_Delay(15); // wait another 15 ms to update EEPROM signature
-	return res;
-}
-
 void tx_cm4_main_thread_entry(ULONG thread_input)
 {
-	uint32_t low[4] = { 950, 950, 950, 950 };
-	unsigned int c[4] = { 0, 0, 0, 0 };
 	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
 	/* Infinite loop */
 	for(;;)
 	{
 		ULONG ticks = tx_time_get() / TX_TIMER_TICKS_PER_SECOND;
 		printf("WS %8lu",ticks);
-		printf(" | %u %u %u %u",bridgeError[0],bridgeBadstatus[0],bridgeError[1],bridgeBadstatus[1]);
-		printf(" %u %u %u %u",bridgeError[2],bridgeBadstatus[2],bridgeError[3],bridgeBadstatus[3]);
-		for (unsigned int i = 0; i < 4; i++)
-		{
-			if (c[i] != bridgeCount[i])
-			{
-				uint32_t weight = (bridgeValue[i] >> 16) & 0x3fff;
-				if (setZero[i])
-				{
-					low[i] = weight;
-					setZero[i] = 0;
-				}
-				if (weight < low[i])
-					weight = 0;
-				else
-					weight -= low[i];
-				weight *= 5000;
-				weight /= 14000;
-				printf(" | %2d.%02d kg", (uint16_t)(weight / 100), (uint16_t)(weight % 100));
-				uint32_t temp = (bridgeValue[i] >> 5) & 0x7ff;
-				temp *= 2000;
-				temp /= 2048; // just a guess at this point...
-				temp -= 500;
-				printf(" %2d.%01d C", (uint16_t)(temp / 10), (uint16_t)(temp % 10));
-				c[i] = bridgeCount[i];
-			}
-			else
-				printf(" |                ");
-		}
 		printf("\r\n");
 		tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
 	}
 }
 
-void tx_cm4_i2c1_thread_entry(ULONG thread_input)
-{
-	const unsigned int cellStart = 2;
-	const unsigned int cellEnd = 4;
-	const uint32_t I2C_Timeout = I2Cx_TIMEOUT_MAX;
-	HAL_StatusTypeDef res;
-	uint8_t dataBuf[4];
-	for (unsigned int i = cellStart; i < cellEnd; i++)
-		HAL_GPIO_WritePin(cell[i].gpio, cell[i].pin, GPIO_PIN_RESET);
-	HAL_Delay(10);
-	for (unsigned int i = cellStart; i < cellEnd; i++)
-	{
-		bridgeError[i] = 0;
-		bridgeStale[i] = 0;
-		bridgeCount[i] = 0;
-		bridgeBadstatus[i] = 0;
-	}
-	/* Infinite loop */
-	for(;;)
-	{
-		for (unsigned int i = cellStart; i < cellEnd; i++)
-		{
-			memset(dataBuf, 0, 4);
-			res = HAL_I2C_Master_Receive(cell[i].handle, cell[i].address | 1, dataBuf, 4, I2C_Timeout);
-			if (res != HAL_OK)
-			{
-				bridgeError[i] += 1;
-#if 0
-				HAL_I2C_DeInit(cell[i].handle);
-				tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
-				HAL_I2C_Init(cell[i].handle);
-				tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
-#endif
-			}
-			else
-			{
-				uint8_t status = (dataBuf[0] >> 6) & 0x3;
-				if (status == 0)
-				{
-					bridgeValue[i] = (dataBuf[0] << 24) | (dataBuf[1] << 16) | (dataBuf[2] << 8) | dataBuf[3];
-					bridgeCount[i] += 1;
-				} else if (status == 2)
-					bridgeStale[i] += 1;
-				else
-					bridgeBadstatus[i] += 1;
-			}
-		}
-		tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 20);
-	}
-}
-
 void tx_cm4_i2c4_thread_entry(ULONG thread_input)
 {
-	const unsigned int cellStart = 0;
-	const unsigned int cellEnd = 2;
-	const uint32_t I2C_Timeout = I2Cx_TIMEOUT_MAX;
-	HAL_StatusTypeDef res;
-	uint8_t dataBuf[4];
-	for (unsigned int i = cellStart; i < cellEnd; i++)
-		HAL_GPIO_WritePin(cell[i].gpio, cell[i].pin, GPIO_PIN_RESET);
-	HAL_Delay(10);
-	for (unsigned int i = cellStart; i < cellEnd; i++)
-	{
-		bridgeError[i] = 0;
-		bridgeStale[i] = 0;
-		bridgeCount[i] = 0;
-		bridgeBadstatus[i] = 0;
-	}
+	memset((void *)touchData, 0, sizeof(touchData));
 	/* Infinite loop */
 	for(;;)
 	{
 		ULONG ticks_target = tx_time_get() + (TX_TIMER_TICKS_PER_SECOND / 20);
-		for (unsigned int i = cellStart; i < cellEnd; i++)
+		/* this is active low */
+		GPIO_PinState touch = HAL_GPIO_ReadPin(TOUCH_INT_GPIO_Port, TOUCH_INT_Pin);
+		if (!touch || touchData[0] != 0)
 		{
-			memset(dataBuf, 0, 4);
-			res = HAL_I2C_Master_Receive(cell[i].handle, cell[i].address | 1, dataBuf, 4, I2C_Timeout);
-			if (res != HAL_OK)
-			{
-				bridgeError[i] += 1;
-#if 0
-				HAL_I2C_DeInit(cell[i].handle);
-				tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
-				HAL_I2C_Init(cell[i].handle);
-				tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
-#endif
-			}
-			else
-			{
-				uint8_t status = (dataBuf[0] >> 6) & 0x3;
-				if (status == 0)
-				{
-					bridgeValue[i] = (dataBuf[0] << 24) | (dataBuf[1] << 16) | (dataBuf[2] << 8) | dataBuf[3];
-					bridgeCount[i] += 1;
-				} else if (status == 2)
-					bridgeStale[i] += 1;
-				else
-					bridgeBadstatus[i] += 1;
-			}
+			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
+			// read status register
+			uint8_t nb_touch;
+			uint8_t data[4];
+			uint32_t touchX, touchY;
+		  if (HAL_I2C_Mem_Read(&hi2c4, TS_I2C_ADDRESS, FT6X06_TD_STAT_REG, I2C_MEMADD_SIZE_8BIT, &nb_touch, 1, 1000) == HAL_OK)
+		  {
+		  	nb_touch &= FT6X06_TD_STATUS_BIT_MASK;
+		    if(HAL_I2C_Mem_Read(&hi2c4, TS_I2C_ADDRESS, FT6X06_P1_XH_REG, I2C_MEMADD_SIZE_8BIT, data, 4, 1000) == HAL_OK)
+		    {
+		      touchX = (((uint32_t)data[0] & FT6X06_P1_XH_TP_BIT_MASK) << 8) | ((uint32_t)data[1] & FT6X06_P1_XL_TP_BIT_MASK);
+		      touchY = (((uint32_t)data[2] & FT6X06_P1_YH_TP_BIT_MASK) << 8) | ((uint32_t)data[3] & FT6X06_P1_YL_TP_BIT_MASK);
+		      touchData[0] = nb_touch;
+		      touchData[1] = touchX;
+		      touchData[2] = touchY;
+		      touchData[3] += 1;
+		    }
+		  }
 		}
+		else
+			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
 		ULONG ticks = tx_time_get();
 		if (ticks < ticks_target)
 			tx_thread_sleep(ticks_target - ticks);

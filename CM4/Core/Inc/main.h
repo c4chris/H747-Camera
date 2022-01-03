@@ -92,6 +92,10 @@ void Error_Handler(void);
 #define FMC_D27_GPIO_Port GPIOI
 #define FMC_SDCAS_Pin GPIO_PIN_15
 #define FMC_SDCAS_GPIO_Port GPIOG
+#define TOUCH_INT_Pin GPIO_PIN_7
+#define TOUCH_INT_GPIO_Port GPIOK
+#define CAM_PWR_DWN_Pin GPIO_PIN_14
+#define CAM_PWR_DWN_GPIO_Port GPIOJ
 #define FMC_D2_Pin GPIO_PIN_0
 #define FMC_D2_GPIO_Port GPIOD
 #define STLINK_TX_Pin GPIO_PIN_10
@@ -166,6 +170,10 @@ void Error_Handler(void);
 #define FMC_D17_GPIO_Port GPIOH
 #define FMC_D20_Pin GPIO_PIN_12
 #define FMC_D20_GPIO_Port GPIOH
+#define I2C4_SCL_Pin GPIO_PIN_12
+#define I2C4_SCL_GPIO_Port GPIOD
+#define I2C4_SDA_Pin GPIO_PIN_13
+#define I2C4_SDA_GPIO_Port GPIOD
 #define FMC_SDRAS_Pin GPIO_PIN_11
 #define FMC_SDRAS_GPIO_Port GPIOF
 #define FMC_A10_Pin GPIO_PIN_0
