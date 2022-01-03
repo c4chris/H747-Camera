@@ -155,6 +155,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_ll_fmc.c</locationURI>
 		</link>
 		<link>
+			<name>Middlewares/guix/common</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/guix/common</locationURI>
+		</link>
+		<link>
 			<name>Drivers/BSP/Components/is42s32800g.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Drivers/BSP/Components/is42s32800g/is42s32800g.c</locationURI>

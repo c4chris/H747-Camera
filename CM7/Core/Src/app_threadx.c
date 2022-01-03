@@ -67,11 +67,6 @@ TX_EVENT_FLAGS_GROUP cm7_event_group;
 GX_WINDOW_ROOT *root_window;
 
 /* data comning from CM4 core */
-__attribute__((section(".sram3.bridgeError"))) volatile unsigned int bridgeError[4];
-__attribute__((section(".sram3.bridgeCount"))) volatile unsigned int bridgeCount[4];
-__attribute__((section(".sram3.bridgeStale"))) volatile unsigned int bridgeStale[4];
-__attribute__((section(".sram3.bridgeBadstatus"))) volatile unsigned int bridgeBadstatus[4];
-__attribute__((section(".sram3.bridgeValue"))) volatile uint32_t bridgeValue[4];
 __attribute__((section(".sram3.touchData"))) volatile uint16_t touchData[4], touchData2[4];
 
 /* USER CODE END PV */
@@ -259,7 +254,7 @@ void tx_cm7_main_thread_entry(ULONG thread_input)
   	ULONG ticks = tx_time_get();
   	if (ticks >= toggleTicks)
   	{
-    	BSP_LED_Toggle(LED_BLUE);
+    	HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin);
   		toggleTicks = ticks + TX_TIMER_TICKS_PER_SECOND;
   	}
   	touchData2[0] = touchData[0];
@@ -334,7 +329,7 @@ VOID weight_update()
   /* Set a value to "my_numeric_pix_prompt". */
 	for (unsigned int i = 0; i < 4; i++)
 	{
-		uint32_t weight = (bridgeValue[i] >> 16) & 0x3fff;
+		uint32_t weight = 0;
 		if (weight < low[i])
 			weight = 0;
 		else
@@ -368,7 +363,7 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 			break;
 
 		default:
-			BSP_LED_Toggle(LED_RED);
+			HAL_GPIO_TogglePin(LED4_GPIO_Port, LED4_Pin);
 			break;
 	}
 	return gx_window_event_process(window, event_ptr);
@@ -433,7 +428,7 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 		pend_buffer = 1 - front_buffer;
 
 		/* Refresh the display */
-		HAL_DSI_Refresh(&hlcd_dsi);
+		HAL_DSI_Refresh(&hdsi);
 	}
 
 	/* Request that event flags 0 is set. If it is set it should be cleared. If the event
@@ -479,7 +474,7 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 
 	}
 	else
-		BSP_LED_Toggle(LED_RED);
+		HAL_GPIO_TogglePin(LED4_GPIO_Port, LED4_Pin);
 }
 
 UINT stm32h7_graphics_driver_setup_32argb(GX_DISPLAY *display)
