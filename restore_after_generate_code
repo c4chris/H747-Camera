@@ -1,0 +1,18 @@
+#!/bin/bash
+read -r -d '' LIST <<'EOF'
+CM4/.project
+CM4/Core/Src/stm32h7xx_it.c
+CM7/Core/Src/stm32h7xx_it.c
+Middlewares/ST/threadx/ports/cortex_m4/gnu/inc/tx_port.h
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_context_restore.S
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_context_save.S
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_interrupt_control.S
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_schedule.S
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_stack_build.S
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_thread_system_return.S
+Middlewares/ST/threadx/ports/cortex_m4/gnu/src/tx_timer_interrupt.S
+EOF
+for f in $LIST; do
+  echo "Restoring $f"
+  git checkout -- $f
+done
