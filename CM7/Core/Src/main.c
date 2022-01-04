@@ -336,18 +336,18 @@ static void MX_DSIHOST_DSI_Init(void)
   {
     Error_Handler();
   }
-  LPCmd.LPGenShortWriteNoP = DSI_LP_GSW0P_DISABLE;
-  LPCmd.LPGenShortWriteOneP = DSI_LP_GSW1P_DISABLE;
-  LPCmd.LPGenShortWriteTwoP = DSI_LP_GSW2P_DISABLE;
-  LPCmd.LPGenShortReadNoP = DSI_LP_GSR0P_DISABLE;
-  LPCmd.LPGenShortReadOneP = DSI_LP_GSR1P_DISABLE;
-  LPCmd.LPGenShortReadTwoP = DSI_LP_GSR2P_DISABLE;
-  LPCmd.LPGenLongWrite = DSI_LP_GLW_DISABLE;
-  LPCmd.LPDcsShortWriteNoP = DSI_LP_DSW0P_DISABLE;
-  LPCmd.LPDcsShortWriteOneP = DSI_LP_DSW1P_DISABLE;
-  LPCmd.LPDcsShortReadNoP = DSI_LP_DSR0P_DISABLE;
-  LPCmd.LPDcsLongWrite = DSI_LP_DLW_DISABLE;
-  LPCmd.LPMaxReadPacket = DSI_LP_MRDP_DISABLE;
+  LPCmd.LPGenShortWriteNoP = DSI_LP_GSW0P_ENABLE;
+  LPCmd.LPGenShortWriteOneP = DSI_LP_GSW1P_ENABLE;
+  LPCmd.LPGenShortWriteTwoP = DSI_LP_GSW2P_ENABLE;
+  LPCmd.LPGenShortReadNoP = DSI_LP_GSR0P_ENABLE;
+  LPCmd.LPGenShortReadOneP = DSI_LP_GSR1P_ENABLE;
+  LPCmd.LPGenShortReadTwoP = DSI_LP_GSR2P_ENABLE;
+  LPCmd.LPGenLongWrite = DSI_LP_GLW_ENABLE;
+  LPCmd.LPDcsShortWriteNoP = DSI_LP_DSW0P_ENABLE;
+  LPCmd.LPDcsShortWriteOneP = DSI_LP_DSW1P_ENABLE;
+  LPCmd.LPDcsShortReadNoP = DSI_LP_DSR0P_ENABLE;
+  LPCmd.LPDcsLongWrite = DSI_LP_DLW_ENABLE;
+  LPCmd.LPMaxReadPacket = DSI_LP_MRDP_ENABLE;
   LPCmd.AcknowledgeRequest = DSI_ACKNOWLEDGE_DISABLE;
   if (HAL_DSI_ConfigCommand(&hdsi, &LPCmd) != HAL_OK)
   {
@@ -380,9 +380,21 @@ static void MX_DSIHOST_DSI_Init(void)
   {
   	Error_Handler();
   }
-  HAL_DSI_ConfigFlowControl(&hdsi, DSI_FLOW_CONTROL_BTA);
   OTM8009A_Init(OTM8009A_FORMAT_RGB888, OTM8009A_ORIENTATION_LANDSCAPE);
-  HAL_LTDC_ProgramLineEvent(&hltdc, 0);
+  LPCmd.LPGenShortWriteNoP    = DSI_LP_GSW0P_DISABLE;
+  LPCmd.LPGenShortWriteOneP   = DSI_LP_GSW1P_DISABLE;
+  LPCmd.LPGenShortWriteTwoP   = DSI_LP_GSW2P_DISABLE;
+  LPCmd.LPGenShortReadNoP     = DSI_LP_GSR0P_DISABLE;
+  LPCmd.LPGenShortReadOneP    = DSI_LP_GSR1P_DISABLE;
+  LPCmd.LPGenShortReadTwoP    = DSI_LP_GSR2P_DISABLE;
+  LPCmd.LPGenLongWrite        = DSI_LP_GLW_DISABLE;
+  LPCmd.LPDcsShortWriteNoP    = DSI_LP_DSW0P_DISABLE;
+  LPCmd.LPDcsShortWriteOneP   = DSI_LP_DSW1P_DISABLE;
+  LPCmd.LPDcsShortReadNoP     = DSI_LP_DSR0P_DISABLE;
+  LPCmd.LPDcsLongWrite        = DSI_LP_DLW_DISABLE;
+  HAL_DSI_ConfigCommand(&hdsi, &LPCmd);
+  HAL_DSI_ConfigFlowControl(&hdsi, DSI_FLOW_CONTROL_BTA);
+  HAL_DSI_ForceRXLowPower(&hlcd_dsi, ENABLE);
 
   /* USER CODE END DSIHOST_Init 2 */
 
