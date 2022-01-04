@@ -390,11 +390,11 @@ static void MX_DSIHOST_DSI_Init(void)
   /* Initialize the OTM8009A LCD Display IC Driver (KoD LCD IC Driver)
   */
   IOCtx.Address     = 0;
-  IOCtx.GetTick     = HAL_GetTick;
+  IOCtx.GetTick     = (long int (*)(void)) HAL_GetTick;
   IOCtx.WriteReg    = DSI_IO_Write;
   IOCtx.ReadReg     = DSI_IO_Read;
   OTM8009A_RegisterBusIO(&OTM8009AObj, &IOCtx);
-  OTM8009A_Init(&OTM8009AObj, OTM8009A_COLMOD_RGB888, LCD_ORIENTATION_LANDSCAPE);
+  OTM8009A_Init(&OTM8009AObj, OTM8009A_COLMOD_RGB888, OTM8009A_ORIENTATION_LANDSCAPE);
 
   LPCmd.LPGenShortWriteNoP    = DSI_LP_GSW0P_DISABLE;
   LPCmd.LPGenShortWriteOneP   = DSI_LP_GSW1P_DISABLE;
@@ -689,21 +689,15 @@ static void MX_GPIO_Init(void)
   */
 static int32_t DSI_IO_Write(uint16_t ChannelNbr, uint16_t Reg, uint8_t *pData, uint16_t Size)
 {
-  int32_t ret = BSP_ERROR_NONE;
+  int32_t ret = HAL_OK;
 
   if(Size <= 1U)
   {
-    if(HAL_DSI_ShortWrite(&hlcd_dsi, ChannelNbr, DSI_DCS_SHORT_PKT_WRITE_P1, Reg, (uint32_t)pData[Size]) != HAL_OK)
-    {
-      ret = BSP_ERROR_BUS_FAILURE;
-    }
+    ret = HAL_DSI_ShortWrite(&hdsi, ChannelNbr, DSI_DCS_SHORT_PKT_WRITE_P1, Reg, (uint32_t)pData[Size]);
   }
   else
   {
-    if(HAL_DSI_LongWrite(&hlcd_dsi, ChannelNbr, DSI_DCS_LONG_PKT_WRITE, Size, (uint32_t)Reg, pData) != HAL_OK)
-    {
-      ret = BSP_ERROR_BUS_FAILURE;
-    }
+    ret = HAL_DSI_LongWrite(&hdsi, ChannelNbr, DSI_DCS_LONG_PKT_WRITE, Size, (uint32_t)Reg, pData);
   }
 
   return ret;
@@ -719,14 +713,7 @@ static int32_t DSI_IO_Write(uint16_t ChannelNbr, uint16_t Reg, uint8_t *pData, u
   */
 static int32_t DSI_IO_Read(uint16_t ChannelNbr, uint16_t Reg, uint8_t *pData, uint16_t Size)
 {
-  int32_t ret = BSP_ERROR_NONE;
-
-  if(HAL_DSI_Read(&hlcd_dsi, ChannelNbr, pData, Size, DSI_DCS_SHORT_PKT_READ, Reg, pData) != HAL_OK)
-  {
-    ret = BSP_ERROR_BUS_FAILURE;
-  }
-
-  return ret;
+  return HAL_DSI_Read(&hdsi, ChannelNbr, pData, Size, DSI_DCS_SHORT_PKT_READ, Reg, pData);
 }
 
 /**
