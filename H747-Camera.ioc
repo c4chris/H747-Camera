@@ -1,5 +1,5 @@
 #MicroXplorer Configuration settings - do not modify
-CortexM4.IPs=BDMA,DMA,FATFS_M4\:I,FREERTOS_M4\:I,IWDG2\:I,MDMA,NVIC2\:I,RCC,USB_DEVICE_M4\:I,USB_HOST_M4\:I,WWDG2\:I,TIM3\:I,DEBUG,PDM2PCM_M4\:I,PWR,RESMGR_UTILITY,SYS_M4\:I,CORTEX_M4\:I,OPENAMP_M4\:I,VREFBUF,TIM7\:I,USART1\:I,STMicroelectronics.X-CUBE-AZRTOS-H7.2.0.0_M4\:I,DCMI\:I,FMC,I2C4\:I
+CortexM4.IPs=BDMA,DMA,FATFS_M4\:I,FREERTOS_M4\:I,IWDG2\:I,MDMA,NVIC2\:I,RCC,USB_DEVICE_M4\:I,USB_HOST_M4\:I,WWDG2\:I,DEBUG,PDM2PCM_M4\:I,PWR,RESMGR_UTILITY,SYS_M4\:I,CORTEX_M4\:I,OPENAMP_M4\:I,VREFBUF,TIM7\:I,USART1\:I,STMicroelectronics.X-CUBE-AZRTOS-H7.2.0.0_M4\:I,DCMI\:I,FMC,I2C4\:I
 CortexM4.Pins=PK7,PJ14,PI12,PI13
 CortexM7.IPs=BDMA\:I,DMA\:I,FATFS_M7\:I,FREERTOS_M7\:I,IWDG1\:I,MDMA\:I,NVIC1\:I,RCC\:I,USB_DEVICE_M7\:I,USB_HOST_M7\:I,WWDG1\:I,CORTEX_M7\:I,DEBUG\:I,PDM2PCM_M7\:I,PWR\:I,RESMGR_UTILITY\:I,SYS\:I,OPENAMP_M7\:I,VREFBUF\:I,TIM6\:I,DMA2D\:I,FMC\:I,LTDC\:I,DSIHOST\:I,STMicroelectronics.X-CUBE-AZRTOS-H7.2.0.0_M7\:I
 CortexM7.Pins=PK5,PK4,PK6,PK3,PJ12,PI14,PG3,PK2,PI15,PJ2
@@ -407,7 +407,7 @@ NVIC1.SavedPendsvIrqHandlerGenerated=false
 NVIC1.SavedSvcallIrqHandlerGenerated=false
 NVIC1.SavedSystickIrqHandlerGenerated=false
 NVIC1.SysTick_IRQn=true\:0\:0\:false\:false\:false\:false\:false\:false
-NVIC1.TIM6_DAC_IRQn=true\:15\:0\:false\:false\:true\:false\:false\:false
+NVIC1.TIM6_DAC_IRQn=true\:0\:0\:true\:false\:true\:false\:false\:false
 NVIC1.TimeBase=TIM6_DAC_IRQn
 NVIC1.TimeBaseIP=TIM6
 NVIC1.UsageFault_IRQn=true\:0\:0\:false\:false\:true\:false\:false\:false
@@ -429,7 +429,7 @@ NVIC2.SavedPendsvIrqHandlerGenerated=false
 NVIC2.SavedSvcallIrqHandlerGenerated=false
 NVIC2.SavedSystickIrqHandlerGenerated=false
 NVIC2.SysTick_IRQn=true\:0\:0\:false\:false\:false\:false\:false\:false
-NVIC2.TIM7_IRQn=true\:15\:0\:false\:false\:true\:false\:false\:false
+NVIC2.TIM7_IRQn=true\:0\:0\:true\:false\:true\:false\:false\:false
 NVIC2.TimeBase=TIM7_IRQn
 NVIC2.TimeBaseIP=TIM7
 NVIC2.USART1_IRQn=true\:0\:0\:true\:false\:true\:false\:false\:true
