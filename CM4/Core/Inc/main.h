@@ -33,6 +33,8 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "ov5640.h"
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -208,6 +210,8 @@ void   MX_FMC_Init(void);
 #define ADV7533_MAIN_POWER_DOWN_REG     0x41U
 
 #define I2Cx_TIMEOUT_MAX               0x3000 /* The value of the maximal timeout for I2C waiting loops */
+
+#define CAMERA_OV5640_ADDRESS           0x78U
 
 /* USER CODE END Private defines */
 

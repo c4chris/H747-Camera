@@ -64,6 +64,8 @@ SDRAM_HandleTypeDef hsdram1;
 /* USER CODE BEGIN PV */
 
 volatile uint32_t Notified = 0;
+static OV5640_Capabilities_t Camera_Cap;
+static uint32_t CameraId;
 
 /* USER CODE END PV */
 
@@ -75,6 +77,11 @@ static void MX_DCMI_Init(void);
 static void MX_MDMA_Init(void);
 static void MX_I2C4_Init(void);
 /* USER CODE BEGIN PFP */
+
+static int32_t OV5640_Probe(uint32_t Resolution, uint32_t PixelFormat);
+static int32_t I2C4_WriteReg16(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length);
+static int32_t I2C4_ReadReg16(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length);
+static int32_t Dummy(void);
 
 /* USER CODE END PFP */
 
@@ -90,6 +97,8 @@ static void MX_I2C4_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+
+	int32_t ret;
 
   /* USER CODE END 1 */
 
@@ -129,6 +138,19 @@ int main(void)
   MX_MDMA_Init();
   MX_I2C4_Init();
   /* USER CODE BEGIN 2 */
+
+  /* Assert the camera POWER_DOWN pin (active high) */
+  HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_SET);
+  HAL_Delay(100);     /* POWER_DOWN de-asserted during 100 ms */
+  /* De-assert the camera POWER_DOWN pin (active high) */
+  HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_RESET);
+  HAL_Delay(20);
+
+  ret = OV5640_Probe(OV5640_R800x480, OV5640_RGB565);
+  if (ret != OV5640_OK)
+  {
+	  HAL_Delay(20);
+  }
 
   /* USER CODE END 2 */
 
@@ -176,13 +198,6 @@ static void MX_DCMI_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN DCMI_Init 2 */
-
-  /* Assert the camera POWER_DOWN pin (active high) */
-  HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_SET);
-  HAL_Delay(100);     /* POWER_DOWN de-asserted during 100 ms */
-  /* De-assert the camera POWER_DOWN pin (active high) */
-  HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_RESET);
-  HAL_Delay(20);
 
   /* USER CODE END DCMI_Init 2 */
 
@@ -462,6 +477,122 @@ void HAL_HSEM_FreeCallback(uint32_t SemMask)
 	Notified |= SemMask;
 }
 
+/**
+  * @brief  Register Bus IOs if component ID is OK
+  * @retval error status
+  */
+static int32_t OV5640_Probe(uint32_t Resolution, uint32_t PixelFormat)
+{
+   int32_t ret;
+  OV5640_IO_t              IOCtx;
+  static OV5640_Object_t   OV5640Obj;
+
+  /* Configure the audio driver */
+  IOCtx.Address     = CAMERA_OV5640_ADDRESS;
+  IOCtx.Init        = Dummy;
+  IOCtx.DeInit      = Dummy;
+  IOCtx.ReadReg     = I2C4_ReadReg16;
+  IOCtx.WriteReg    = I2C4_WriteReg16;
+  IOCtx.GetTick     = (long int (*)(void)) HAL_GetTick;
+
+  if(OV5640_RegisterBusIO (&OV5640Obj, &IOCtx) != OV5640_OK)
+  {
+    ret = OV5640_ERROR;
+  }
+  else if(OV5640_ReadID(&OV5640Obj, &CameraId) != OV5640_OK)
+  {
+    ret = OV5640_ERROR;
+  }
+  else
+  {
+    if(CameraId != OV5640_ID)
+    {
+      ret = OV5640_ERROR;
+    }
+    else
+    {
+      if(OV5640_CAMERA_Driver.Init(&OV5640Obj, Resolution, PixelFormat) != OV5640_OK)
+      {
+        ret = OV5640_ERROR;
+      }
+      else if(OV5640_CAMERA_Driver.GetCapabilities(&OV5640Obj, &Camera_Cap) != OV5640_OK)
+      {
+        ret = OV5640_ERROR;
+      }
+      else
+      {
+        ret = OV5640_OK;
+      }
+    }
+  }
+
+  return ret;
+}
+
+/* Just return 0 */
+static int32_t Dummy(void)
+{
+  return 0;
+}
+
+/**
+  * @brief  Write a 16bit value in a register of the device through BUS.
+  * @param  DevAddr Device address on Bus.
+  * @param  Reg    The target register address to write
+  * @param  pData  The target register value to be written
+  * @param  Length buffer size to be written
+  * @retval BSP status
+  */
+static int32_t I2C4_WriteReg16(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length)
+{
+  int32_t ret;
+  if (HAL_I2C_Mem_Write(&hi2c4, DevAddr, Reg, I2C_MEMADD_SIZE_16BIT, pData, Length, 1000) == HAL_OK)
+  {
+    ret = 0;
+  }
+  else
+  {
+    if( HAL_I2C_GetError(&hi2c4) == HAL_I2C_ERROR_AF)
+    {
+      ret = -1;
+    }
+    else
+    {
+      ret = -1;
+    }
+  }
+  return ret;
+}
+
+/**
+  * @brief  Read a 16bit register of the device through BUS
+  * @param  DevAddr Device address on BUS
+  * @param  Reg     The target register address to read
+  * @param  pData   Pointer to data buffer
+  * @param  Length  Length of the data
+  * @retval BSP status
+  */
+static int32_t I2C4_ReadReg16(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, uint16_t Length)
+{
+  int32_t ret;
+  if (HAL_I2C_Mem_Read(&hi2c4, DevAddr, Reg, I2C_MEMADD_SIZE_16BIT, pData, Length, 1000) == HAL_OK)
+  {
+    ret = 0;
+  }
+  else
+  {
+    if (HAL_I2C_GetError(&hi2c4) == HAL_I2C_ERROR_AF)
+    {
+      ret = -1;
+    }
+    else
+    {
+      ret = -1;
+    }
+  }
+  return ret;
+}
+
 /* USER CODE END 4 */
 
 /**
@@ -513,7 +644,7 @@ void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+     example: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

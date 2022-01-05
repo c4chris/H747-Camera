@@ -160,6 +160,9 @@ int main(void)
   MX_MDMA_Init();
   /* USER CODE BEGIN 2 */
 
+  __HAL_DSI_WRAPPER_ENABLE(&hdsi);
+  HAL_DSI_Refresh(&hdsi);
+
   /* USER CODE END 2 */
 
   MX_ThreadX_Init();
@@ -384,7 +387,7 @@ static void MX_DSIHOST_DSI_Init(void)
    * To avoid any synchronization issue, the DSI shall be started after enabling the LTDC */
   if (HAL_DSI_Start(&hdsi) != HAL_OK)
   {
-  	Error_Handler();
+	  Error_Handler();
   }
     
   /* Initialize the OTM8009A LCD Display IC Driver (KoD LCD IC Driver)
@@ -393,8 +396,14 @@ static void MX_DSIHOST_DSI_Init(void)
   IOCtx.GetTick     = (long int (*)(void)) HAL_GetTick;
   IOCtx.WriteReg    = DSI_IO_Write;
   IOCtx.ReadReg     = DSI_IO_Read;
-  OTM8009A_RegisterBusIO(&OTM8009AObj, &IOCtx);
-  OTM8009A_Init(&OTM8009AObj, OTM8009A_COLMOD_RGB888, OTM8009A_ORIENTATION_LANDSCAPE);
+  if (OTM8009A_RegisterBusIO(&OTM8009AObj, &IOCtx) != OTM8009A_OK)
+  {
+	  Error_Handler();
+  }
+  if (OTM8009A_Init(&OTM8009AObj, OTM8009A_COLMOD_RGB888, OTM8009A_ORIENTATION_LANDSCAPE) != OTM8009A_OK)
+  {
+	  Error_Handler();
+  }
 
   LPCmd.LPGenShortWriteNoP    = DSI_LP_GSW0P_DISABLE;
   LPCmd.LPGenShortWriteOneP   = DSI_LP_GSW1P_DISABLE;
