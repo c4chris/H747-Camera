@@ -148,7 +148,7 @@ void HAL_DSI_MspInit(DSI_HandleTypeDef* hdsi)
   /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_DSI;
-    PeriphClkInitStruct.DsiClockSelection = RCC_DSICLKSOURCE_PLL2;
+    PeriphClkInitStruct.DsiClockSelection = RCC_DSICLKSOURCE_PHY;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
       Error_Handler();
@@ -160,6 +160,10 @@ void HAL_DSI_MspInit(DSI_HandleTypeDef* hdsi)
     HAL_NVIC_SetPriority(DSI_IRQn, 0, 0);
     HAL_NVIC_EnableIRQ(DSI_IRQn);
   /* USER CODE BEGIN DSI_MspInit 1 */
+
+  /** Soft Reset the DSI Host and wrapper */
+    __HAL_RCC_DSI_FORCE_RESET();
+    __HAL_RCC_DSI_RELEASE_RESET();
 
   /* USER CODE END DSI_MspInit 1 */
   }
@@ -212,7 +216,7 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef* hltdc)
     PeriphClkInitStruct.PLL3.PLL3N = 160;
     PeriphClkInitStruct.PLL3.PLL3P = 2;
     PeriphClkInitStruct.PLL3.PLL3Q = 2;
-    PeriphClkInitStruct.PLL3.PLL3R = 19;
+    PeriphClkInitStruct.PLL3.PLL3R = 29;
     PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_2;
     PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
     PeriphClkInitStruct.PLL3.PLL3FRACN = 0;
@@ -229,8 +233,8 @@ void HAL_LTDC_MspInit(LTDC_HandleTypeDef* hltdc)
   /* USER CODE BEGIN LTDC_MspInit 1 */
 
     /** Toggle Sw reset of LTDC IP */
-    //__HAL_RCC_LTDC_FORCE_RESET();
-    //__HAL_RCC_LTDC_RELEASE_RESET();
+    __HAL_RCC_LTDC_FORCE_RESET();
+    __HAL_RCC_LTDC_RELEASE_RESET();
 
   /* USER CODE END LTDC_MspInit 1 */
   }

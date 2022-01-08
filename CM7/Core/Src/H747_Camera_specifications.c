@@ -33,13 +33,13 @@ GX_STUDIO_DISPLAY_INFO H747_Camera_display_table[1] =
     MAIN_DISPLAY_THEME_TABLE_SIZE,
     MAIN_DISPLAY_LANGUAGE_TABLE_SIZE,
     MAIN_DISPLAY_STRING_TABLE_SIZE,
-    720,                                     /* x resolution                   */
-    576,                                     /* y resolution                   */
+    800,                                     /* x resolution                   */
+    480,                                     /* y resolution                   */
     &main_display_control_block,
     &main_display_canvas_control_block,
     &main_display_root_window,
     GX_NULL,                                 /* canvas memory area             */
-    1658880,                                 /* canvas memory size in bytes    */
+    1536000,                                 /* canvas memory size in bytes    */
     GX_SCREEN_ROTATION_NONE                  /* rotation angle                 */
     }
 };
@@ -232,7 +232,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_text_view_define =
     gx_studio_multi_line_text_view_create,     /* create function              */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {0, 176, 639, 575},                      /* widget size                    */
+    {0, 76, 639, 475},                      /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_text_view), /* control block */
@@ -328,7 +328,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) main_screen_event_handler, /* event function override */
-    {0, 0, 719, 575},                        /* widget size                    */
+    {0, 0, 799, 479},                        /* widget size                    */
     GX_NULL,                                 /* next widget                    */
     &main_window_weight_prompt_define,       /* child widget                   */
     0,                                       /* control block                  */

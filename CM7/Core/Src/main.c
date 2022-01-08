@@ -170,9 +170,6 @@ int main(void)
   MX_MDMA_Init();
   /* USER CODE BEGIN 2 */
 
-  __HAL_DSI_WRAPPER_ENABLE(&hdsi);
-  HAL_DSI_Refresh(&hdsi);
-
   /* USER CODE END 2 */
 
   MX_ThreadX_Init();
@@ -303,17 +300,16 @@ static void MX_DSIHOST_DSI_Init(void)
   DSI_PLLInitTypeDef PLLInit = {0};
   DSI_HOST_TimeoutTypeDef HostTimeouts = {0};
   DSI_PHY_TimerTypeDef PhyTimings = {0};
-  DSI_LPCmdTypeDef LPCmd = {0};
-  DSI_CmdCfgTypeDef CmdCfg = {0};
+  DSI_VidCfgTypeDef VidCfg = {0};
 
   /* USER CODE BEGIN DSIHOST_Init 1 */
 
   /* USER CODE END DSIHOST_Init 1 */
   hdsi.Instance = DSI;
   hdsi.Init.AutomaticClockLaneControl = DSI_AUTO_CLK_LANE_CTRL_DISABLE;
-  hdsi.Init.TXEscapeCkdiv = 4;
+  hdsi.Init.TXEscapeCkdiv = 3;
   hdsi.Init.NumberOfLanes = DSI_TWO_DATA_LANES;
-  PLLInit.PLLNDIV = 100;
+  PLLInit.PLLNDIV = 96;
   PLLInit.PLLIDF = DSI_PLL_IN_DIV5;
   PLLInit.PLLODF = DSI_PLL_OUT_DIV1;
   if (HAL_DSI_Init(&hdsi, &PLLInit) != HAL_OK)
@@ -334,9 +330,9 @@ static void MX_DSIHOST_DSI_Init(void)
     Error_Handler();
   }
   PhyTimings.ClockLaneHS2LPTime = 28;
-  PhyTimings.ClockLaneLP2HSTime = 33;
+  PhyTimings.ClockLaneLP2HSTime = 32;
   PhyTimings.DataLaneHS2LPTime = 15;
-  PhyTimings.DataLaneLP2HSTime = 25;
+  PhyTimings.DataLaneLP2HSTime = 24;
   PhyTimings.DataLaneMaxReadTime = 0;
   PhyTimings.StopWaitTime = 10;
   if (HAL_DSI_ConfigPhyTimer(&hdsi, &PhyTimings) != HAL_OK)
@@ -355,35 +351,34 @@ static void MX_DSIHOST_DSI_Init(void)
   {
     Error_Handler();
   }
-  LPCmd.LPGenShortWriteNoP = DSI_LP_GSW0P_ENABLE;
-  LPCmd.LPGenShortWriteOneP = DSI_LP_GSW1P_ENABLE;
-  LPCmd.LPGenShortWriteTwoP = DSI_LP_GSW2P_ENABLE;
-  LPCmd.LPGenShortReadNoP = DSI_LP_GSR0P_ENABLE;
-  LPCmd.LPGenShortReadOneP = DSI_LP_GSR1P_ENABLE;
-  LPCmd.LPGenShortReadTwoP = DSI_LP_GSR2P_ENABLE;
-  LPCmd.LPGenLongWrite = DSI_LP_GLW_ENABLE;
-  LPCmd.LPDcsShortWriteNoP = DSI_LP_DSW0P_ENABLE;
-  LPCmd.LPDcsShortWriteOneP = DSI_LP_DSW1P_ENABLE;
-  LPCmd.LPDcsShortReadNoP = DSI_LP_DSR0P_ENABLE;
-  LPCmd.LPDcsLongWrite = DSI_LP_DLW_ENABLE;
-  LPCmd.LPMaxReadPacket = DSI_LP_MRDP_ENABLE;
-  LPCmd.AcknowledgeRequest = DSI_ACKNOWLEDGE_DISABLE;
-  if (HAL_DSI_ConfigCommand(&hdsi, &LPCmd) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  CmdCfg.VirtualChannelID = 0;
-  CmdCfg.ColorCoding = DSI_RGB888;
-  CmdCfg.CommandSize = 800;
-  CmdCfg.TearingEffectSource = DSI_TE_DSILINK;
-  CmdCfg.TearingEffectPolarity = DSI_TE_RISING_EDGE;
-  CmdCfg.HSPolarity = DSI_HSYNC_ACTIVE_LOW;
-  CmdCfg.VSPolarity = DSI_VSYNC_ACTIVE_LOW;
-  CmdCfg.DEPolarity = DSI_DATA_ENABLE_ACTIVE_HIGH;
-  CmdCfg.VSyncPol = DSI_VSYNC_FALLING;
-  CmdCfg.AutomaticRefresh = DSI_AR_DISABLE;
-  CmdCfg.TEAcknowledgeRequest = DSI_TE_ACKNOWLEDGE_ENABLE;
-  if (HAL_DSI_ConfigAdaptedCommandMode(&hdsi, &CmdCfg) != HAL_OK)
+  VidCfg.VirtualChannelID = 0;
+  VidCfg.ColorCoding = DSI_RGB888;
+  VidCfg.LooselyPacked = DSI_LOOSELY_PACKED_DISABLE;
+  VidCfg.Mode = DSI_VID_MODE_BURST;
+  VidCfg.PacketSize = 800;
+  VidCfg.NumberOfChunks = 0;
+  VidCfg.NullPacketSize = 0;
+  VidCfg.HSPolarity = DSI_HSYNC_ACTIVE_HIGH;
+  VidCfg.VSPolarity = DSI_VSYNC_ACTIVE_HIGH;
+  VidCfg.DEPolarity = DSI_DATA_ENABLE_ACTIVE_HIGH;
+  VidCfg.HorizontalSyncActive = 4;
+  VidCfg.HorizontalBackPorch = 74;
+  VidCfg.HorizontalLine = 1892;
+  VidCfg.VerticalSyncActive = 1;
+  VidCfg.VerticalBackPorch = 15;
+  VidCfg.VerticalFrontPorch = 16;
+  VidCfg.VerticalActive = 480;
+  VidCfg.LPCommandEnable = DSI_LP_COMMAND_ENABLE;
+  VidCfg.LPLargestPacketSize = 4;
+  VidCfg.LPVACTLargestPacketSize = 4;
+  VidCfg.LPHorizontalFrontPorchEnable = DSI_LP_HFP_ENABLE;
+  VidCfg.LPHorizontalBackPorchEnable = DSI_LP_HBP_ENABLE;
+  VidCfg.LPVerticalActiveEnable = DSI_LP_VACT_ENABLE;
+  VidCfg.LPVerticalFrontPorchEnable = DSI_LP_VFP_ENABLE;
+  VidCfg.LPVerticalBackPorchEnable = DSI_LP_VBP_ENABLE;
+  VidCfg.LPVerticalSyncActiveEnable = DSI_LP_VSYNC_ENABLE;
+  VidCfg.FrameBTAAcknowledgeEnable = DSI_FBTAA_DISABLE;
+  if (HAL_DSI_ConfigVideoMode(&hdsi, &VidCfg) != HAL_OK)
   {
     Error_Handler();
   }
@@ -415,19 +410,7 @@ static void MX_DSIHOST_DSI_Init(void)
 	  Error_Handler();
   }
 
-  LPCmd.LPGenShortWriteNoP    = DSI_LP_GSW0P_DISABLE;
-  LPCmd.LPGenShortWriteOneP   = DSI_LP_GSW1P_DISABLE;
-  LPCmd.LPGenShortWriteTwoP   = DSI_LP_GSW2P_DISABLE;
-  LPCmd.LPGenShortReadNoP     = DSI_LP_GSR0P_DISABLE;
-  LPCmd.LPGenShortReadOneP    = DSI_LP_GSR1P_DISABLE;
-  LPCmd.LPGenShortReadTwoP    = DSI_LP_GSR2P_DISABLE;
-  LPCmd.LPGenLongWrite        = DSI_LP_GLW_DISABLE;
-  LPCmd.LPDcsShortWriteNoP    = DSI_LP_DSW0P_DISABLE;
-  LPCmd.LPDcsShortWriteOneP   = DSI_LP_DSW1P_DISABLE;
-  LPCmd.LPDcsShortReadNoP     = DSI_LP_DSR0P_DISABLE;
-  LPCmd.LPDcsLongWrite        = DSI_LP_DLW_DISABLE;
-  HAL_DSI_ConfigCommand(&hdsi, &LPCmd);
-  HAL_DSI_ForceRXLowPower(&hdsi, ENABLE);
+  HAL_LTDC_ProgramLineEvent(&hltdc, 0);
 
   /* USER CODE END DSIHOST_Init 2 */
 
@@ -460,18 +443,18 @@ static void MX_LTDC_Init(void)
 
   /* USER CODE END LTDC_Init 1 */
   hltdc.Instance = LTDC;
-  hltdc.Init.HSPolarity = LTDC_HSPOLARITY_AL;
-  hltdc.Init.VSPolarity = LTDC_VSPOLARITY_AL;
+  hltdc.Init.HSPolarity = LTDC_HSPOLARITY_AH;
+  hltdc.Init.VSPolarity = LTDC_VSPOLARITY_AH;
   hltdc.Init.DEPolarity = LTDC_DEPOLARITY_AL;
   hltdc.Init.PCPolarity = LTDC_PCPOLARITY_IPC;
   hltdc.Init.HorizontalSync = 1;
-  hltdc.Init.VerticalSync = 1;
-  hltdc.Init.AccumulatedHBP = 2;
-  hltdc.Init.AccumulatedVBP = 2;
-  hltdc.Init.AccumulatedActiveW = 802;
-  hltdc.Init.AccumulatedActiveH = 482;
-  hltdc.Init.TotalWidth = 803;
-  hltdc.Init.TotalHeigh = 483;
+  hltdc.Init.VerticalSync = 0;
+  hltdc.Init.AccumulatedHBP = 35;
+  hltdc.Init.AccumulatedVBP = 15;
+  hltdc.Init.AccumulatedActiveW = 835;
+  hltdc.Init.AccumulatedActiveH = 495;
+  hltdc.Init.TotalWidth = 869;
+  hltdc.Init.TotalHeigh = 511;
   hltdc.Init.Backcolor.Blue = 0;
   hltdc.Init.Backcolor.Green = 0;
   hltdc.Init.Backcolor.Red = 0;
