@@ -211,12 +211,21 @@ int UART_Receive(unsigned char *dest, const unsigned char *rx, UART_HandleTypeDe
 void tx_cm4_main_thread_entry(ULONG thread_input)
 {
 	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
+	volatile uint32_t *SDRAM = (uint32_t *) 0xD0400000UL;
 	/* Infinite loop */
 	for(;;)
 	{
 		ULONG ticks = tx_time_get() / TX_TIMER_TICKS_PER_SECOND;
 		printf("WS %8lu",ticks);
+		for (unsigned int i = 0; i < 16; i++)
+		{
+			printf(" %u:%lu",i,SDRAM[i]);
+		}
 		printf("\r\n");
+		for (unsigned int i = 0; i < 16; i++)
+		{
+			SDRAM[i] = ticks;
+		}
 		tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
 	}
 }
