@@ -55,9 +55,10 @@
 /* USER CODE BEGIN PV */
 
 /* Define ThreadX global data structures.  */
-TX_THREAD       cm4_main_thread;
-TX_THREAD       cm4_i2c4_thread;
-TX_THREAD       cm4_uart_thread;
+TX_THREAD            cm4_main_thread;
+TX_THREAD            cm4_i2c4_thread;
+TX_THREAD            cm4_uart_thread;
+TX_EVENT_FLAGS_GROUP cm4_event_group;
 
 /* ...  */
 volatile unsigned int u2rc;
@@ -115,6 +116,15 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 		  DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
 
   /* Check main thread creation */
+  if (ret != TX_SUCCESS)
+  {
+	  Error_Handler();
+  }
+
+  /* Create an event flags group. */
+  ret = tx_event_flags_create(&cm4_event_group, "cm4_event_group_name");
+
+  /* If status equals TX_SUCCESS, my_event_group is ready for get and set services. */
   if (ret != TX_SUCCESS)
   {
 	  Error_Handler();
@@ -211,22 +221,44 @@ int UART_Receive(unsigned char *dest, const unsigned char *rx, UART_HandleTypeDe
 void tx_cm4_main_thread_entry(ULONG thread_input)
 {
 	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
-	volatile uint32_t *SDRAM = (uint32_t *) 0xD0400000UL;
+	volatile uint32_t *SDRAM = (uint32_t *) CAMERA_FB_0_ADDRESS;
+	ULONG actual_events;
+	ULONG prev_ticks = tx_time_get();
+	UINT frame_cnt = 0;
 	/* Infinite loop */
 	for(;;)
 	{
-		ULONG ticks = tx_time_get() / TX_TIMER_TICKS_PER_SECOND;
-		printf("WS %5lu %u",ticks,hdcmi.State);
-		for (unsigned int i = 0; i < 16; i++)
+		/* Request that event flags 0 is set. If it is set it should be cleared. If the event
+		flags are not set, this service suspends for a maximum of 200 timer-ticks. */
+		UINT status = tx_event_flags_get(&cm4_event_group, 0x1, TX_AND_CLEAR, &actual_events, TX_TIMER_TICKS_PER_SECOND);
+		ULONG ticks = tx_time_get();
+
+		/* If status equals TX_SUCCESS, actual_events contains the actual events obtained. */
+		if (status == TX_SUCCESS)
 		{
-			printf(" %08lx",SDRAM[i]);
+			frame_cnt += 1;
+			if (ticks - prev_ticks >= TX_TIMER_TICKS_PER_SECOND)
+			{
+				printf("WS %5lu %u %u",ticks / TX_TIMER_TICKS_PER_SECOND,hdcmi.State,frame_cnt);
+				for (unsigned int i = 0; i < 16; i++)
+				{
+					printf(" %08lx",SDRAM[i]);
+				}
+				printf("\r\n");
+				prev_ticks = ticks;
+				frame_cnt = 0;
+			}
+			if (hdcmi.State == HAL_DCMI_STATE_SUSPENDED)
+			{
+				tx_thread_sleep(2);
+				HAL_DCMI_Resume(&hdcmi);
+			}
 		}
-		printf("\r\n");
-		if (hdcmi.State == HAL_DCMI_STATE_SUSPENDED)
+		else
 		{
-			HAL_DCMI_Resume(&hdcmi);
+			printf("WS %5lu %u",ticks / TX_TIMER_TICKS_PER_SECOND,hdcmi.State);
+			printf("\r\n");
 		}
-		tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
 	}
 }
 

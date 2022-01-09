@@ -214,6 +214,12 @@ void   MX_FMC_Init(void);
 
 #define CAMERA_OV5640_ADDRESS           0x78U
 
+#define SDRAM_BANK_0         0xD0000000UL
+#define SDRAM_BANK_1         0xD0800000UL
+#define SDRAM_BANK_2         0xD1000000UL
+#define SDRAM_BANK_3         0xD1800000UL
+#define CAMERA_FB_0_ADDRESS  SDRAM_BANK_2
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

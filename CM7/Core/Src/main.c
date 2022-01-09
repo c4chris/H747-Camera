@@ -68,7 +68,7 @@ __IO int32_t  pend_buffer   = -1;
 const uint32_t Buffers[] =
 {
 		LCD_LAYER_0_ADDRESS,
-		LCD_LAYER_0_ADDRESS + (800*480*4),
+		LCD_LAYER_1_ADDRESS,
 };
 
 /* USER CODE END PV */
@@ -796,7 +796,7 @@ void MPU_Config(void)
   */
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
   MPU_InitStruct.Number = MPU_REGION_NUMBER0;
-  MPU_InitStruct.BaseAddress = 0xd0000000;
+  MPU_InitStruct.BaseAddress = SDRAM_BANK_0;
   MPU_InitStruct.Size = MPU_REGION_SIZE_256MB;
   MPU_InitStruct.SubRegionDisable = 0x0;
   MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL0;
@@ -810,15 +810,15 @@ void MPU_Config(void)
   /** Initializes and configures the Region and the memory to be protected
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER1;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_4MB;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_16MB;
   MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   /** Initializes and configures the Region and the memory to be protected
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER2;
-  MPU_InitStruct.BaseAddress = 0xd0400000;
-  MPU_InitStruct.Size = MPU_REGION_SIZE_2MB;
+  MPU_InitStruct.BaseAddress = SDRAM_BANK_2;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_8MB;
   MPU_InitStruct.IsShareable = MPU_ACCESS_SHAREABLE;
   MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
 

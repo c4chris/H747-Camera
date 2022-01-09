@@ -39,6 +39,8 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
+extern TX_EVENT_FLAGS_GROUP cm4_event_group;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

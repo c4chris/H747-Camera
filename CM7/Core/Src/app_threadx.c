@@ -56,8 +56,8 @@
 //ALIGN_32BYTES (uint32_t media_memory[512]);
 
 /* Define ThreadX global data structures.  */
-TX_THREAD       cm7_main_thread;
-TX_THREAD       cm7_lcd_thread;
+TX_THREAD            cm7_main_thread;
+TX_THREAD            cm7_lcd_thread;
 TX_EVENT_FLAGS_GROUP cm7_event_group;
 
 /* Define the GUIX resources. */
