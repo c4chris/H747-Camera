@@ -216,15 +216,15 @@ void tx_cm4_main_thread_entry(ULONG thread_input)
 	for(;;)
 	{
 		ULONG ticks = tx_time_get() / TX_TIMER_TICKS_PER_SECOND;
-		printf("WS %8lu",ticks);
+		printf("WS %5lu %u",ticks,hdcmi.State);
 		for (unsigned int i = 0; i < 16; i++)
 		{
-			printf(" %u:%lu",i,SDRAM[i]);
+			printf(" %08lx",SDRAM[i]);
 		}
 		printf("\r\n");
-		for (unsigned int i = 0; i < 16; i++)
+		if (hdcmi.State == HAL_DCMI_STATE_SUSPENDED)
 		{
-			SDRAM[i] = ticks;
+			HAL_DCMI_Resume(&hdcmi);
 		}
 		tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
 	}

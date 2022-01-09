@@ -48,6 +48,7 @@ extern "C" {
 extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c4;
 extern UART_HandleTypeDef huart1;
+extern DCMI_HandleTypeDef hdcmi;
 
 /* USER CODE END EC */
 

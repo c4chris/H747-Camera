@@ -150,10 +150,22 @@ int main(void)
   HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_RESET);
   HAL_Delay(20);
 
-  ret = OV5640_Probe(OV5640_R800x480, OV5640_RGB565);
+  //ret = OV5640_Probe(OV5640_R800x480, OV5640_RGB565);
+  ret = OV5640_Probe(OV5640_R640x480, OV5640_RGB565);
+  //ret = OV5640_Probe(OV5640_R320x240, OV5640_RGB565);
   if (ret != OV5640_OK)
   {
-	  HAL_Delay(20);
+    Error_Handler();
+  }
+
+  /* Wait for the camera initialization after HW reset*/
+  HAL_Delay(100);
+
+  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, 0xd0400000, 192000UL) != HAL_OK)
+  if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, 0xd0400000, 153600UL) != HAL_OK)
+  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, 0xd0400000, 38400UL) != HAL_OK)
+  {
+    Error_Handler();
   }
 
   /* USER CODE END 2 */
@@ -595,6 +607,32 @@ static int32_t I2C4_ReadReg16(uint16_t DevAddr, uint16_t Reg, uint8_t *pData, ui
     }
   }
   return ret;
+}
+
+/**
+  * @brief  Frame event callback
+  * @param  hdcmi pointer to the DCMI handle
+  * @retval None
+  */
+void HAL_DCMI_FrameEventCallback(DCMI_HandleTypeDef *hdcmi)
+{
+  if (HAL_DCMI_Suspend(hdcmi) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+  HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
+#if 0
+  if(cameraState == CAMERA_STATE_CAPTURE_ONGOING)
+  {
+    cameraState = CAMERA_STATE_DISPLAY_ONGOING;  
+    /* Convert captured frame to ARGB8888 and copy it to LCD FRAME BUFFER */
+    DMA2D_ConvertFrameToARGB8888((uint32_t *)(CAMERA_FRAME_BUFFER), (uint32_t *)(LCD_FRAME_BUFFER), CameraResX[CameraResIndex], CameraResY[CameraResIndex]);
+  }
+  if (HAL_DCMI_Resume(hdcmi) != HAL_OK)
+  {
+    Error_Handler( );
+  }
+#endif
 }
 
 /* USER CODE END 4 */
