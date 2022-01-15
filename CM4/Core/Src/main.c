@@ -66,6 +66,7 @@ SDRAM_HandleTypeDef hsdram1;
 volatile uint32_t Notified = 0;
 static OV5640_Capabilities_t Camera_Cap;
 static uint32_t CameraId;
+__attribute__((section(".sram2.camera"))) volatile uint16_t cameraBuffer[(800 * 96)];
 
 /* USER CODE END PV */
 
@@ -150,8 +151,8 @@ int main(void)
   HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_RESET);
   HAL_Delay(20);
 
-  //ret = OV5640_Probe(OV5640_R800x480, OV5640_RGB565);
-  ret = OV5640_Probe(OV5640_R640x480, OV5640_RGB565);
+  ret = OV5640_Probe(OV5640_R800x480, OV5640_RGB565);
+  //ret = OV5640_Probe(OV5640_R640x480, OV5640_RGB565);
   //ret = OV5640_Probe(OV5640_R320x240, OV5640_RGB565);
   if (ret != OV5640_OK)
   {
@@ -161,9 +162,20 @@ int main(void)
   /* Wait for the camera initialization after HW reset*/
   HAL_Delay(100);
 
-  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, CAMERA_FB_0_ADDRESS, 192000UL) != HAL_OK)
-  if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, CAMERA_FB_0_ADDRESS, 153600UL) != HAL_OK)
-  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, CAMERA_FB_0_ADDRESS, 38400UL) != HAL_OK)
+  /* Crop a part of the image to reduce data transfer */
+  if (HAL_DCMI_ConfigCrop(&hdcmi, 0, 0, 800, 96) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_DCMI_EnableCrop(&hdcmi) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 800 * 96 * 2) != HAL_OK)
+  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, cameraBuffer, 192000UL) != HAL_OK)
+  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, cameraBuffer, 153600UL) != HAL_OK)
+  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, cameraBuffer, 38400UL) != HAL_OK)
   {
     Error_Handler();
   }
@@ -681,6 +693,20 @@ void MPU_Config(void)
   MPU_InitStruct.BaseAddress = 0x10040000;
   MPU_InitStruct.Size = MPU_REGION_SIZE_32KB;
   MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_ENABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+  /** Initializes and configures the Region and the memory to be protected
+  */
+  MPU_InitStruct.Number = MPU_REGION_NUMBER3;
+  MPU_InitStruct.BaseAddress = 0x10018000;
+  MPU_InitStruct.DisableExec = MPU_INSTRUCTION_ACCESS_DISABLE;
+
+  HAL_MPU_ConfigRegion(&MPU_InitStruct);
+  /** Initializes and configures the Region and the memory to be protected
+  */
+  MPU_InitStruct.Number = MPU_REGION_NUMBER4;
+  MPU_InitStruct.BaseAddress = 0x10020000;
+  MPU_InitStruct.Size = MPU_REGION_SIZE_128KB;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
   /* Enables the MPU */

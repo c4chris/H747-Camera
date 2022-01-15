@@ -221,7 +221,6 @@ int UART_Receive(unsigned char *dest, const unsigned char *rx, UART_HandleTypeDe
 void tx_cm4_main_thread_entry(ULONG thread_input)
 {
 	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
-	volatile uint32_t *SDRAM = (uint32_t *) CAMERA_FB_0_ADDRESS;
 	ULONG actual_events;
 	ULONG prev_ticks = tx_time_get();
 	UINT frame_cnt = 0;
@@ -240,9 +239,9 @@ void tx_cm4_main_thread_entry(ULONG thread_input)
 			if (ticks - prev_ticks >= TX_TIMER_TICKS_PER_SECOND)
 			{
 				printf("WS %5lu %u %u",ticks / TX_TIMER_TICKS_PER_SECOND,hdcmi.State,frame_cnt);
-				for (unsigned int i = 0; i < 16; i++)
+				for (unsigned int i = 0; i < 24; i++)
 				{
-					printf(" %08lx",SDRAM[i]);
+					printf(" %04x",cameraBuffer[i]);
 				}
 				printf("\r\n");
 				prev_ticks = ticks;

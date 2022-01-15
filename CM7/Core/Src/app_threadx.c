@@ -321,6 +321,7 @@ void tx_cm7_lcd_thread_entry(ULONG thread_input)
   gx_system_start();
 }
 
+#if 0
 /*************************************************************************************/
 VOID weight_update()
 {
@@ -341,6 +342,7 @@ VOID weight_update()
 	total /= 10;
   gx_numeric_pixelmap_prompt_value_set(&main_window.main_window_weight_prompt, total);
 }
+#endif
 
 /*************************************************************************************/
 UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
@@ -349,16 +351,16 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 	{
 		case GX_EVENT_SHOW:
 			/* Set current weight. */
-			weight_update();
+			//weight_update();
 
 			/* Start a timer to update weight. */
-			gx_system_timer_start(&main_window, CLOCK_TIMER, GX_TICKS_SECOND / 2, GX_TICKS_SECOND / 2);
+			//gx_system_timer_start(&main_window, CLOCK_TIMER, GX_TICKS_SECOND / 2, GX_TICKS_SECOND / 2);
 			break;
 
 		case GX_EVENT_TIMER:
 			if (event_ptr->gx_event_payload.gx_event_timer_id == CLOCK_TIMER)
 			{
-				weight_update();
+				//weight_update();
 			}
 			break;
 
@@ -369,6 +371,7 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 	return gx_window_event_process(window, event_ptr);
 }
 
+#if 0
 /* Define my numeric format function. */
 VOID weight_format_func(GX_NUMERIC_PIXELMAP_PROMPT *prompt, INT value)
 {
@@ -402,6 +405,7 @@ UINT weight_prompt_event(GX_NUMERIC_PIXELMAP_PROMPT *widget, GX_EVENT *event_ptr
 	}
 	return status;
 }
+#endif
 
 /*
  * VOID (*gx_display_driver_buffer_toggle)(struct GX_CANVAS_STRUCT *canvas, GX_RECTANGLE *dirty_area)

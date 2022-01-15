@@ -5,13 +5,13 @@
 /*  resource file(s). For more information please refer to the Azure RTOS GUIX */
 /*  Studio User Guide, or visit our web site at azure.com/rtos                 */
 /*                                                                             */
-/*  GUIX Studio Revision 6.1.7.0                                               */
-/*  Date (dd.mm.yyyy):  3. 7.2021   Time (hh:mm): 09:54                        */
+/*  GUIX Studio Revision 6.1.9.2                                               */
+/*  Date (dd.mm.yyyy): 15. 1.2022   Time (hh:mm): 00:09                        */
 /*******************************************************************************/
 
 
-#ifndef _H747_WEIGHINGSTATION_MAIN_DISPLAY_RESOURCES_H_
-#define _H747_WEIGHINGSTATION_MAIN_DISPLAY_RESOURCES_H_
+#ifndef _H747_CAMERA_MAIN_DISPLAY_RESOURCES_H_
+#define _H747_CAMERA_MAIN_DISPLAY_RESOURCES_H_
 
 #include "gx_api.h"
 
@@ -19,8 +19,8 @@
 
 #define MAIN_DISPLAY 0
 #define MAIN_DISPLAY_COLOR_FORMAT GX_COLOR_FORMAT_32ARGB
-#define MAIN_DISPLAY_X_RESOLUTION 720
-#define MAIN_DISPLAY_Y_RESOLUTION 576
+#define MAIN_DISPLAY_X_RESOLUTION 800
+#define MAIN_DISPLAY_Y_RESOLUTION 480
 #define MAIN_DISPLAY_DEFAULT_THEME 0
 #define MAIN_DISPLAY_THEME_TABLE_SIZE 1
 
@@ -35,8 +35,7 @@
 
 /* Font ID definitions                                                         */
 
-#define GX_FONT_ID_CASCADIACODE 4
-#define MAIN_DISPLAY_FONT_TABLE_SIZE 5
+#define MAIN_DISPLAY_FONT_TABLE_SIZE 4
 
 /* Pixelmap ID definitions                                                     */
 

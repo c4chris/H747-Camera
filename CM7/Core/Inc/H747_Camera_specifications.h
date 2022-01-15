@@ -5,13 +5,13 @@
 /*  specification file(s). For more information please refer to the Azure RTOS */
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
-/*  GUIX Studio Revision 6.1.7.0                                               */
-/*  Date (dd.mm.yyyy):  3. 7.2021   Time (hh:mm): 09:54                        */
+/*  GUIX Studio Revision 6.1.9.2                                               */
+/*  Date (dd.mm.yyyy): 15. 1.2022   Time (hh:mm): 00:09                        */
 /*******************************************************************************/
 
 
-#ifndef _H747_WEIGHINGSTATION_SPECIFICATIONS_H_
-#define _H747_WEIGHINGSTATION_SPECIFICATIONS_H_
+#ifndef _H747_CAMERA_SPECIFICATIONS_H_
+#define _H747_CAMERA_SPECIFICATIONS_H_
 
 #include "gx_api.h"
 
@@ -68,23 +68,6 @@ typedef struct
 
 typedef struct
 {
-    GX_RESOURCE_ID string_id;
-    GX_RESOURCE_ID font_id;
-    GX_RESOURCE_ID normal_text_color_id;
-    GX_RESOURCE_ID selected_text_color_id;
-    GX_RESOURCE_ID disabled_text_color_id;
-    GX_RESOURCE_ID left_map_id;
-    GX_RESOURCE_ID fill_map_id;
-    GX_RESOURCE_ID right_map_id;
-    GX_RESOURCE_ID selected_left_map_id;
-    GX_RESOURCE_ID selected_fill_map_id;
-    GX_RESOURCE_ID selected_right_map_id;
-    VOID (*format_func)(GX_NUMERIC_PIXELMAP_PROMPT *, INT);
-    INT            numeric_prompt_value;
-} GX_NUMERIC_PIXELMAP_PROMPT_PROPERTIES;
-
-typedef struct
-{
     GX_RESOURCE_ID wallpaper_id;
 } GX_WINDOW_PROPERTIES;
 
@@ -124,7 +107,6 @@ typedef struct
 typedef struct MAIN_WINDOW_CONTROL_BLOCK_STRUCT
 {
     GX_WINDOW_MEMBERS_DECLARE
-    GX_NUMERIC_PIXELMAP_PROMPT main_window_weight_prompt;
     GX_BUTTON main_window_button;
     GX_NUMERIC_SCROLL_WHEEL main_window_numeric_scroll_wheel;
     GX_MULTI_LINE_TEXT_VIEW main_window_text_view;
@@ -140,8 +122,6 @@ extern MAIN_WINDOW_CONTROL_BLOCK main_window;
 /* Declare event process functions, draw functions, and callback functions     */
 
 UINT main_screen_event_handler(GX_WINDOW *widget, GX_EVENT *event_ptr);
-VOID weight_format_func(GX_NUMERIC_PIXELMAP_PROMPT *, INT);
-UINT weight_prompt_event(GX_NUMERIC_PIXELMAP_PROMPT *widget, GX_EVENT *event_ptr);
 
 /* Declare the GX_STUDIO_DISPLAY_INFO structure                                */
 
@@ -169,7 +149,6 @@ typedef struct GX_STUDIO_DISPLAY_INFO_STRUCT
 /* Declare Studio-generated functions for creating top-level widgets           */
 
 UINT gx_studio_button_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);
-UINT gx_studio_numeric_pixelmap_prompt_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);
 UINT gx_studio_window_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);
 UINT gx_studio_numeric_scroll_wheel_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);
 UINT gx_studio_multi_line_text_view_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);

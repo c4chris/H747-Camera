@@ -45,7 +45,8 @@ _Min_Stack_Size = 0x400 ; /* required amount of stack */
 MEMORY
 {
   FLASH (rx)      : ORIGIN = 0x08100000, LENGTH = 1024K
-  RAM   (xrw)     : ORIGIN = 0x10000000, LENGTH =  256K    /* SRAM1 + SRAM2 */
+  RAM   (xrw)     : ORIGIN = 0x10000000, LENGTH =   96K    /* SRAM1 (first 96K of 128K) */
+  SRAM2 (xrw)     : ORIGIN = 0x10018000, LENGTH =  160K    /* SRAM1 (last 32K of 128K) + SRAM2 (whole 128K) */
   SRAM3 (xrw)     : ORIGIN = 0x10040000, LENGTH =   32K    /* we want to use this as shared memory between the 2 cores */
 }
 
@@ -62,6 +63,12 @@ SECTIONS
     *(.sram3.bridgeBadstatus*);
     *(.sram3*);
   } > SRAM3
+
+  /* We want some memory for the data retrieved from the camera */
+  .sram2 :
+  {
+    *(.sram2*);
+  } > SRAM2
 
   /* The startup code goes first into FLASH */
   .isr_vector :

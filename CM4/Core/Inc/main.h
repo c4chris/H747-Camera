@@ -49,6 +49,7 @@ extern I2C_HandleTypeDef hi2c1;
 extern I2C_HandleTypeDef hi2c4;
 extern UART_HandleTypeDef huart1;
 extern DCMI_HandleTypeDef hdcmi;
+extern volatile uint16_t cameraBuffer[(800 * 96)];
 
 /* USER CODE END EC */
 
@@ -218,7 +219,6 @@ void   MX_FMC_Init(void);
 #define SDRAM_BANK_1         0xD0800000UL
 #define SDRAM_BANK_2         0xD1000000UL
 #define SDRAM_BANK_3         0xD1800000UL
-#define CAMERA_FB_0_ADDRESS  SDRAM_BANK_2
 
 /* USER CODE END Private defines */
 

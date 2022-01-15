@@ -5,8 +5,8 @@
 /*  specification file(s). For more information please refer to the Azure RTOS */
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
-/*  GUIX Studio Revision 6.1.7.0                                               */
-/*  Date (dd.mm.yyyy):  3. 7.2021   Time (hh:mm): 09:54                        */
+/*  GUIX Studio Revision 6.1.9.2                                               */
+/*  Date (dd.mm.yyyy): 15. 1.2022   Time (hh:mm): 00:09                        */
 /*******************************************************************************/
 
 
@@ -50,44 +50,6 @@ UINT gx_studio_button_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control
     UINT status;
     GX_BUTTON *button = (GX_BUTTON *) control_block;
     status = gx_button_create(button, info->widget_name, parent, info->style, info->widget_id, &info->size);
-    return status;
-}
-
-UINT gx_studio_numeric_pixelmap_prompt_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent)
-{
-    UINT status;
-    GX_NUMERIC_PIXELMAP_PROMPT *pix_prompt = (GX_NUMERIC_PIXELMAP_PROMPT *) control_block;
-    GX_PROMPT *prompt = (GX_PROMPT *) pix_prompt;
-    GX_NUMERIC_PIXELMAP_PROMPT_PROPERTIES *props = (GX_NUMERIC_PIXELMAP_PROMPT_PROPERTIES *) info->properties;
-    status = gx_numeric_pixelmap_prompt_create(pix_prompt, info->widget_name, parent,
-               props->string_id,
-               props->fill_map_id,
-               info->style, info->widget_id, &info->size);
-
-    if (status == GX_SUCCESS)
-    {
-        if(!props->string_id)
-        {
-            gx_numeric_pixelmap_prompt_value_set(pix_prompt, props->numeric_prompt_value);
-        }
-        if(props->format_func)
-        {
-            gx_numeric_pixelmap_prompt_format_function_set(pix_prompt, props->format_func);
-        }
-        gx_pixelmap_prompt_pixelmap_set((GX_PIXELMAP_PROMPT *)pix_prompt,
-                                        props->left_map_id,
-                                        props->fill_map_id,
-                                        props->right_map_id,
-                                        props->selected_left_map_id,
-                                        props->selected_fill_map_id,
-                                        props->selected_right_map_id);
-        gx_prompt_font_set(prompt, props->font_id);
-#if defined(GUIX_5_4_0_COMPATIBILITY)
-        gx_prompt_text_color_set(prompt, props->normal_text_color_id, props->selected_text_color_id);
-#else
-        gx_prompt_text_color_set(prompt, props->normal_text_color_id, props->selected_text_color_id, props->disabled_text_color_id);
-#endif
-    }
     return status;
 }
 
@@ -170,22 +132,6 @@ GX_WINDOW_PROPERTIES main_window_properties =
 {
     0                                        /* wallpaper pixelmap id          */
 };
-GX_NUMERIC_PIXELMAP_PROMPT_PROPERTIES main_window_weight_prompt_properties =
-{
-    0,                                       /* string id                      */
-    GX_FONT_ID_CASCADIACODE,                 /* font id                        */
-    GX_COLOR_ID_TEXT,                        /* normal text color              */
-    GX_COLOR_ID_SELECTED_TEXT,               /* selected text color            */
-    GX_COLOR_ID_DISABLED_TEXT,               /* disabled text color            */
-    0,                                       /* left pixelmap id               */
-    0,                                       /* fill pixelmap id               */
-    0,                                       /* right pixelmap id              */
-    0,                                       /* selected left pixelmap id      */
-    0,                                       /* selected fill pixelmap id      */
-    0,                                       /* selected right pixelmap id     */
-    weight_format_func,                      /* format function                */
-    1234                                     /* numeric prompt value           */
-};
 GX_NUMERIC_SCROLL_WHEEL_PROPERTIES main_window_numeric_scroll_wheel_properties =
 {
     0,                                       /* total rows                     */
@@ -232,7 +178,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_text_view_define =
     gx_studio_multi_line_text_view_create,     /* create function              */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {0, 76, 639, 475},                      /* widget size                    */
+    {-1, 96, 718, 479},                      /* widget size                    */
     GX_NULL,                                 /* no next widget                 */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_text_view), /* control block */
@@ -256,7 +202,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_numeric_scroll_wheel_define =
     gx_studio_numeric_scroll_wheel_create,     /* create function              */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {657, 136, 697, 375},                    /* widget size                    */
+    {740, 213, 780, 452},                    /* widget size                    */
     &main_window_text_view_define,           /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_numeric_scroll_wheel), /* control block */
@@ -280,35 +226,11 @@ GX_CONST GX_STUDIO_WIDGET main_window_button_define =
     gx_studio_button_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {649, 35, 702, 83},                      /* widget size                    */
+    {731, 116, 784, 164},                    /* widget size                    */
     &main_window_numeric_scroll_wheel_define, /* next widget definition        */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_button), /* control block  */
     (void *) GX_NULL                         /* no extended properties         */
-};
-
-GX_CONST GX_STUDIO_WIDGET main_window_weight_prompt_define =
-{
-    "weight_prompt",
-    GX_TYPE_NUMERIC_PIXELMAP_PROMPT,         /* widget type                    */
-    GX_ID_NONE,                              /* widget id                      */
-    #if defined(GX_WIDGET_USER_DATA)
-    0,                                       /* user data                      */
-    #endif
-    GX_STYLE_BORDER_NONE|GX_STYLE_ENABLED|GX_STYLE_TEXT_RIGHT,   /* style flags */
-    0,                                       /* status flags                   */
-    sizeof(GX_NUMERIC_PIXELMAP_PROMPT),      /* control block size             */
-    GX_COLOR_ID_WIDGET_FILL,                 /* normal color id                */
-    GX_COLOR_ID_SELECTED_FILL,               /* selected color id              */
-    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
-    gx_studio_numeric_pixelmap_prompt_create,     /* create function           */
-    GX_NULL,                                 /* drawing function override      */
-    (UINT (*)(GX_WIDGET *, GX_EVENT *)) weight_prompt_event, /* event function override */
-    {0, 0, 639, 175},                        /* widget size                    */
-    &main_window_button_define,              /* next widget definition         */
-    GX_NULL,                                 /* no child widgets               */ 
-    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_weight_prompt), /* control block */
-    (void *) &main_window_weight_prompt_properties /* extended properties      */
 };
 
 GX_CONST GX_STUDIO_WIDGET main_window_define =
@@ -328,9 +250,9 @@ GX_CONST GX_STUDIO_WIDGET main_window_define =
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) main_screen_event_handler, /* event function override */
-    {0, 0, 799, 479},                        /* widget size                    */
+    {-1, 0, 798, 479},                       /* widget size                    */
     GX_NULL,                                 /* next widget                    */
-    &main_window_weight_prompt_define,       /* child widget                   */
+    &main_window_button_define,              /* child widget                   */
     0,                                       /* control block                  */
     (void *) &main_window_properties         /* extended properties            */
 };
@@ -500,9 +422,15 @@ UINT gx_studio_display_configure(USHORT display, UINT (*driver)(GX_DISPLAY *),
             gx_display_pixelmap_table_set(display_info->display, theme_ptr->theme_pixelmap_table, theme_ptr->theme_pixelmap_table_size);
             gx_system_scroll_appearance_set(theme_ptr->theme_vertical_scroll_style, (GX_SCROLLBAR_APPEARANCE *) &theme_ptr->theme_vertical_scrollbar_appearance);
             gx_system_scroll_appearance_set(theme_ptr->theme_horizontal_scroll_style, (GX_SCROLLBAR_APPEARANCE *) &theme_ptr->theme_horizontal_scrollbar_appearance);
-            gx_display_language_table_set_ext(display_info->display, display_info->language_table, (GX_UBYTE) display_info->language_table_size, display_info->string_table_size);
-            gx_display_active_language_set(display_info->display, language);
         }
+    }
+
+/* Install the language table.                                                 */
+
+    if(display_info->language_table)
+    {
+        gx_display_language_table_set_ext(display_info->display, display_info->language_table, (GX_UBYTE) display_info->language_table_size, display_info->string_table_size);
+        gx_display_active_language_set(display_info->display, language);
     }
 
 /* Set screen rotation angle.                                                  */
