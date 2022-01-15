@@ -151,9 +151,9 @@ int main(void)
   HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_RESET);
   HAL_Delay(20);
 
-  ret = OV5640_Probe(OV5640_R800x480, OV5640_RGB565);
+  //ret = OV5640_Probe(OV5640_R800x480, OV5640_RGB565);
   //ret = OV5640_Probe(OV5640_R640x480, OV5640_RGB565);
-  //ret = OV5640_Probe(OV5640_R320x240, OV5640_RGB565);
+  ret = OV5640_Probe(OV5640_R320x240, OV5640_RGB565);
   if (ret != OV5640_OK)
   {
     Error_Handler();
@@ -161,7 +161,7 @@ int main(void)
 
   /* Wait for the camera initialization after HW reset*/
   HAL_Delay(100);
-
+#if 0
   /* Crop a part of the image to reduce data transfer */
   if (HAL_DCMI_ConfigCrop(&hdcmi, 0, 0, 800, 96) != HAL_OK)
   {
@@ -171,11 +171,11 @@ int main(void)
   {
     Error_Handler();
   }
-
-  if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 800 * 96 * 2) != HAL_OK)
-  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, cameraBuffer, 192000UL) != HAL_OK)
-  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, cameraBuffer, 153600UL) != HAL_OK)
-  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, cameraBuffer, 38400UL) != HAL_OK)
+#endif
+  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, (800 * 96 * 2 / 4)) != HAL_OK)
+  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 192000UL) != HAL_OK)
+  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 153600UL) != HAL_OK)
+  if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 38400UL) != HAL_OK)
   {
     Error_Handler();
   }
