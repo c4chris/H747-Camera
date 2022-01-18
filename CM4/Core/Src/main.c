@@ -64,6 +64,7 @@ SDRAM_HandleTypeDef hsdram1;
 /* USER CODE BEGIN PV */
 
 volatile uint32_t Notified = 0;
+static OV5640_Object_t OV5640Obj;
 static OV5640_Capabilities_t Camera_Cap;
 static uint32_t CameraId;
 __attribute__((section(".sram2.camera"))) volatile uint16_t cameraBuffer[(800 * 96)];
@@ -159,9 +160,6 @@ int main(void)
     Error_Handler();
   }
 
-  /* Wait for the camera initialization after HW reset*/
-  HAL_Delay(100);
-#if 0
   /* Crop a part of the image to reduce data transfer */
   if (HAL_DCMI_ConfigCrop(&hdcmi, 0, 0, 800, 96) != HAL_OK)
   {
@@ -171,11 +169,21 @@ int main(void)
   {
     Error_Handler();
   }
-#endif
-  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, (800 * 96 * 2 / 4)) != HAL_OK)
+
+  /* Re-do a power down cycle (?) */
+  /* Assert the camera POWER_DOWN pin (active high) */
+  HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_SET);
+  HAL_Delay(100);     /* POWER_DOWN de-asserted during 100 ms */
+  /* De-assert the camera POWER_DOWN pin (active high) */
+  HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_RESET);
+  HAL_Delay(20);
+
+  //OV5640_SetPCLK(&OV5640Obj, OV5640_PCLK_24M);
+
+  if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, (800 * 96 * 2 / 4)) != HAL_OK)
   //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 192000UL) != HAL_OK)
   //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 153600UL) != HAL_OK)
-  if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 38400UL) != HAL_OK)
+  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 38400UL) != HAL_OK)
   {
     Error_Handler();
   }
@@ -513,7 +521,6 @@ static int32_t OV5640_Probe(uint32_t Resolution, uint32_t PixelFormat)
 {
    int32_t ret;
   OV5640_IO_t              IOCtx;
-  static OV5640_Object_t   OV5640Obj;
 
   /* Configure the audio driver */
   IOCtx.Address     = CAMERA_OV5640_ADDRESS;
