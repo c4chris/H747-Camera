@@ -24,6 +24,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include <stdio.h>
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -40,6 +42,9 @@
 
 /* fx_sd_thread preemption priority */
 #define DEFAULT_PREEMPTION_THRESHOLD      DEFAULT_THREAD_PRIO
+
+#define COLUMNS                              88
+#define LINES                                20
 
 /* USER CODE END PD */
 
@@ -68,6 +73,11 @@ GX_WINDOW_ROOT *root_window;
 
 /* data comning from CM4 core */
 __attribute__((section(".sram3.touchData"))) volatile uint16_t touchData[4], touchData2[4];
+__attribute__((section(".sram2.camera"))) volatile uint16_t cameraBuffer[(800 * 96)];
+
+char textBuffer[LINES*COLUMNS];
+UINT lineEnd[LINES];
+UINT curLine;
 
 /* USER CODE END PV */
 
@@ -248,6 +258,8 @@ void tx_cm7_main_thread_entry(ULONG thread_input)
 	uint16_t prevTouch[4] = {0};
 	ULONG toggleTicks = tx_time_get();
 
+	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
+	printf("Starting CM7 Run on %s\n", _tx_version_id);
   /* Infinite Loop */
   for( ;; )
   {
@@ -321,28 +333,66 @@ void tx_cm7_lcd_thread_entry(ULONG thread_input)
   gx_system_start();
 }
 
-#if 0
 /*************************************************************************************/
-VOID weight_update()
+VOID status_update()
 {
-	uint32_t low[4] = { 950, 950, 950, 950 };
-	uint32_t total = 0;
-  /* Set a value to "my_numeric_pix_prompt". */
-	for (unsigned int i = 0; i < 4; i++)
+	ULONG ticks = tx_time_get();
+	printf("WS %5lu",ticks / TX_TIMER_TICKS_PER_SECOND);
+	for (unsigned int i = 0; i < 15; i++)
 	{
-		uint32_t weight = 0;
-		if (weight < low[i])
-			weight = 0;
-		else
-			weight -= low[i];
-		weight *= 5000;
-		weight /= 14000;
-		total += weight;
+		printf(" %04x",cameraBuffer[i]);
 	}
-	total /= 10;
-  gx_numeric_pixelmap_prompt_value_set(&main_window.main_window_weight_prompt, total);
+	printf("\n");
 }
-#endif
+
+/*************************************************************************************/
+static void shiftLines(void)
+{
+	/* we need to remove the first line by shifting everything up */
+	if (curLine < 1)
+		return;
+	curLine -= 1;
+	UINT shift = lineEnd[0];
+	memmove(textBuffer, textBuffer + shift, lineEnd[curLine] - shift);
+	for (unsigned int i = 0; i < curLine; i++)
+		lineEnd[i] = lineEnd[i + 1] - shift;
+}
+
+int _write(int file, char *ptr, int len)
+{
+	if (len <= 0)
+		return len;
+	int cur = 0;
+	while (cur < len)
+	{
+		UINT pos = lineEnd[curLine];
+		UINT ll = pos;
+		if (curLine > 0)
+			ll -= lineEnd[curLine - 1];
+		if (ll + 1 == COLUMNS || ptr[cur] == '\n')
+		{
+			/* we have or need a new line */
+			textBuffer[pos] = '\n';
+			if (ptr[cur] == '\n')
+				cur += 1;
+			lineEnd[curLine] += 1;
+			curLine += 1;
+			if (curLine > (LINES - 1))
+				shiftLines();
+			lineEnd[curLine] = lineEnd[curLine - 1];
+		}
+		else
+		{
+			textBuffer[pos] = ptr[cur];
+			cur += 1;
+			lineEnd[curLine] += 1;
+		}
+	}
+	/* add terminating 0 to the string; we should have room */
+	textBuffer[lineEnd[curLine]] = 0;
+	gx_multi_line_text_view_text_set(&main_window.main_window_text_view, textBuffer);
+	return len;
+}
 
 /*************************************************************************************/
 UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
@@ -351,16 +401,16 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 	{
 		case GX_EVENT_SHOW:
 			/* Set current weight. */
-			//weight_update();
+			status_update();
 
 			/* Start a timer to update weight. */
-			//gx_system_timer_start(&main_window, CLOCK_TIMER, GX_TICKS_SECOND / 2, GX_TICKS_SECOND / 2);
+			gx_system_timer_start(&main_window, CLOCK_TIMER, GX_TICKS_SECOND, GX_TICKS_SECOND);
 			break;
 
 		case GX_EVENT_TIMER:
 			if (event_ptr->gx_event_payload.gx_event_timer_id == CLOCK_TIMER)
 			{
-				//weight_update();
+				status_update();
 			}
 			break;
 
@@ -370,42 +420,6 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 	}
 	return gx_window_event_process(window, event_ptr);
 }
-
-#if 0
-/* Define my numeric format function. */
-VOID weight_format_func(GX_NUMERIC_PIXELMAP_PROMPT *prompt, INT value)
-{
-	/* If the value is "1234", the new format will be "123.4". */
-
-	INT length;
-	gx_utility_ltoa(value / 10,
-									prompt->gx_numeric_pixelmap_prompt_buffer,
-									GX_NUMERIC_PROMPT_BUFFER_SIZE);
-	length = GX_STRLEN(prompt->gx_numeric_pixelmap_prompt_buffer);
-	prompt->gx_numeric_pixelmap_prompt_buffer[length++] = '.';
-	gx_utility_ltoa(value % 10,
-									prompt->gx_numeric_pixelmap_prompt_buffer + length,
-									GX_NUMERIC_PROMPT_BUFFER_SIZE - length);
-}
-
-UINT weight_prompt_event(GX_NUMERIC_PIXELMAP_PROMPT *widget, GX_EVENT *event_ptr)
-{
-	UINT status = GX_SUCCESS;
-
-	switch(event_ptr->gx_event_type)
-	{
-		//case xyz:
-			/* Insert custom event handling here */
-			//break;
-
-		default:
-			/* Pass all other events to the default tree view event processing */
-			status = gx_prompt_event_process((GX_PROMPT *) widget, event_ptr);
-			break;
-	}
-	return status;
-}
-#endif
 
 /*
  * VOID (*gx_display_driver_buffer_toggle)(struct GX_CANVAS_STRUCT *canvas, GX_RECTANGLE *dirty_area)
@@ -430,7 +444,18 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 	{
 		/* Switch to other buffer */
 		pend_buffer = 1 - front_buffer;
-
+#if 0
+		DMA2D->CR = 0x00010000UL; // | DMA2D_CR_TCIE;
+		DMA2D->FGMAR = (uint32_t) cameraBuffer;
+		DMA2D->OMAR = Buffers[front_buffer];
+		DMA2D->FGOR = 0;
+		DMA2D->OOR = 0;
+		DMA2D->FGPFCCR = 0x00010000UL | LTDC_PIXEL_FORMAT_RGB565;
+		DMA2D->OPFCCR = LTDC_PIXEL_FORMAT_ARGB8888;
+		DMA2D->NLR = (uint32_t) (800 << 16) | (uint16_t) 96;
+		DMA2D->CR |= DMA2D_CR_START;
+		while (DMA2D->CR & DMA2D_CR_START) {}
+#endif
 		/* Refresh the display */
 		HAL_DSI_Refresh(&hdsi);
 	}

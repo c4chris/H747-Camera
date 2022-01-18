@@ -48,7 +48,8 @@ MEMORY
   RAM     (xrw)  : ORIGIN = 0x24000000, LENGTH =  256K    /* Memory is divided. Actual start is 0x24000000 and actual length is 512K */
   FLASH   (rx)   : ORIGIN = 0x08000000, LENGTH = 1024K    /* Memory is divided. Actual start is 0x08000000 and actual length is 2048K */
   DTCMRAM (xrw)  : ORIGIN = 0x20000000, LENGTH =  128K
-  RAM_D2  (xrw)  : ORIGIN = 0x30000000, LENGTH =  256K    /* SRAM1 + SRAM2 */
+  RAM_D2  (xrw)  : ORIGIN = 0x30000000, LENGTH =   96K    /* SRAM1 (first 96K of 128K) */
+  SRAM2   (xrw)  : ORIGIN = 0x30018000, LENGTH =  160K    /* SRAM1 (last 32K of 128K) + SRAM2 (whole 128K) */
   SRAM3   (xrw)  : ORIGIN = 0x30040000, LENGTH =   32K    /* we want to use this as shared memory between the 2 cores */
   RAM_D3  (xrw)  : ORIGIN = 0x38000000, LENGTH =   64K
   ITCMRAM (xrw)  : ORIGIN = 0x00000000, LENGTH =   64K
@@ -67,6 +68,12 @@ SECTIONS
     *(.sram3.bridgeBadstatus*);
     *(.sram3*);
   } > SRAM3
+
+  /* We want some memory for the data retrieved from the camera */
+  .sram2 :
+  {
+    *(.sram2*);
+  } > SRAM2
 
   /* The startup code into "FLASH" Rom type memory */
   .isr_vector :
