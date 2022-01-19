@@ -78,6 +78,7 @@ __attribute__((section(".sram2.camera"))) volatile uint16_t cameraBuffer[(800 * 
 char textBuffer[LINES*COLUMNS];
 UINT lineEnd[LINES];
 UINT curLine;
+volatile UINT txCnt;
 
 /* USER CODE END PV */
 
@@ -258,7 +259,7 @@ void tx_cm7_main_thread_entry(ULONG thread_input)
 	uint16_t prevTouch[4] = {0};
 	ULONG toggleTicks = tx_time_get();
 
-	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
+	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND/5);
 	printf("Starting CM7 Run on %s\n", _tx_version_id);
   /* Infinite Loop */
   for( ;; )
@@ -337,8 +338,8 @@ void tx_cm7_lcd_thread_entry(ULONG thread_input)
 VOID status_update()
 {
 	ULONG ticks = tx_time_get();
-	printf("WS %5lu",ticks / TX_TIMER_TICKS_PER_SECOND);
-	for (unsigned int i = 0; i < 15; i++)
+	printf("WS %5lu %5u",ticks / TX_TIMER_TICKS_PER_SECOND,txCnt);
+	for (unsigned int i = 0; i < 12; i++)
 	{
 		printf(" %04x",cameraBuffer[i]);
 	}
@@ -444,20 +445,47 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 	{
 		/* Switch to other buffer */
 		pend_buffer = 1 - front_buffer;
-#if 0
-		DMA2D->CR = 0x00010000UL; // | DMA2D_CR_TCIE;
-		DMA2D->FGMAR = (uint32_t) cameraBuffer;
-		DMA2D->OMAR = Buffers[front_buffer];
-		DMA2D->FGOR = 0;
-		DMA2D->OOR = 0;
-		DMA2D->FGPFCCR = 0x00010000UL | LTDC_PIXEL_FORMAT_RGB565;
-		DMA2D->OPFCCR = LTDC_PIXEL_FORMAT_ARGB8888;
-		DMA2D->NLR = (uint32_t) (800 << 16) | (uint16_t) 96;
-		DMA2D->CR |= DMA2D_CR_START;
-		while (DMA2D->CR & DMA2D_CR_START) {}
-#endif
+
+		/* Configure the DMA2D Mode, Color Mode and output offset */
+		hdma2d.Init.Mode          = DMA2D_M2M_PFC;
+		hdma2d.Init.ColorMode     = DMA2D_OUTPUT_ARGB8888; /* Output color out of PFC */
+		hdma2d.Init.AlphaInverted = DMA2D_REGULAR_ALPHA;  /* No Output Alpha Inversion*/
+		hdma2d.Init.RedBlueSwap   = DMA2D_RB_REGULAR;     /* No Output Red & Blue swap */
+
+		/* Output offset in pixels == nb of pixels to be added at end of line to come to the  */
+		/* first pixel of the next line : on the output side of the DMA2D computation         */
+		hdma2d.Init.OutputOffset = 480;
+
+		/* Foreground Configuration */
+		hdma2d.LayerCfg[1].AlphaMode      = DMA2D_NO_MODIF_ALPHA;
+		hdma2d.LayerCfg[1].InputAlpha     = 0xFF; /* fully opaque */
+		hdma2d.LayerCfg[1].InputColorMode = DMA2D_INPUT_RGB565;
+		hdma2d.LayerCfg[1].InputOffset    = 0;
+		hdma2d.LayerCfg[1].RedBlueSwap    = DMA2D_RB_REGULAR; /* No ForeGround Red/Blue swap */
+		hdma2d.LayerCfg[1].AlphaInverted  = DMA2D_REGULAR_ALPHA; /* No ForeGround Alpha inversion */
+
+		hdma2d.Instance = DMA2D;
+
+		/* DMA2D Initialization */
+		if(HAL_DMA2D_Init(&hdma2d) == HAL_OK)
+		{
+			if(HAL_DMA2D_ConfigLayer(&hdma2d, 1) == HAL_OK)
+			{
+				if (HAL_DMA2D_Start(&hdma2d, (uint32_t)cameraBuffer, Buffers[pend_buffer], 320, 96) == HAL_OK)
+				{
+					/* Polling For DMA transfer */
+					if(HAL_DMA2D_PollForTransfer(&hdma2d, 10) == HAL_OK)
+					{
+						/* return good status on exit */
+						txCnt += 1;
+					}
+				}
+			}
+		}
+
 		/* Refresh the display */
-		HAL_DSI_Refresh(&hdsi);
+		HAL_LTDC_ProgramLineEvent(&hltdc, 0);
+		//HAL_DSI_Refresh(&hdsi);
 	}
 
 	/* Request that event flags 0 is set. If it is set it should be cleared. If the event
@@ -485,16 +513,16 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 		put += offset;
 
 		// RM0388 - pp 780...  not sure about interrupt vs polling yet
-    DMA2D->CR = 0x00000000UL; // | DMA2D_CR_TCIE;
-    DMA2D->FGMAR = (uint32_t) get;
-    DMA2D->OMAR = (uint32_t) put;
-    DMA2D->FGOR = canvas->gx_canvas_x_resolution - copy_width;
-    DMA2D->OOR = MAIN_DISPLAY_X_RESOLUTION - copy_width;
-    DMA2D->FGPFCCR = LTDC_PIXEL_FORMAT_ARGB8888;
-    DMA2D->OPFCCR = LTDC_PIXEL_FORMAT_ARGB8888;
-    DMA2D->NLR = (uint32_t) (copy_width << 16) | (uint16_t) copy_height;
-    DMA2D->CR |= DMA2D_CR_START;
-    while (DMA2D->CR & DMA2D_CR_START) {}
+		DMA2D->CR = 0x00000000UL; // | DMA2D_CR_TCIE;
+		DMA2D->FGMAR = (uint32_t) get;
+		DMA2D->OMAR = (uint32_t) put;
+		DMA2D->FGOR = canvas->gx_canvas_x_resolution - copy_width;
+		DMA2D->OOR = MAIN_DISPLAY_X_RESOLUTION - copy_width;
+		DMA2D->FGPFCCR = LTDC_PIXEL_FORMAT_ARGB8888;
+		DMA2D->OPFCCR = LTDC_PIXEL_FORMAT_ARGB8888;
+		DMA2D->NLR = (uint32_t) (copy_width << 16) | (uint16_t) copy_height;
+		DMA2D->CR |= DMA2D_CR_START;
+		while (DMA2D->CR & DMA2D_CR_START) {}
 
 		/* Assign canvas memory block. */
 		status = gx_canvas_memory_define(canvas, (GX_COLOR *) Buffers[1 - front_buffer], (800*480*4));
