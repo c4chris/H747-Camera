@@ -161,24 +161,30 @@ int main(void)
   }
 
   /* Crop a part of the image to reduce data transfer */
-  if (HAL_DCMI_ConfigCrop(&hdcmi, 0, 0, 800, 96) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  if (HAL_DCMI_EnableCrop(&hdcmi) != HAL_OK)
-  {
-    Error_Handler();
-  }
+  //if (HAL_DCMI_ConfigCrop(&hdcmi, 0, 0, 800, 96) != HAL_OK)
+  //{
+  //  Error_Handler();
+  //}
+  //if (HAL_DCMI_EnableCrop(&hdcmi) != HAL_OK)
+  //{
+  //  Error_Handler();
+  //}
 
   /* Re-do a power down cycle (?) */
   /* Assert the camera POWER_DOWN pin (active high) */
-  HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_SET);
-  HAL_Delay(100);     /* POWER_DOWN de-asserted during 100 ms */
+  //HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_SET);
+  //HAL_Delay(100);     /* POWER_DOWN de-asserted during 100 ms */
   /* De-assert the camera POWER_DOWN pin (active high) */
-  HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_RESET);
-  HAL_Delay(20);
+  //HAL_GPIO_WritePin(CAM_PWR_DWN_GPIO_Port, CAM_PWR_DWN_Pin, GPIO_PIN_RESET);
+  //HAL_Delay(20);
 
   //OV5640_SetPCLK(&OV5640Obj, OV5640_PCLK_24M);
+  // somehow 800 doesn't work for me (DCMI DMA transaction does not complete)
+  ret = OV5640_SetResolution2(&OV5640Obj, 768, 100);
+  if (ret != OV5640_OK)
+  {
+    Error_Handler();
+  }
 
   if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, (800 * 96 * 2 / 4)) != HAL_OK)
   //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 192000UL) != HAL_OK)

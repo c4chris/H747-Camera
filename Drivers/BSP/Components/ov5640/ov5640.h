@@ -213,6 +213,7 @@ int32_t OV5640_SetContrast(OV5640_Object_t *pObj, int32_t Level);
 int32_t OV5640_SetHueDegree(OV5640_Object_t *pObj, int32_t Degree);
 int32_t OV5640_MirrorFlipConfig(OV5640_Object_t *pObj, uint32_t Config);
 int32_t OV5640_ZoomConfig(OV5640_Object_t *pObj, uint32_t Zoom);
+int32_t OV5640_SetResolution2(OV5640_Object_t *pObj, uint16_t Width, uint16_t Height);
 int32_t OV5640_SetResolution(OV5640_Object_t *pObj, uint32_t Resolution);
 int32_t OV5640_GetResolution(OV5640_Object_t *pObj, uint32_t *Resolution);
 int32_t OV5640_SetPixelFormat(OV5640_Object_t *pObj, uint32_t PixelFormat);

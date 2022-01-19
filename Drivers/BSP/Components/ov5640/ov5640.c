@@ -688,6 +688,43 @@ int32_t OV5640_GetPixelFormat(OV5640_Object_t *pObj, uint32_t *PixelFormat)
 /**
   * @brief  Get OV5640 camera resolution.
   * @param  pObj  pointer to component object
+  * @param  Width  Camerai X resolution
+  * @param  Height  Camera Y resolution
+  * @retval Component status
+  */
+int32_t OV5640_SetResolution2(OV5640_Object_t *pObj, uint16_t Width, uint16_t Height)
+{
+  int32_t ret = OV5640_OK;
+  uint32_t index;
+  uint8_t tmp;
+
+  /* Initialization sequence */
+  uint16_t OV5640_RES[][2] =
+  {
+    {OV5640_TIMING_DVPHO_HIGH, (Width >> 8) & 0xff},
+    {OV5640_TIMING_DVPHO_LOW, Width & 0xff},
+    {OV5640_TIMING_DVPVO_HIGH, (Height >> 8) & 0xff},
+    {OV5640_TIMING_DVPVO_LOW, Height & 0xff},
+  };
+
+  for (index = 0; index < (sizeof(OV5640_RES) / 4U); index++)
+  {
+    if (ret != OV5640_ERROR)
+    {
+      tmp = (uint8_t)OV5640_RES[index][1];
+      if (ov5640_write_reg(&pObj->Ctx, OV5640_RES[index][0], &tmp, 1) != OV5640_OK)
+      {
+	ret = OV5640_ERROR;
+      }
+    }
+  }
+
+  return ret;
+}
+
+/**
+  * @brief  Get OV5640 camera resolution.
+  * @param  pObj  pointer to component object
   * @param  Resolution  Camera resolution
   * @retval Component status
   */
