@@ -244,7 +244,9 @@ int32_t OV5640_Init(OV5640_Object_t *pObj, uint32_t Resolution, uint32_t PixelFo
     {OV5640_PCLK_PERIOD, 0x22},
     {0x3824, 0x02},
     {OV5640_ISP_CONTROL00, 0xa7},
-    {OV5640_ISP_CONTROL01, 0xa3},
+    //{OV5640_ISP_CONTROL01, 0xa3},
+    // no scaling
+    {OV5640_ISP_CONTROL01, 0x83},
     {OV5640_AWB_CTRL00, 0xff},
     {OV5640_AWB_CTRL01, 0xf2},
     {OV5640_AWB_CTRL02, 0x00},
