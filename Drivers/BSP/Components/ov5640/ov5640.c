@@ -145,8 +145,10 @@ int32_t OV5640_Init(OV5640_Object_t *pObj, uint32_t Resolution, uint32_t PixelFo
     {OV5640_PAD_OUTPUT_ENABLE02, 0xf3},
     {OV5640_SC_PLL_CONTRL0, 0x18},
     {OV5640_SYSTEM_CTROL0, 0x02},
-    {OV5640_SC_PLL_CONTRL1, 0x41},
-    {OV5640_SC_PLL_CONTRL2, 0x30},
+    //{OV5640_SC_PLL_CONTRL1, 0x41},
+    //{OV5640_SC_PLL_CONTRL2, 0x30},
+    {OV5640_SC_PLL_CONTRL1, 0x21},
+    {OV5640_SC_PLL_CONTRL2, 0x69},
     {OV5640_SC_PLL_CONTRL3, 0x13},
     {OV5640_SYSTEM_ROOT_DIVIDER, 0x01},
     {0x3630, 0x36},
@@ -195,23 +197,33 @@ int32_t OV5640_Init(OV5640_Object_t *pObj, uint32_t Resolution, uint32_t PixelFo
     {OV5640_TIMING_HS_HIGH, 0x00},
     {OV5640_TIMING_HS_LOW, 0x00},
     {OV5640_TIMING_VS_HIGH, 0x00},
-    {OV5640_TIMING_VS_LOW, 0x04},
+    //{OV5640_TIMING_VS_LOW, 0x04},
+    {OV5640_TIMING_VS_LOW, 0xfa},
     {OV5640_TIMING_HW_HIGH, 0x0a},
     {OV5640_TIMING_HW_LOW, 0x3f},
-    {OV5640_TIMING_VH_HIGH, 0x07},
-    {OV5640_TIMING_VH_LOW, 0x9b},
+    //{OV5640_TIMING_VH_HIGH, 0x07},
+    //{OV5640_TIMING_VH_LOW, 0x9b},
+    {OV5640_TIMING_VH_HIGH, 0x06},
+    {OV5640_TIMING_VH_LOW, 0xa9},
     {OV5640_TIMING_DVPHO_HIGH, 0x03},
     {OV5640_TIMING_DVPHO_LOW, 0x20},
-    {OV5640_TIMING_DVPVO_HIGH, 0x02},
-    {OV5640_TIMING_DVPVO_LOW, 0x58},
-    {OV5640_TIMING_HTS_HIGH, 0x06},
-    {OV5640_TIMING_HTS_LOW, 0x40},
-    {OV5640_TIMING_VTS_HIGH, 0x03},
-    {OV5640_TIMING_VTS_LOW, 0xe8},
+    //{OV5640_TIMING_DVPVO_HIGH, 0x02},
+    //{OV5640_TIMING_DVPVO_LOW, 0x58},
+    {OV5640_TIMING_DVPVO_HIGH, 0x00},
+    {OV5640_TIMING_DVPVO_LOW, 0x60},
+    //{OV5640_TIMING_HTS_HIGH, 0x06},
+    //{OV5640_TIMING_HTS_LOW, 0x40},
+    {OV5640_TIMING_HTS_HIGH, 0x07},
+    {OV5640_TIMING_HTS_LOW, 0x64},
+    //{OV5640_TIMING_VTS_HIGH, 0x03},
+    //{OV5640_TIMING_VTS_LOW, 0xe8},
+    {OV5640_TIMING_VTS_HIGH, 0x02},
+    {OV5640_TIMING_VTS_LOW, 0xe4},
     {OV5640_TIMING_HOFFSET_HIGH, 0x00},
     {OV5640_TIMING_HOFFSET_LOW, 0x10},
     {OV5640_TIMING_VOFFSET_HIGH, 0x00},
-    {OV5640_TIMING_VOFFSET_LOW, 0x06},
+    //{OV5640_TIMING_VOFFSET_LOW, 0x06},
+    {OV5640_TIMING_VOFFSET_LOW, 0x04},
     {0x3618, 0x00},
     {0x3612, 0x29},
     {0x3708, 0x64},
@@ -427,6 +439,7 @@ int32_t OV5640_Init(OV5640_Object_t *pObj, uint32_t Resolution, uint32_t PixelFo
 
       if (ret == OV5640_OK)
       {
+#if 0
         /* Set specific parameters for each resolution */
         if (OV5640_SetResolution(pObj, Resolution) != OV5640_OK)
         {
@@ -442,6 +455,7 @@ int32_t OV5640_Init(OV5640_Object_t *pObj, uint32_t Resolution, uint32_t PixelFo
           ret = OV5640_ERROR;
         }
         else
+#endif
         {
           pObj->IsInitialized = 1U;
         }

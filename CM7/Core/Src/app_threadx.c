@@ -455,7 +455,7 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 
 		/* Output offset in pixels == nb of pixels to be added at end of line to come to the  */
 		/* first pixel of the next line : on the output side of the DMA2D computation         */
-		hdma2d.Init.OutputOffset = 32;
+		hdma2d.Init.OutputOffset = 0;
 
 		/* Foreground Configuration */
 		hdma2d.LayerCfg[1].AlphaMode      = DMA2D_NO_MODIF_ALPHA;
@@ -472,7 +472,7 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 		{
 			if(HAL_DMA2D_ConfigLayer(&hdma2d, 1) == HAL_OK)
 			{
-				if (HAL_DMA2D_Start(&hdma2d, (uint32_t)cameraBuffer, Buffers[pend_buffer], 768, 96) == HAL_OK)
+				if (HAL_DMA2D_Start(&hdma2d, (uint32_t)cameraBuffer, Buffers[pend_buffer], 800, 96) == HAL_OK)
 				{
 					/* Polling For DMA transfer */
 					if(HAL_DMA2D_PollForTransfer(&hdma2d, 10) == HAL_OK)

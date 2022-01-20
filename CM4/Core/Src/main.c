@@ -180,11 +180,11 @@ int main(void)
 
   //OV5640_SetPCLK(&OV5640Obj, OV5640_PCLK_24M);
   // somehow 800 doesn't work for me (DCMI DMA transaction does not complete)
-  ret = OV5640_SetResolution2(&OV5640Obj, 768, 100);
-  if (ret != OV5640_OK)
-  {
-    Error_Handler();
-  }
+  //ret = OV5640_SetResolution2(&OV5640Obj, 768, 100);
+  //if (ret != OV5640_OK)
+  //{
+  //  Error_Handler();
+  //}
 
   if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, (800 * 96 * 2 / 4)) != HAL_OK)
   //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 192000UL) != HAL_OK)
