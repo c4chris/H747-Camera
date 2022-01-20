@@ -187,7 +187,9 @@ int32_t OV5640_Init(OV5640_Object_t *pObj, uint32_t Resolution, uint32_t PixelFo
     {OV5640_SAMPLE_NUMBER_HIGH, 0x9c},
     {OV5640_SAMPLE_NUMBER_LOW, 0x40},
     {OV5640_TIMING_TC_REG20, 0x06},
-    {OV5640_TIMING_TC_REG21, 0x00},
+    //{OV5640_TIMING_TC_REG21, 0x00},
+    // activate binning
+    {OV5640_TIMING_TC_REG21, 0x01},
     {OV5640_TIMING_X_INC, 0x31},
     {OV5640_TIMING_Y_INC, 0x31},
     {OV5640_TIMING_HS_HIGH, 0x00},

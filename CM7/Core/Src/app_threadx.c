@@ -339,9 +339,10 @@ VOID status_update()
 {
 	ULONG ticks = tx_time_get();
 	printf("WS %5lu %5u",ticks / TX_TIMER_TICKS_PER_SECOND,txCnt);
-	for (unsigned int i = 0; i < 12; i++)
+	for (unsigned int i = 0; i < 8; i++)
 	{
-		printf(" %04x",cameraBuffer[i]);
+		uint16_t v = cameraBuffer[i];
+		printf(" %02u%02u%02u",v >> 11, (v >> 5) & 0x3f, v & 0x1f);
 	}
 	printf("\n");
 }
