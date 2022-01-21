@@ -417,8 +417,8 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 			break;
 
 		default:
-			HAL_GPIO_TogglePin(LED4_GPIO_Port, LED4_Pin);
-			break;
+			//HAL_GPIO_TogglePin(LED4_GPIO_Port, LED4_Pin);
+			printf("Got main screen event %lu/n", event_ptr->gx_event_type);
 	}
 	return gx_window_event_process(window, event_ptr);
 }
