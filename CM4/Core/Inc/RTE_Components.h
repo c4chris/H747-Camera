@@ -23,6 +23,9 @@
 
 /* Defines ------------------------------------------------------------------*/
 /* STMicroelectronics.X-CUBE-AZRTOS-H7.2.0.0 */
+#define USBXHOST_ENABLED
+#define UX_HOST_CONTROLLERS_ENABLED
+#define FILEX_ENABLED
 #define THREADX_ENABLED
 
 #endif /* __RTE_COMPONENTS_H__ */
