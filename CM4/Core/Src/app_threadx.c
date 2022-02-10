@@ -66,7 +66,7 @@ volatile unsigned int u2tc;
 volatile unsigned int u2htc;
 volatile unsigned int u2ec;
 volatile unsigned int u2ic;
-__attribute__((section(".sram3.touchData"))) volatile uint16_t touchData[4], touchData2[4];
+__attribute__((section(".sram4.touchData"))) volatile uint16_t touchData[4], touchData2[4];
 unsigned char dbgBuf[256];
 unsigned char input[64];
 unsigned char u2tx[256];

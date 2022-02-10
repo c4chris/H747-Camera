@@ -43,28 +43,30 @@ _Min_Stack_Size = 0x400 ; /* required amount of stack */
 /* Specify the memory areas */
 MEMORY
 {
-  FLASH (rx)      : ORIGIN = 0x08100000, LENGTH = 1024K
-  RAM   (xrw)     : ORIGIN = 0x10000000, LENGTH =   96K    /* SRAM1 (first 96K of 128K) */
-  SRAM2 (xrw)     : ORIGIN = 0x10018000, LENGTH =  160K    /* SRAM1 (last 32K of 128K) + SRAM2 (whole 128K) */
-  SRAM3 (xrw)     : ORIGIN = 0x10040000, LENGTH =   32K    /* we want to use this as shared memory between the 2 cores */
+  FLASH  (rx)     : ORIGIN = 0x08100000, LENGTH = 1024K
+  RAM    (xrw)    : ORIGIN = 0x10000000, LENGTH =   56K    /* SRAM1 (first 56K) - RAM for the core */
+  SRAM1  (xrw)    : ORIGIN = 0x1000e000, LENGTH =   72K    /* SRAM1 (last 72K) - for USB data */
+  SRAM2  (xrw)    : ORIGIN = 0x10020000, LENGTH =  160K    /* SRAM2 (128K) + SRAM3 (32K) - for camera data */
+  RAM_D3 (xrw)    : ORIGIN = 0x38000000, LENGTH =   64K    /* we want to use this as shared memory between the 2 cores */
 }
 
 /* Define output sections */
 SECTIONS
 {
-  /* We want some shared memory between the 2 cores, and we want to decide the order in the linker script */
-  .sram3 :
+  /* We want some shared memory between the 2 cores */
+  .sram4 :
   {
-    *(.sram3.bridgeValue*);
-    *(.sram3.bridgeCount*);
-    *(.sram3.bridgeStale*);
-    *(.sram3.bridgeError*);
-    *(.sram3.bridgeBadstatus*);
-    *(.sram3*);
-  } > SRAM3
+    *(.sram4*);
+  } > RAM_D3
+
+  /* We want some memory for the USB data */
+  .sram1 (NOLOAD):
+  {
+    *(.sram1*);
+  } > SRAM1
 
   /* We want some memory for the data retrieved from the camera */
-  .sram2 :
+  .sram2 (NOLOAD):
   {
     *(.sram2*);
   } > SRAM2

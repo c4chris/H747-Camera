@@ -72,7 +72,7 @@ TX_EVENT_FLAGS_GROUP cm7_event_group;
 GX_WINDOW_ROOT *root_window;
 
 /* data comning from CM4 core */
-__attribute__((section(".sram3.touchData"))) volatile uint16_t touchData[4], touchData2[4];
+__attribute__((section(".sram4.touchData"))) volatile uint16_t touchData[4], touchData2[4];
 __attribute__((section(".sram2.camera"))) volatile uint16_t cameraBuffer[(800 * 96)];
 
 char textBuffer[LINES*COLUMNS];
