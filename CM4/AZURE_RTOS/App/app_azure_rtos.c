@@ -54,6 +54,7 @@ static UCHAR  fx_byte_pool_buffer[FX_APP_MEM_POOL_SIZE];
 static TX_BYTE_POOL fx_app_byte_pool;
 
 /* USER CODE BEGIN UX_HOST_Pool_Buffer */
+__attribute__((section(".sram1.UsbxPoolSection")))
 /* USER CODE END UX_HOST_Pool_Buffer */
 static UCHAR  ux_host_byte_pool_buffer[UX_HOST_APP_MEM_POOL_SIZE];
 static TX_BYTE_POOL ux_host_app_byte_pool;

@@ -36,7 +36,7 @@
 
 #define APP_QUEUE_SIZE                               5
 #define USBX_APP_STACK_SIZE                          1024
-#define USBX_MEMORY_SIZE                             (24 * 1024)
+#define USBX_MEMORY_SIZE                             (64 * 1024)
 
 /* USER CODE END PD */
 
