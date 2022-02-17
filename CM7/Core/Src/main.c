@@ -35,9 +35,11 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define HSEM_ID_0 (0U) /* HW semaphore 0*/
-#define HSEM_ID_1 (1U) /* HW semaphore 1*/
-#define HSEM_ID_2 (2U) /* HW semaphore 2*/
+#define HSEM_ID_0 (0U) /* HW semaphore 0 - used to coordinate boot with CM4 */
+#define HSEM_ID_1 (1U) /* HW semaphore 1 - CM4 sends touchdata to CM7 */
+#define HSEM_ID_2 (2U) /* HW semaphore 2 - CM4 signals camera data to CM7 */
+#define HSEM_ID_3 (3U) /* HW semaphore 3 - CM4 signals USB stick status change to CM7 */
+#define HSEM_ID_4 (4U) /* HW semaphore 4 - CM7 asks CM4 to eject USB stick */
 
 /* USER CODE END PD */
 

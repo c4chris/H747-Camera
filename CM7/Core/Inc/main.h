@@ -216,7 +216,6 @@ void Error_Handler(void);
 #define SDRAM_BANK_3         0xD1800000UL
 #define LCD_LAYER_0_ADDRESS  SDRAM_BANK_0
 #define LCD_LAYER_1_ADDRESS  SDRAM_BANK_1
-#define CAMERA_FB_0_ADDRESS  SDRAM_BANK_2
 
 /* USER CODE END Private defines */
 
