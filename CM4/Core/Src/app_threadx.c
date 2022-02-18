@@ -57,6 +57,10 @@
 TX_THREAD            cm4_main_thread;
 TX_THREAD            cm4_i2c4_thread;
 TX_THREAD            cm4_uart_thread;
+/* 
+ * event flag 0 is from DCMI transfer done
+ * event flags 1 - n are from HSEM
+ */
 TX_EVENT_FLAGS_GROUP cm4_event_group;
 
 /* ...  */
@@ -166,6 +170,8 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   {
 	  Error_Handler();
   }
+  /* signal the data structures are ready */
+  threadInitDone = 1;
   /* USER CODE END App_ThreadX_Init */
 
   return ret;

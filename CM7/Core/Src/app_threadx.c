@@ -63,6 +63,10 @@
 /* Define ThreadX global data structures.  */
 TX_THREAD            cm7_main_thread;
 TX_THREAD            cm7_lcd_thread;
+/* 
+ * event flag 0 is from LCD refresh done
+ * event flags 1 - n are from HSEM
+ */
 TX_EVENT_FLAGS_GROUP cm7_event_group;
 
 /* Define the GUIX resources. */
@@ -157,6 +161,9 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   {
     Error_Handler();
   }
+
+  /* signal the data structures are ready */
+  threadInitDone = 1;
 
   /* USER CODE END App_ThreadX_Init */
 

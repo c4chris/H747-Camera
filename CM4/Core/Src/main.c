@@ -40,6 +40,11 @@
 #define HSEM_ID_2 (2U) /* HW semaphore 2 - CM4 signals camera data to CM7 */
 #define HSEM_ID_3 (3U) /* HW semaphore 3 - CM4 signals USB stick status change to CM7 */
 #define HSEM_ID_4 (4U) /* HW semaphore 4 - CM7 asks CM4 to eject USB stick */
+#define HSEM_0 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_0))
+#define HSEM_1 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_1))
+#define HSEM_2 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_2))
+#define HSEM_3 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_3))
+#define HSEM_4 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_4))
 
 /* USER CODE END PD */
 
@@ -67,6 +72,7 @@ SDRAM_HandleTypeDef hsdram1;
 /* USER CODE BEGIN PV */
 
 volatile uint32_t Notified = 0;
+volatile uint32_t threadInitDone = 0;
 static OV5640_Object_t OV5640Obj;
 static OV5640_Capabilities_t Camera_Cap;
 static uint32_t CameraId;
@@ -116,7 +122,7 @@ int main(void)
   /*HW semaphore Clock enable*/
   __HAL_RCC_HSEM_CLK_ENABLE();
   /* Activate HSEM notification for Cortex-M4*/
-  HAL_HSEM_ActivateNotification(__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_0));
+  HAL_HSEM_ActivateNotification(HSEM_0|HSEM_4);
   /*
   Domain D2 goes to STOP mode (Cortex-M4 in deep-sleep) waiting for Cortex-M7 to
   perform system initialization (system clock config, external memory configuration.. )
@@ -124,7 +130,7 @@ int main(void)
   HAL_PWREx_ClearPendingEvent();
   HAL_PWREx_EnterSTOPMode(PWR_MAINREGULATOR_ON, PWR_STOPENTRY_WFE, PWR_D2_DOMAIN);
   /* Clear HSEM flag */
-  __HAL_HSEM_CLEAR_FLAG(__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_0));
+  __HAL_HSEM_CLEAR_FLAG(HSEM_0);
 
 /* USER CODE END Boot_Mode_Sequence_1 */
   /* MCU Configuration--------------------------------------------------------*/
@@ -560,6 +566,15 @@ PUTCHAR_PROTOTYPE
 void HAL_HSEM_FreeCallback(uint32_t SemMask)
 {
 	Notified |= SemMask;
+	if (threadInitDone != 0)
+	{
+		__HAL_HSEM_CLEAR_FLAG(SemMask);
+		/* Signal we are done */
+		if (tx_event_flags_set(&cm4_event_group, SemMask, TX_OR) != TX_SUCCESS)
+		{
+		  Error_Handler();
+		}
+	}
 }
 
 /**

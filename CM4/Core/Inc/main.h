@@ -49,6 +49,7 @@ extern I2C_HandleTypeDef hi2c4;
 extern UART_HandleTypeDef huart1;
 extern DCMI_HandleTypeDef hdcmi;
 extern volatile uint16_t cameraBuffer[(800 * 96)];
+extern volatile uint32_t threadInitDone;
 
 /* USER CODE END EC */
 

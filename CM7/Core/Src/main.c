@@ -40,6 +40,11 @@
 #define HSEM_ID_2 (2U) /* HW semaphore 2 - CM4 signals camera data to CM7 */
 #define HSEM_ID_3 (3U) /* HW semaphore 3 - CM4 signals USB stick status change to CM7 */
 #define HSEM_ID_4 (4U) /* HW semaphore 4 - CM7 asks CM4 to eject USB stick */
+#define HSEM_0 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_0))
+#define HSEM_1 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_1))
+#define HSEM_2 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_2))
+#define HSEM_3 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_3))
+#define HSEM_4 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_4))
 
 /* USER CODE END PD */
 
@@ -62,6 +67,7 @@ SDRAM_HandleTypeDef hsdram1;
 /* USER CODE BEGIN PV */
 
 volatile uint32_t Notified = 0;
+volatile uint32_t threadInitDone = 0;
 
 __IO int32_t  front_buffer   = 0;
 __IO int32_t  pend_buffer   = -1;
@@ -141,6 +147,8 @@ int main(void)
 	   HSEM notification */
   /*HW semaphore Clock enable*/
   __HAL_RCC_HSEM_CLK_ENABLE();
+  /* Activate HSEM notification for Cortex-M7 - needed for later events (not boot) */
+  HAL_HSEM_ActivateNotification(HSEM_1|HSEM_2|HSEM_3);
   /*Take HSEM */
   HAL_HSEM_FastTake(HSEM_ID_0);
   /*Release HSEM in order to notify the CPU2(CM4)*/
@@ -723,6 +731,15 @@ static int32_t DSI_IO_Read(uint16_t ChannelNbr, uint16_t Reg, uint8_t *pData, ui
 void HAL_HSEM_FreeCallback(uint32_t SemMask)
 {
 	Notified |= SemMask;
+	if (threadInitDone != 0)
+	{
+		__HAL_HSEM_CLEAR_FLAG(SemMask);
+		/* Signal we are done */
+		if (tx_event_flags_set(&cm7_event_group, SemMask, TX_OR) != TX_SUCCESS)
+		{
+		  Error_Handler();
+		}
+	}
 }
 
 /**
