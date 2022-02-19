@@ -559,6 +559,23 @@ PUTCHAR_PROTOTYPE
 }
 
 /**
+  * @brief  EXTI line detection callback.
+  * @param  GPIO_Pin: Specifies the port pin connected to corresponding EXTI line.
+  * @retval None
+  */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	if (threadInitDone != 0 && GPIO_Pin == TOUCH_INT_Pin)
+	{
+		/* Signal we have a touch interrupt */
+		if (tx_event_flags_set(&cm4_event_group, 0x2, TX_OR) != TX_SUCCESS)
+		{
+		  Error_Handler();
+		}
+	}
+}
+
+/**
   * @brief Semaphore Released Callback.
   * @param SemMask: Mask of Released semaphores
   * @retval None

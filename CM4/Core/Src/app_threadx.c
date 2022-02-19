@@ -59,7 +59,8 @@ TX_THREAD            cm4_i2c4_thread;
 TX_THREAD            cm4_uart_thread;
 /* 
  * event flag 0 is from DCMI transfer done
- * event flags 1 - n are from HSEM
+ * event flag 1 is from TOUCH_INT
+ * event flag 4 is from HSEM_4
  */
 TX_EVENT_FLAGS_GROUP cm4_event_group;
 
@@ -267,22 +268,50 @@ void tx_cm4_main_thread_entry(ULONG thread_input)
 	}
 }
 
+/*
+Working Mode Register Map
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Address Name      Default | Bit7 | Bit6 | Bit5 | Bit4 | Bit3 | Bit2 | Bit1 | Bit0 |  Host
+                   Value  |      |      |      |      |      |      |      |      | Access
+==========================================================================================
+0x00    DEV_MODE   0x00   |      | [2:0]Device Mode   |                           |  R/W
+0x01    GEST_ID    0x00   | [7:0]Gesture ID                                       |   R
+0x02    TD_STATUS  0x00   |                           | [3:0] Number of           |   R
+                          |                           |       touch points        |
+0x03    P1_XH      0xFF   | [7:6]1st    |             | [3:0] 1st Touch           |   R
+                          |  Event Flag |             |       X Position[11:8]    |
+0x04    P1_XL      0xFF   | [7:0] 1st Touch X Position                            |   R
+0x05    P1_YH      0xFF   | [7:4] 1st Touch ID        | [3:0] 1st Touch           |   R
+                          |                           |       Y Position[11:8]    |
+0x06    P1_YL      0xFF   | [7:0] 1st Touch Y Position                            |   R
+0x07    P1_WEIGHT  0xFF   | [7:0] 1st Touch Weight                                |   R
+0x08    P1_MISC    0xFF   | [7:4] 1st Touch Area      |                           |   R
+0x09    P2_XH      0xFF   | [7:6]2nd    |             | [3:0]2nd Touch            |   R
+                          |  Event Flag |             |       X Position[11:8]    |
+0x0A    P2_XL      0xFF   | [7:0] 2nd Touch X Position                            |   R
+0x0B    P2_YH      0xFF   | [7:4] 2ndTouch ID         | [3:0] 2nd Touch           |   R
+                          |                           |       Y Position[11:8]    |
+0x0C    P2_YL      0xFF   | [7:0] 2nd Touch Y Position                            |   R
+0x0D    P2_WEIGHT  0xFF   | [7:0] 2nd Touch Weight                                |   R
+0x0E    P2_MISC    0xFF   | [7:4] 2nd Touch Area      |                           |   R
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+*/
 void tx_cm4_i2c4_thread_entry(ULONG thread_input)
 {
+	ULONG actual_events;
 	memset((void *)touchData, 0, sizeof(touchData));
 	/* Infinite loop */
 	for(;;)
 	{
-		ULONG ticks_target = tx_time_get() + (TX_TIMER_TICKS_PER_SECOND / 20);
-		/* this is active low */
-		GPIO_PinState touch = HAL_GPIO_ReadPin(TOUCH_INT_GPIO_Port, TOUCH_INT_Pin);
-		if (!touch || touchData[0] != 0)
+		UINT status = tx_event_flags_get(&cm4_event_group, 0x2, TX_AND_CLEAR, &actual_events, TX_WAIT_FOREVER);
+		// FIXME - could read all the touch info and gestures maybe ?
+		if (status == TX_SUCCESS)
 		{
-			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
 			// read status register
 			uint8_t nb_touch;
 			uint8_t data[4];
 			uint32_t touchX, touchY;
+			//ULONG ticks = tx_time_get();
 		  if (HAL_I2C_Mem_Read(&hi2c4, TS_I2C_ADDRESS, FT6X06_TD_STAT_REG, I2C_MEMADD_SIZE_8BIT, &nb_touch, 1, 1000) == HAL_OK)
 		  {
 		  	nb_touch &= FT6X06_TD_STATUS_BIT_MASK;
@@ -294,14 +323,14 @@ void tx_cm4_i2c4_thread_entry(ULONG thread_input)
 		      touchData[1] = touchX;
 		      touchData[2] = touchY;
 		      touchData[3] += 1;
+		      /* Signal CM7 that we have new touch data */
+		      HAL_HSEM_FastTake(HSEM_ID_1);
+		      HAL_HSEM_Release(HSEM_ID_1,0);
 		    }
 		  }
 		}
 		else
-			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
-		ULONG ticks = tx_time_get();
-		if (ticks < ticks_target)
-			tx_thread_sleep(ticks_target - ticks);
+			HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 	}
 }
 
