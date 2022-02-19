@@ -234,13 +234,16 @@ void tx_cm4_main_thread_entry(ULONG thread_input)
 	for(;;)
 	{
 		/* Request that event flags 0 is set. If it is set it should be cleared. If the event
-		flags are not set, this service suspends for a maximum of 200 timer-ticks. */
+		flags are not set, this service suspends for a maximum of TX_TIMER_TICKS_PER_SECOND timer-ticks. */
 		UINT status = tx_event_flags_get(&cm4_event_group, 0x1, TX_AND_CLEAR, &actual_events, TX_TIMER_TICKS_PER_SECOND);
 		ULONG ticks = tx_time_get();
 
 		/* If status equals TX_SUCCESS, actual_events contains the actual events obtained. */
 		if (status == TX_SUCCESS)
 		{
+		  /* Signal CM7 that we have new camera data */
+		  HAL_HSEM_FastTake(HSEM_ID_2);
+		  HAL_HSEM_Release(HSEM_ID_2,0);
 			frame_cnt += 1;
 			if (ticks - prev_ticks >= TX_TIMER_TICKS_PER_SECOND)
 			{
@@ -374,4 +377,5 @@ void tx_cm4_uart_thread_entry(ULONG thread_input)
 	}
 }
 
+// vim: noet ci pi sts=0 sw=2 ts=2
 /* USER CODE END 1 */
