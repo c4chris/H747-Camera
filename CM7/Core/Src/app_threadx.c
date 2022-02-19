@@ -62,10 +62,11 @@
 
 /* Define ThreadX global data structures.  */
 TX_THREAD            cm7_main_thread;
+TX_THREAD            cm7_touch_thread;
 TX_THREAD            cm7_lcd_thread;
 /* 
  * event flag 0 is from LCD refresh done
- * event flags 1 - n are from HSEM
+ * event flag 1 is from HSEM_1 when core M4 signals touch data is available
  */
 TX_EVENT_FLAGS_GROUP cm7_event_group;
 
@@ -90,6 +91,7 @@ volatile UINT txCnt;
 /* USER CODE BEGIN PFP */
 
 void tx_cm7_main_thread_entry(ULONG thread_input);
+void tx_cm7_touch_thread_entry(ULONG thread_input);
 void tx_cm7_lcd_thread_entry(ULONG thread_input);
 void Error_Handler(void);
 static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_area);
@@ -115,10 +117,10 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 
   /* USER CODE BEGIN App_ThreadX_Init */
 
-  /*Allocate memory for fx_thread_entry*/
+  /*Allocate memory for tx_cm7_main_thread_entry */
   ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
 
-  /* Check FILEX_DEFAULT_STACK_SIZE allocation*/
+  /* Check DEFAULT_STACK_SIZE allocation*/
   if (ret != TX_SUCCESS)
   {
     Error_Handler();
@@ -143,10 +145,10 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
     Error_Handler();
   }
 
-  /*Allocate memory for fx_thread_entry*/
+  /*Allocate memory for tx_cm7_lcd_thread_entry */
   ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
 
-  /* Check FILEX_DEFAULT_STACK_SIZE allocation*/
+  /* Check DEFAULT_STACK_SIZE allocation*/
   if (ret != TX_SUCCESS)
   {
     Error_Handler();
@@ -157,6 +159,25 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
                          DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
 
   /* Check main thread creation */
+  if (ret != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+
+  /*Allocate memory for tx_cm7_touch_thread_entry */
+  ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
+
+  /* Check DEFAULT_STACK_SIZE allocation*/
+  if (ret != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+
+  /* Create the touch thread.  */
+  ret = tx_thread_create(&cm7_touch_thread, "tx_cm7_touch_thread", tx_cm7_touch_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
+                         DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+  /* Check touch thread creation */
   if (ret != TX_SUCCESS)
   {
     Error_Handler();
@@ -257,13 +278,64 @@ GX_EVENT_ZOOM_OUT
 
  */
 
+void tx_cm7_touch_thread_entry(ULONG thread_input)
+{
+	uint16_t curTouch[4];
+	uint16_t prevTouch[4] = {0};
+
+  /* Infinite Loop */
+  for( ;; )
+  {
+		ULONG actual_events;
+		/* Request that event flag 1 is set. If it is set it should be cleared. */
+		UINT status = tx_event_flags_get(&cm7_event_group, 0x2, TX_AND_CLEAR, &actual_events, TX_WAIT_FOREVER);
+
+		/* If status equals TX_SUCCESS, actual_events contains the actual events obtained. */
+		if (status == TX_SUCCESS)
+		{
+  		touchData2[0] = touchData[0];
+  		touchData2[1] = touchData[1];
+  		touchData2[2] = touchData[2];
+  		touchData2[3] = touchData[3];
+  		if (touchData[3] != prevTouch[3])
+  		{
+  			/* Send a pen event for processing. */
+  			GX_EVENT e = {0};
+  			//e.gx_event_display_handle = LCD_FRAME_BUFFER;
+    		curTouch[0] = touchData[0];
+    		curTouch[1] = touchData[1];
+    		curTouch[2] = touchData[2];
+    		curTouch[3] = touchData[3];
+  			e.gx_event_payload.gx_event_pointdata.gx_point_x = curTouch[2];       // Y value of touchscreen driver
+  			e.gx_event_payload.gx_event_pointdata.gx_point_y = 480 - curTouch[1]; // X value of touchscreen driver, but reversed
+  			if (curTouch[0] == 0)
+  			{
+    			e.gx_event_type = GX_EVENT_PEN_UP; // pen UP
+  				//BSP_LED_Off(LED_RED);
+  			}
+  			else if (prevTouch[0] == 0)
+  			{
+    			e.gx_event_type = GX_EVENT_PEN_DOWN; // pen DOWN
+  				//BSP_LED_On(LED_RED);
+  			}
+  			else
+    			e.gx_event_type = GX_EVENT_PEN_DRAG; // pen DRAG
+  			/* Push the event to event pool. */
+  			if (e.gx_event_type == GX_EVENT_PEN_DRAG)
+    			gx_system_event_fold(&e);
+  			else
+  				gx_system_event_send(&e);
+  			memcpy(prevTouch, curTouch, sizeof(curTouch));
+  		}
+		}
+  }
+}
+
 void tx_cm7_main_thread_entry(ULONG thread_input)
 {
   //UINT status;
   //CHAR read_buffer[32];
   //CHAR data[] = "This is ThreadX working on STM32 CM7";
-	uint16_t curTouch[4];
-	uint16_t prevTouch[4] = {0};
 	ULONG toggleTicks = tx_time_get();
 
 	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND/5);
@@ -276,40 +348,6 @@ void tx_cm7_main_thread_entry(ULONG thread_input)
   	{
     	HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin);
   		toggleTicks = ticks + TX_TIMER_TICKS_PER_SECOND;
-  	}
-  	touchData2[0] = touchData[0];
-  	touchData2[1] = touchData[1];
-  	touchData2[2] = touchData[2];
-  	touchData2[3] = touchData[3];
-  	if (touchData[3] != prevTouch[3])
-  	{
-  		/* Send a pen event for processing. */
-  		GX_EVENT e = {0};
-  		//e.gx_event_display_handle = LCD_FRAME_BUFFER;
-    	curTouch[0] = touchData[0];
-    	curTouch[1] = touchData[1];
-    	curTouch[2] = touchData[2];
-    	curTouch[3] = touchData[3];
-  		e.gx_event_payload.gx_event_pointdata.gx_point_x = curTouch[2];       // Y value of touchscreen driver
-  		e.gx_event_payload.gx_event_pointdata.gx_point_y = 480 - curTouch[1]; // X value of touchscreen driver, but reversed
-  		if (curTouch[0] == 0)
-  		{
-    		e.gx_event_type = GX_EVENT_PEN_UP; // pen UP
-  			//BSP_LED_Off(LED_RED);
-  		}
-  		else if (prevTouch[0] == 0)
-  		{
-    		e.gx_event_type = GX_EVENT_PEN_DOWN; // pen DOWN
-  			//BSP_LED_On(LED_RED);
-  		}
-  		else
-    		e.gx_event_type = GX_EVENT_PEN_DRAG; // pen DRAG
-  		/* Push the event to event pool. */
-  		if (e.gx_event_type == GX_EVENT_PEN_DRAG)
-    		gx_system_event_fold(&e);
-  		else
-  			gx_system_event_send(&e);
-  		memcpy(prevTouch, curTouch, sizeof(curTouch));
   	}
   	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 5);
   }
@@ -551,4 +589,5 @@ UINT stm32h7_graphics_driver_setup_32argb(GX_DISPLAY *display)
 	return(GX_SUCCESS);
 }
 
+// vim: noet ci pi sts=0 sw=2 ts=2
 /* USER CODE END 1 */
