@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 
 #include "app_filex.h"
+#include "main.h"
 
 /* USER CODE END Includes */
 
@@ -79,6 +80,9 @@ void  msc_process_thread_entry(ULONG arg)
     status = tx_queue_receive(&ux_app_MsgQueue_msc, &media, TX_WAIT_FOREVER);
     if ((storage != NULL) && (media != NULL))
     {
+	    HAL_HSEM_FastTake(HSEM_ID_3);
+	    HAL_HSEM_Release(HSEM_ID_3, 0); 
+# if 0
       /* Create a file */
       status = App_File_Create(media);
 
@@ -124,6 +128,7 @@ void  msc_process_thread_entry(ULONG arg)
         USBH_ErrLog("!! Read Process Fail !! \n");
         break;
       }
+#endif
 
     }
     else

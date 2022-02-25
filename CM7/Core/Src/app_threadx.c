@@ -64,6 +64,7 @@
 TX_THREAD            cm7_main_thread;
 TX_THREAD            cm7_touch_thread;
 TX_THREAD            cm7_lcd_thread;
+TX_THREAD            cm7_usb_stick_thread;
 /* 
  * event flag 0 is from LCD refresh done
  * event flag 1 is from HSEM_1 when core M4 signals touch data is available
@@ -93,6 +94,7 @@ volatile UINT txCnt;
 void tx_cm7_main_thread_entry(ULONG thread_input);
 void tx_cm7_touch_thread_entry(ULONG thread_input);
 void tx_cm7_lcd_thread_entry(ULONG thread_input);
+void tx_cm7_usb_stick_thread_entry(ULONG thread_input);
 void Error_Handler(void);
 static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_area);
 UINT stm32h7_graphics_driver_setup_32argb(GX_DISPLAY *display);
@@ -175,6 +177,19 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 
   /* Create the touch thread.  */
   ret = tx_thread_create(&cm7_touch_thread, "tx_cm7_touch_thread", tx_cm7_touch_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
+                         DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+  /*Allocate memory for tx_cm7_usb_stick_thread_entry */
+  ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
+
+  /* Check DEFAULT_STACK_SIZE allocation*/
+  if (ret != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+
+  /* Create the usb_stick thread.  */
+  ret = tx_thread_create(&cm7_usb_stick_thread, "tx_cm7_usb_stick_thread", tx_cm7_usb_stick_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
                          DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
 
   /* Check touch thread creation */
@@ -377,6 +392,22 @@ void tx_cm7_lcd_thread_entry(ULONG thread_input)
 
   /* Let GUIX run. */
   gx_system_start();
+}
+
+void tx_cm7_usb_stick_thread_entry(ULONG thread_input)
+{
+  /* Infinite Loop */
+  for( ;; )
+  {
+		ULONG actual_events;
+		/* Request that event flag 1 is set. If it is set it should be cleared. */
+		UINT status = tx_event_flags_get(&cm7_event_group, 0x8, TX_AND_CLEAR, &actual_events, TX_WAIT_FOREVER);
+
+		/* If status equals TX_SUCCESS, actual_events contains the actual events obtained. */
+		if (status == TX_SUCCESS)
+		{
+		}
+  }
 }
 
 /*************************************************************************************/

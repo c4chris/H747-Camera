@@ -235,7 +235,7 @@ void   MX_FMC_Init(void);
 #define HSEM_ID_1 (1U) /* HW semaphore 1 - CM4 sends touchdata to CM7 */
 #define HSEM_ID_2 (2U) /* HW semaphore 2 - CM4 signals camera data to CM7 */
 #define HSEM_ID_3 (3U) /* HW semaphore 3 - CM4 signals USB stick status change to CM7 */
-#define HSEM_ID_4 (4U) /* HW semaphore 4 - CM7 asks CM4 to eject USB stick */
+#define HSEM_ID_4 (4U) /* HW semaphore 4 - CM7 asks CM4 to perform some actions on USB stick */
 #define HSEM_0 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_0))
 #define HSEM_1 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_1))
 #define HSEM_2 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_2))
