@@ -245,7 +245,7 @@ void tx_cm4_main_thread_entry(ULONG thread_input)
 		  HAL_HSEM_FastTake(HSEM_ID_2);
 		  HAL_HSEM_Release(HSEM_ID_2,0);
 			frame_cnt += 1;
-			if (ticks - prev_ticks >= TX_TIMER_TICKS_PER_SECOND)
+			if (ticks - prev_ticks >= 60 * TX_TIMER_TICKS_PER_SECOND)
 			{
 				printf("WS %5lu %u %u",ticks / TX_TIMER_TICKS_PER_SECOND,hdcmi.State,frame_cnt);
 				for (unsigned int i = 0; i < 16; i++)

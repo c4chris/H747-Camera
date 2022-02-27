@@ -82,6 +82,7 @@ void  msc_process_thread_entry(ULONG arg)
     {
 	    HAL_HSEM_FastTake(HSEM_ID_3);
 	    HAL_HSEM_Release(HSEM_ID_3, 0); 
+			printf("USB inserted\r\n");
 # if 0
       /* Create a file */
       status = App_File_Create(media);

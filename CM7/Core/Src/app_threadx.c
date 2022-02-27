@@ -427,6 +427,8 @@ void tx_cm7_usb_stick_thread_entry(ULONG thread_input)
 		/* If status equals TX_SUCCESS, actual_events contains the actual events obtained. */
 		if (status == TX_SUCCESS)
 		{
+			printf("Select USB button\n");
+			gx_widget_style_add((GX_WIDGET *)&main_window.main_window_usb_icon, GX_STYLE_DRAW_SELECTED);
 		}
   }
 }
@@ -541,7 +543,7 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 
 		default:
 			//HAL_GPIO_TogglePin(LED4_GPIO_Port, LED4_Pin);
-			printf("Got main screen event %lu/n", event_ptr->gx_event_type);
+			printf("Got main screen event %lu\n", event_ptr->gx_event_type);
 	}
 	return gx_window_event_process(window, event_ptr);
 }
