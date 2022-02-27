@@ -65,6 +65,7 @@ TX_THREAD            cm7_main_thread;
 TX_THREAD            cm7_touch_thread;
 TX_THREAD            cm7_lcd_thread;
 TX_THREAD            cm7_usb_stick_thread;
+TX_THREAD            cm7_camera_thread;
 /* 
  * event flag 0 is from LCD refresh done
  * event flag 1 is from HSEM_1 when core M4 signals touch data is available
@@ -95,6 +96,7 @@ void tx_cm7_main_thread_entry(ULONG thread_input);
 void tx_cm7_touch_thread_entry(ULONG thread_input);
 void tx_cm7_lcd_thread_entry(ULONG thread_input);
 void tx_cm7_usb_stick_thread_entry(ULONG thread_input);
+void tx_cm7_camera_thread_entry(ULONG thread_input);
 void Error_Handler(void);
 static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_area);
 UINT stm32h7_graphics_driver_setup_32argb(GX_DISPLAY *display);
@@ -190,6 +192,25 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 
   /* Create the usb_stick thread.  */
   ret = tx_thread_create(&cm7_usb_stick_thread, "tx_cm7_usb_stick_thread", tx_cm7_usb_stick_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
+                         DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+  /* Check touch thread creation */
+  if (ret != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+
+  /*Allocate memory for tx_cm7_camera_thread_entry */
+  ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
+
+  /* Check DEFAULT_STACK_SIZE allocation*/
+  if (ret != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+
+  /* Create the camera thread.  */
+  ret = tx_thread_create(&cm7_camera_thread, "tx_cm7_camera_thread", tx_cm7_camera_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
                          DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
 
   /* Check touch thread creation */
@@ -410,6 +431,32 @@ void tx_cm7_usb_stick_thread_entry(ULONG thread_input)
   }
 }
 
+void tx_cm7_camera_thread_entry(ULONG thread_input)
+{
+	ULONG prevUpdate = 0;
+	UINT cnt = 0;
+  /* Infinite Loop */
+  for( ;; )
+  {
+		ULONG actual_events;
+		/* Request that event flag 1 is set. If it is set it should be cleared. */
+		UINT status = tx_event_flags_get(&cm7_event_group, 0x4, TX_AND_CLEAR, &actual_events, TX_WAIT_FOREVER);
+
+		/* If status equals TX_SUCCESS, actual_events contains the actual events obtained. */
+		if (status == TX_SUCCESS)
+		{
+			ULONG ticks = tx_time_get();
+			cnt += 1;
+			if (prevUpdate + TX_TIMER_TICKS_PER_SECOND <= ticks)
+			{
+				gx_numeric_prompt_value_set(&main_window.main_window_fps_value, cnt);
+				cnt = 0;
+				prevUpdate = ticks;
+			}
+		}
+  }
+}
+
 /*************************************************************************************/
 VOID status_update()
 {
@@ -479,10 +526,10 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 	{
 		case GX_EVENT_SHOW:
 			/* Set current weight. */
-			status_update();
+			//status_update();
 
 			/* Start a timer to update weight. */
-			gx_system_timer_start(&main_window, CLOCK_TIMER, GX_TICKS_SECOND, GX_TICKS_SECOND);
+			gx_system_timer_start(&main_window, CLOCK_TIMER, 60 * GX_TICKS_SECOND, 60 * GX_TICKS_SECOND);
 			break;
 
 		case GX_EVENT_TIMER:
