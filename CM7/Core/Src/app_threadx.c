@@ -514,6 +514,7 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 	ULONG *get;
 	ULONG *put;
 	ULONG actual_events;
+	static int notfirst = 0;
 
 	/* FIXME - maybe make sure the event is cleared here ?  */
 
@@ -573,6 +574,11 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 	if (status == TX_SUCCESS)
 	{
 		/* now refresh offline buffer and switch buffers in canvas  */
+		if (!notfirst)
+		{
+			memcpy((void *)Buffers[1], (void *)Buffers[0], 800 * 480 * 4); /* maybe ? */
+			notfirst = 1;
+		}
 
 		copy_width = dirty_area->gx_rectangle_right - dirty_area->gx_rectangle_left + 1;
 		copy_height = dirty_area->gx_rectangle_bottom - dirty_area->gx_rectangle_top + 1;
