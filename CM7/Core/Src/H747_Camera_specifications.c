@@ -5,8 +5,8 @@
 /*  specification file(s). For more information please refer to the Azure RTOS */
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
-/*  GUIX Studio Revision 6.1.9.2                                               */
-/*  Date (dd.mm.yyyy): 15. 1.2022   Time (hh:mm): 00:09                        */
+/*  GUIX Studio Revision 6.1.10.0                                              */
+/*  Date (dd.mm.yyyy): 27. 2.2022   Time (hh:mm): 01:24                        */
 /*******************************************************************************/
 
 
@@ -45,11 +45,74 @@ GX_STUDIO_DISPLAY_INFO H747_Camera_display_table[1] =
 };
 
 
-UINT gx_studio_button_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent)
+UINT gx_studio_icon_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent)
 {
     UINT status;
-    GX_BUTTON *button = (GX_BUTTON *) control_block;
-    status = gx_button_create(button, info->widget_name, parent, info->style, info->widget_id, &info->size);
+    GX_ICON *icon = (GX_ICON *) control_block;
+    GX_ICON_PROPERTIES *props = (GX_ICON_PROPERTIES *) info->properties;
+    status = gx_icon_create(icon, info->widget_name, parent, props->normal_pixelmap_id, info->style, info->widget_id, info->size.gx_rectangle_left, info->size.gx_rectangle_top);
+    if (props->selected_pixelmap_id)
+    {
+        gx_icon_pixelmap_set(icon, props->normal_pixelmap_id, props->selected_pixelmap_id);
+    }
+    return status;
+}
+
+UINT gx_studio_radial_progress_bar_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent)
+{
+    UINT status;
+    GX_RADIAL_PROGRESS_BAR *bar = (GX_RADIAL_PROGRESS_BAR *) control_block;
+    GX_RADIAL_PROGRESS_BAR_INFO *bar_info = (GX_RADIAL_PROGRESS_BAR_INFO *) info->properties;
+    status = gx_radial_progress_bar_create(bar,
+                    info->widget_name,
+                    parent,
+                    bar_info,
+                    info->style,
+                    info->widget_id);
+    return status;
+}
+
+UINT gx_studio_prompt_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent)
+{
+    UINT status;
+    GX_PROMPT *prompt = (GX_PROMPT *) control_block;
+    GX_PROMPT_PROPERTIES *props = (GX_PROMPT_PROPERTIES *) info->properties;
+    status = gx_prompt_create(prompt, info->widget_name, parent, props->string_id, info->style, info->widget_id, &info->size);
+    if (status == GX_SUCCESS)
+    {
+        gx_prompt_font_set(prompt, props->font_id);
+#if defined(GUIX_5_4_0_COMPATIBILITY)
+        gx_prompt_text_color_set(prompt, props->normal_text_color_id, props->selected_text_color_id);
+#else
+        gx_prompt_text_color_set(prompt, props->normal_text_color_id, props->selected_text_color_id, props->disabled_text_color_id);
+#endif
+    }
+    return status;
+}
+
+UINT gx_studio_numeric_prompt_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent)
+{
+    UINT status;
+    GX_NUMERIC_PROMPT *prompt = (GX_NUMERIC_PROMPT *) control_block;
+    GX_NUMERIC_PROMPT_PROPERTIES *props = (GX_NUMERIC_PROMPT_PROPERTIES *) info->properties;
+    status = gx_numeric_prompt_create(prompt, info->widget_name, parent, props->string_id, info->style, info->widget_id, &info->size);
+    if (status == GX_SUCCESS)
+    {
+        gx_prompt_font_set((GX_PROMPT *)prompt, props->font_id);
+#if defined(GUIX_5_4_0_COMPATIBILITY)
+        gx_prompt_text_color_set((GX_PROMPT *)prompt, props->normal_text_color_id, props->selected_text_color_id);
+#else
+        gx_prompt_text_color_set((GX_PROMPT *)prompt, props->normal_text_color_id, props->selected_text_color_id, props->disabled_text_color_id);
+#endif
+        if(!props->string_id)
+        {
+            gx_numeric_prompt_value_set(prompt, props->numeric_prompt_value);
+        }
+        if(props->format_func)
+        {
+            gx_numeric_prompt_format_function_set(prompt, props->format_func);
+        }
+    }
     return status;
 }
 
@@ -64,46 +127,6 @@ UINT gx_studio_window_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control
         if (props->wallpaper_id)
         {
             gx_window_wallpaper_set(window, props->wallpaper_id, info->style & GX_STYLE_TILE_WALLPAPER);
-        }
-    }
-    return status;
-}
-
-UINT gx_studio_numeric_scroll_wheel_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent)
-{
-    UINT status;
-    GX_NUMERIC_SCROLL_WHEEL *wheel = (GX_NUMERIC_SCROLL_WHEEL *) control_block;
-    GX_NUMERIC_SCROLL_WHEEL_PROPERTIES *props = (GX_NUMERIC_SCROLL_WHEEL_PROPERTIES *) info->properties;
-    status = gx_numeric_scroll_wheel_create(wheel, info->widget_name, parent, props->start_val, props->end_val, 
-                                    info->style, info->widget_id, &info->size);
-    if (status == GX_SUCCESS)
-    {
-        if (props->wallpaper_id)
-        {
-            gx_window_wallpaper_set((GX_WINDOW *) wheel, props->wallpaper_id, info->style & GX_STYLE_TILE_WALLPAPER);
-        }
-        if(props->selected_background)
-        {
-            gx_scroll_wheel_selected_background_set((GX_SCROLL_WHEEL *)wheel, props->selected_background);
-        }
-
-        if (props->total_rows)
-        {
-            gx_scroll_wheel_total_rows_set((GX_SCROLL_WHEEL *)wheel, props->total_rows);
-        }
-
-        gx_scroll_wheel_selected_set((GX_SCROLL_WHEEL *)wheel, props->selected_row);
-        gx_scroll_wheel_gradient_alpha_set((GX_SCROLL_WHEEL *)wheel, props->start_alpha, props->end_alpha);
-        gx_scroll_wheel_row_height_set((GX_SCROLL_WHEEL *)wheel, props->row_height);
-        gx_text_scroll_wheel_font_set((GX_TEXT_SCROLL_WHEEL *)wheel, props->normal_font, props->selected_font);
-#if defined(GUIX_5_4_0_COMPATIBILITY)
-        gx_text_scroll_wheel_text_color_set((GX_TEXT_SCROLL_WHEEL *)wheel, props->normal_text_color, props->selected_text_color);
-#else
-        gx_text_scroll_wheel_text_color_set((GX_TEXT_SCROLL_WHEEL *)wheel, props->normal_text_color, props->selected_text_color, props->disabled_text_color);
-#endif
-        if(props->callback)
-        {
-            gx_text_scroll_wheel_callback_set_ext((GX_TEXT_SCROLL_WHEEL *)wheel, (UINT (*)(GX_TEXT_SCROLL_WHEEL*, INT, GX_STRING *))props->callback);
         }
     }
     return status;
@@ -132,24 +155,6 @@ GX_WINDOW_PROPERTIES main_window_properties =
 {
     0                                        /* wallpaper pixelmap id          */
 };
-GX_NUMERIC_SCROLL_WHEEL_PROPERTIES main_window_numeric_scroll_wheel_properties =
-{
-    0,                                       /* total rows                     */
-    0,                                       /* selected row                   */
-    50,                                      /* row height                     */
-    0,                                       /* start alpha                    */
-    0,                                       /* end alpha                      */
-    GX_FONT_ID_SYSTEM,                       /* normal font id                 */
-    GX_FONT_ID_SYSTEM,                       /* selected font id               */
-    GX_COLOR_ID_SHADOW,                      /* normal text color id           */
-    GX_COLOR_ID_TEXT,                        /* selected text color id         */
-    GX_COLOR_ID_DISABLED_TEXT,               /* disabled text color id         */
-    0,                                       /* wallpaper id                   */
-    0,                                       /* selected background            */
-    GX_NULL,                                 /* format callback                */
-    0,                                       /* start val                      */
-    9,                                       /* end val                        */
-};
 GX_ML_TEXT_VIEW_PROPERTIES main_window_text_view_properties =
 {
     GX_STRING_ID_STRING_3,                   /* string id                      */
@@ -159,6 +164,202 @@ GX_ML_TEXT_VIEW_PROPERTIES main_window_text_view_properties =
     GX_COLOR_ID_DISABLED_TEXT,               /* disabled text color            */
     0,                                       /* whitespace                     */
     2                                        /* line_space                     */
+};
+GX_ICON_PROPERTIES main_window_fps_icon_properties =
+{
+    GX_PIXELMAP_ID_BALL_BIG_BLUE,            /* normal pixelmap id             */
+    0                                        /* selected pixelmap id           */
+};
+GX_PROMPT_PROPERTIES main_window_fps_label_properties =
+{
+    GX_STRING_ID_STRING_4,                   /* string id                      */
+    GX_FONT_ID_SMALL,                        /* font id                        */
+    GX_COLOR_ID_READONLY_TEXT,               /* normal text color              */
+    GX_COLOR_ID_READONLY_TEXT,               /* selected text color            */
+    GX_COLOR_ID_READONLY_TEXT                /* disabled text color            */
+};
+GX_PROMPT_PROPERTIES main_window_camera_label_properties =
+{
+    GX_STRING_ID_STRING_5,                   /* string id                      */
+    GX_FONT_ID_SMALL,                        /* font id                        */
+    GX_COLOR_ID_READONLY_TEXT,               /* normal text color              */
+    GX_COLOR_ID_READONLY_TEXT,               /* selected text color            */
+    GX_COLOR_ID_READONLY_TEXT                /* disabled text color            */
+};
+GX_NUMERIC_PROMPT_PROPERTIES main_window_fps_value_properties =
+{
+    0,                                       /* string id                      */
+    GX_FONT_ID_MEDIUM,                       /* font id                        */
+    GX_COLOR_ID_READONLY_TEXT,               /* normal text color              */
+    GX_COLOR_ID_READONLY_TEXT,               /* selected text color            */
+    GX_COLOR_ID_READONLY_TEXT,               /* disabled text color            */
+    GX_NULL,                                 /* format function                */
+    30                                       /* numeric prompt value           */
+};
+GX_ICON_PROPERTIES main_window_usb_icon_properties =
+{
+    GX_PIXELMAP_ID_AUX_ICON,                 /* normal pixelmap id             */
+    GX_PIXELMAP_ID_AUX_ICON_TRANSPARENT_100  /* selected pixelmap id           */
+};
+GX_RADIAL_PROGRESS_BAR_INFO main_window_usb_fill_bar_properties =
+{
+    760,                                     /* xcenter                        */
+    256,                                     /* ycenter                        */
+    22,                                      /* radius                         */
+    -180,                                    /* current val                    */
+    90,                                      /* anchor val                     */
+    GX_FONT_ID_SMALL,                        /* font_id                        */
+    GX_COLOR_ID_TEXT,                        /* normal text color              */
+    GX_COLOR_ID_READONLY_TEXT,               /* selected text color            */
+    GX_COLOR_ID_READONLY_TEXT,               /* disabled text color            */
+    4,                                       /* normal brush width             */
+    4,                                       /* selected brush width           */
+    GX_COLOR_ID_DISABLED_FILL,               /* normal brush color             */
+    GX_COLOR_ID_BTN_LOWER,                   /* selected brush color           */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_fps_value_define =
+{
+    "fps_value",
+    GX_TYPE_NUMERIC_PROMPT,                  /* widget type                    */
+    GX_ID_NONE,                              /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_TRANSPARENT|GX_STYLE_TEXT_CENTER,   /* style flags */
+    0,                                       /* status flags                   */
+    sizeof(GX_NUMERIC_PROMPT),               /* control block size             */
+    GX_COLOR_ID_WIDGET_FILL,                 /* normal color id                */
+    GX_COLOR_ID_SELECTED_FILL,               /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_numeric_prompt_create,         /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {726, 125, 794, 156},                    /* widget size                    */
+    GX_NULL,                                 /* no next widget                 */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_fps_value), /* control block */
+    (void *) &main_window_fps_value_properties /* extended properties          */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_camera_label_define =
+{
+    "camera_label",
+    GX_TYPE_PROMPT,                          /* widget type                    */
+    GX_ID_NONE,                              /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_TRANSPARENT|GX_STYLE_TEXT_CENTER,   /* style flags */
+    0,                                       /* status flags                   */
+    sizeof(GX_PROMPT),                       /* control block size             */
+    GX_COLOR_ID_WIDGET_FILL,                 /* normal color id                */
+    GX_COLOR_ID_SELECTED_FILL,               /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_prompt_create,                 /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {726, 108, 794, 119},                    /* widget size                    */
+    &main_window_fps_value_define,           /* next widget definition         */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_camera_label), /* control block */
+    (void *) &main_window_camera_label_properties /* extended properties       */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_fps_label_define =
+{
+    "fps_label",
+    GX_TYPE_PROMPT,                          /* widget type                    */
+    GX_ID_NONE,                              /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_TRANSPARENT|GX_STYLE_TEXT_CENTER,   /* style flags */
+    0,                                       /* status flags                   */
+    sizeof(GX_PROMPT),                       /* control block size             */
+    GX_COLOR_ID_WIDGET_FILL,                 /* normal color id                */
+    GX_COLOR_ID_SELECTED_FILL,               /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_prompt_create,                 /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {726, 158, 794, 169},                    /* widget size                    */
+    &main_window_camera_label_define,        /* next widget definition         */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_fps_label), /* control block */
+    (void *) &main_window_fps_label_properties /* extended properties          */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_usb_fill_bar_define =
+{
+    "usb_fill_bar",
+    GX_TYPE_RADIAL_PROGRESS_BAR,             /* widget type                    */
+    GX_ID_NONE,                              /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_TRANSPARENT|GX_STYLE_PROGRESS_PERCENT|GX_STYLE_PROGRESS_TEXT_DRAW|GX_STYLE_RADIAL_PROGRESS_ALIAS|GX_STYLE_RADIAL_PROGRESS_ROUND,   /* style flags */
+    0,                                       /* status flags                   */
+    sizeof(GX_RADIAL_PROGRESS_BAR),          /* control block size             */
+    GX_COLOR_ID_WIDGET_FILL,                 /* normal color id                */
+    GX_COLOR_ID_SELECTED_FILL,               /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_radial_progress_bar_create,     /* create function               */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {737, 232, 785, 280},                    /* widget size                    */
+    GX_NULL,                                 /* no next widget                 */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_usb_fill_bar), /* control block */
+    (void *) &main_window_usb_fill_bar_properties /* extended properties       */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_usb_icon_define =
+{
+    "usb_icon",
+    GX_TYPE_ICON,                            /* widget type                    */
+    GX_ID_NONE,                              /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_TRANSPARENT|GX_STYLE_HALIGN_LEFT|GX_STYLE_VALIGN_TOP,   /* style flags */
+    0,                                       /* status flags                   */
+    sizeof(GX_ICON),                         /* control block size             */
+    GX_COLOR_ID_WIDGET_FILL,                 /* normal color id                */
+    GX_COLOR_ID_SELECTED_FILL,               /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_icon_create,                   /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {750, 196, 772, 210},                    /* widget size                    */
+    &main_window_usb_fill_bar_define,        /* next widget definition         */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_usb_icon), /* control block */
+    (void *) &main_window_usb_icon_properties /* extended properties           */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_fps_icon_define =
+{
+    "fps_icon",
+    GX_TYPE_ICON,                            /* widget type                    */
+    GX_ID_NONE,                              /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_HALIGN_LEFT|GX_STYLE_VALIGN_TOP,   /* style flags */
+    0,                                       /* status flags                   */
+    sizeof(GX_ICON),                         /* control block size             */
+    GX_COLOR_ID_WIDGET_FILL,                 /* normal color id                */
+    GX_COLOR_ID_SELECTED_FILL,               /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_icon_create,                   /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {726, 103, 794, 171},                    /* widget size                    */
+    &main_window_usb_icon_define,            /* next widget definition         */
+    &main_window_fps_label_define,           /* child widget definition        */
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_fps_icon), /* control block */
+    (void *) &main_window_fps_icon_properties /* extended properties           */
 };
 
 GX_CONST GX_STUDIO_WIDGET main_window_text_view_define =
@@ -178,59 +379,11 @@ GX_CONST GX_STUDIO_WIDGET main_window_text_view_define =
     gx_studio_multi_line_text_view_create,     /* create function              */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {-1, 96, 718, 479},                      /* widget size                    */
-    GX_NULL,                                 /* no next widget                 */
+    {0, 96, 719, 479},                       /* widget size                    */
+    &main_window_fps_icon_define,            /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_text_view), /* control block */
     (void *) &main_window_text_view_properties /* extended properties          */
-};
-
-GX_CONST GX_STUDIO_WIDGET main_window_numeric_scroll_wheel_define =
-{
-    "numeric_scroll_wheel",
-    GX_TYPE_NUMERIC_SCROLL_WHEEL,            /* widget type                    */
-    GX_ID_NONE,                              /* widget id                      */
-    #if defined(GX_WIDGET_USER_DATA)
-    0,                                       /* user data                      */
-    #endif
-    GX_STYLE_BORDER_THIN|GX_STYLE_ENABLED|GX_STYLE_WRAP|GX_STYLE_TEXT_CENTER,   /* style flags */
-    GX_STATUS_ACCEPTS_FOCUS,                 /* status flags                   */
-    sizeof(GX_NUMERIC_SCROLL_WHEEL),         /* control block size             */
-    GX_COLOR_ID_WINDOW_FILL,                 /* normal color id                */
-    GX_COLOR_ID_WINDOW_FILL,                 /* selected color id              */
-    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
-    gx_studio_numeric_scroll_wheel_create,     /* create function              */
-    GX_NULL,                                 /* drawing function override      */
-    GX_NULL,                                 /* event function override        */
-    {740, 213, 780, 452},                    /* widget size                    */
-    &main_window_text_view_define,           /* next widget definition         */
-    GX_NULL,                                 /* no child widgets               */ 
-    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_numeric_scroll_wheel), /* control block */
-    (void *) &main_window_numeric_scroll_wheel_properties /* extended properties */
-};
-
-GX_CONST GX_STUDIO_WIDGET main_window_button_define =
-{
-    "button",
-    GX_TYPE_BUTTON,                          /* widget type                    */
-    GX_ID_NONE,                              /* widget id                      */
-    #if defined(GX_WIDGET_USER_DATA)
-    0,                                       /* user data                      */
-    #endif
-    GX_STYLE_BORDER_RAISED|GX_STYLE_ENABLED|GX_STYLE_BUTTON_TOGGLE,   /* style flags */
-    GX_STATUS_ACCEPTS_FOCUS,                 /* status flags                   */
-    sizeof(GX_BUTTON),                       /* control block size             */
-    GX_COLOR_ID_BTN_LOWER,                   /* normal color id                */
-    GX_COLOR_ID_BTN_UPPER,                   /* selected color id              */
-    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
-    gx_studio_button_create,                 /* create function                */
-    GX_NULL,                                 /* drawing function override      */
-    GX_NULL,                                 /* event function override        */
-    {731, 116, 784, 164},                    /* widget size                    */
-    &main_window_numeric_scroll_wheel_define, /* next widget definition        */
-    GX_NULL,                                 /* no child widgets               */ 
-    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_button), /* control block  */
-    (void *) GX_NULL                         /* no extended properties         */
 };
 
 GX_CONST GX_STUDIO_WIDGET main_window_define =
@@ -244,15 +397,15 @@ GX_CONST GX_STUDIO_WIDGET main_window_define =
     GX_STYLE_BORDER_NONE|GX_STYLE_ENABLED,   /* style flags                    */
     GX_STATUS_ACCEPTS_FOCUS,                 /* status flags                   */
     sizeof(MAIN_WINDOW_CONTROL_BLOCK),       /* control block size             */
-    GX_COLOR_ID_WINDOW_FILL,                 /* normal color id                */
-    GX_COLOR_ID_WINDOW_FILL,                 /* selected color id              */
+    GX_COLOR_ID_CANVAS,                      /* normal color id                */
+    GX_COLOR_ID_CANVAS,                      /* selected color id              */
     GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
     gx_studio_window_create,                 /* create function                */
     GX_NULL,                                 /* drawing function override      */
     (UINT (*)(GX_WIDGET *, GX_EVENT *)) main_screen_event_handler, /* event function override */
-    {-1, 0, 798, 479},                       /* widget size                    */
+    {0, 0, 799, 479},                        /* widget size                    */
     GX_NULL,                                 /* next widget                    */
-    &main_window_button_define,              /* child widget                   */
+    &main_window_text_view_define,           /* child widget                   */
     0,                                       /* control block                  */
     (void *) &main_window_properties         /* extended properties            */
 };

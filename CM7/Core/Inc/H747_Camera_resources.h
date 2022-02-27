@@ -5,8 +5,8 @@
 /*  resource file(s). For more information please refer to the Azure RTOS GUIX */
 /*  Studio User Guide, or visit our web site at azure.com/rtos                 */
 /*                                                                             */
-/*  GUIX Studio Revision 6.1.9.2                                               */
-/*  Date (dd.mm.yyyy): 15. 1.2022   Time (hh:mm): 00:09                        */
+/*  GUIX Studio Revision 6.1.10.0                                              */
+/*  Date (dd.mm.yyyy): 27. 2.2022   Time (hh:mm): 01:24                        */
 /*******************************************************************************/
 
 
@@ -35,16 +35,24 @@
 
 /* Font ID definitions                                                         */
 
-#define MAIN_DISPLAY_FONT_TABLE_SIZE 4
+#define GX_FONT_ID_SMALL 4
+#define GX_FONT_ID_MEDIUM 5
+#define MAIN_DISPLAY_FONT_TABLE_SIZE 6
 
 /* Pixelmap ID definitions                                                     */
 
-#define MAIN_DISPLAY_PIXELMAP_TABLE_SIZE 5
+#define GX_PIXELMAP_ID_AUX_ICON 5
+#define GX_PIXELMAP_ID_AUX_ICON_TRANSPARENT_100 6
+#define GX_PIXELMAP_ID_BALL_BIG_BLUE 7
+#define MAIN_DISPLAY_PIXELMAP_TABLE_SIZE 8
 
 /* String Ids                                                                  */
 
 #define GX_STRING_ID_STRING_1 1
 #define GX_STRING_ID_STRING_3 2
-#define MAIN_DISPLAY_STRING_TABLE_SIZE 3
+#define GX_STRING_ID_STRING_2 3
+#define GX_STRING_ID_STRING_4 4
+#define GX_STRING_ID_STRING_5 5
+#define MAIN_DISPLAY_STRING_TABLE_SIZE 6
 
 #endif                                       /* sentry                         */
