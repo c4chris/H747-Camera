@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include <stdio.h>
 #include "app_filex.h"
 #include "main.h"
 
@@ -80,9 +81,26 @@ void  msc_process_thread_entry(ULONG arg)
     status = tx_queue_receive(&ux_app_MsgQueue_msc, &media, TX_WAIT_FOREVER);
     if ((storage != NULL) && (media != NULL))
     {
+	    ULONG64 space = 0;
+	    ULONG spacekb;
+	    CHAR directory_name[FX_MAX_LONG_NAME_LEN];
+			UINT attributes;
+			ULONG size;
+	    UINT year, month, day;
+	    UINT hour, minute, second;
 	    HAL_HSEM_FastTake(HSEM_ID_3);
 	    HAL_HSEM_Release(HSEM_ID_3, 0); 
 			printf("USB inserted\r\n");
+	    fx_media_extended_space_available(media, &space);
+	    /* need to use newlib instead of newlib-nano if we want to use %llu in printf - for now just print kb instead of b */
+	    spacekb = space / 1024;
+	    printf("%lu kbytes space available\r\n", spacekb);
+	    status = fx_directory_first_full_entry_find(media,directory_name,&attributes,&size,&year,&month,&day,&hour,&minute,&second);
+	    if (status == FX_SUCCESS)
+	    {
+		    printf("%.20s %u %lu %u %u %u %u:%u:%u\r\n", directory_name, attributes, size, year, month, day, hour, minute, second);
+				status = fx_directory_next_full_entry_find(media,directory_name,&attributes,&size,&year,&month,&day,&hour,&minute,&second);
+	    }
 # if 0
       /* Create a file */
       status = App_File_Create(media);
