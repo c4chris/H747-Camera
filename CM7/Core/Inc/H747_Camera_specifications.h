@@ -6,7 +6,7 @@
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
 /*  GUIX Studio Revision 6.1.10.0                                              */
-/*  Date (dd.mm.yyyy): 27. 2.2022   Time (hh:mm): 18:36                        */
+/*  Date (dd.mm.yyyy):  5. 3.2022   Time (hh:mm): 01:34                        */
 /*******************************************************************************/
 
 
@@ -121,6 +121,12 @@ typedef struct MAIN_WINDOW_CONTROL_BLOCK_STRUCT
     GX_NUMERIC_PROMPT main_window_fps_value;
     GX_ICON main_window_usb_icon;
     GX_RADIAL_PROGRESS_BAR main_window_usb_fill_bar;
+    GX_ICON main_window_frames_icon;
+    GX_PROMPT main_window_frames_label;
+    GX_PROMPT main_window_captured_label;
+    GX_NUMERIC_PROMPT main_window_frames_value;
+    GX_ICON main_window_record_icon;
+    GX_ICON main_window_eject_icon;
 } MAIN_WINDOW_CONTROL_BLOCK;
 
 

@@ -6,7 +6,7 @@
 /*  Studio User Guide, or visit our web site at azure.com/rtos                 */
 /*                                                                             */
 /*  GUIX Studio Revision 6.1.10.0                                              */
-/*  Date (dd.mm.yyyy): 27. 2.2022   Time (hh:mm): 18:36                        */
+/*  Date (dd.mm.yyyy):  5. 3.2022   Time (hh:mm): 01:34                        */
 /*******************************************************************************/
 
 
@@ -44,7 +44,12 @@
 #define GX_PIXELMAP_ID_AUX_ICON 5
 #define GX_PIXELMAP_ID_AUX_ICON_TRANSPARENT_100 6
 #define GX_PIXELMAP_ID_BALL_BIG_BLUE 7
-#define MAIN_DISPLAY_PIXELMAP_TABLE_SIZE 8
+#define GX_PIXELMAP_ID_BALL_BIG_RED 8
+#define GX_PIXELMAP_ID_CAMERA_BUTTON 9
+#define GX_PIXELMAP_ID_CAMERA_BUTTON_ACTIVE 10
+#define GX_PIXELMAP_ID_EJECT_BUTTON 11
+#define GX_PIXELMAP_ID_EJECT_BUTTON_ACTIVE 12
+#define MAIN_DISPLAY_PIXELMAP_TABLE_SIZE 13
 
 /* String Ids                                                                  */
 
@@ -53,6 +58,8 @@
 #define GX_STRING_ID_STRING_2 3
 #define GX_STRING_ID_STRING_4 4
 #define GX_STRING_ID_STRING_5 5
-#define MAIN_DISPLAY_STRING_TABLE_SIZE 6
+#define GX_STRING_ID_STRING_6 6
+#define GX_STRING_ID_STRING_7 7
+#define MAIN_DISPLAY_STRING_TABLE_SIZE 8
 
 #endif                                       /* sentry                         */
