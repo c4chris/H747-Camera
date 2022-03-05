@@ -429,6 +429,7 @@ void tx_cm7_usb_stick_thread_entry(ULONG thread_input)
 		{
 			printf("Select USB button\n");
 			gx_widget_style_add((GX_WIDGET *)&main_window.main_window_usb_icon, GX_STYLE_DRAW_SELECTED);
+			gx_widget_style_add((GX_WIDGET *)&main_window.main_window_eject_icon, GX_STYLE_DRAW_SELECTED);
 		}
   }
 }
