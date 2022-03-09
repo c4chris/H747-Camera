@@ -75,6 +75,7 @@ __attribute__((section(".sram4.touchData"))) volatile uint16_t touchData[4], tou
 unsigned char dbgBuf[256];
 unsigned char input[64];
 unsigned char u2tx[256];
+ULONG gCounter;
 
 /* USER CODE END PV */
 
@@ -350,6 +351,7 @@ void tx_cm4_uart_thread_entry(ULONG thread_input)
 
 		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
 		tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
+		gCounter += 1;
 
 	}
 	HAL_UART_Receive_DMA(&huart1, read_buffer, 32);

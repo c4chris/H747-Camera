@@ -1697,78 +1697,6 @@
 <enabled>TRUE</enabled>
 <compress>FALSE</compress>
 </resource>
-<resource>
-<name>Add New String</name>
-<pathinfo>
-<pathtype>project_relative</pathtype>
-</pathinfo>
-<is_default>FALSE</is_default>
-<enabled>TRUE</enabled>
-<compress>FALSE</compress>
-</resource>
-<resource>
-<name>Add New String</name>
-<pathinfo>
-<pathtype>project_relative</pathtype>
-</pathinfo>
-<is_default>FALSE</is_default>
-<enabled>TRUE</enabled>
-<compress>FALSE</compress>
-</resource>
-<resource>
-<name>Add New String</name>
-<pathinfo>
-<pathtype>project_relative</pathtype>
-</pathinfo>
-<is_default>FALSE</is_default>
-<enabled>TRUE</enabled>
-<compress>FALSE</compress>
-</resource>
-<resource>
-<name>Add New String</name>
-<pathinfo>
-<pathtype>project_relative</pathtype>
-</pathinfo>
-<is_default>FALSE</is_default>
-<enabled>TRUE</enabled>
-<compress>FALSE</compress>
-</resource>
-<resource>
-<name>Add New String</name>
-<pathinfo>
-<pathtype>project_relative</pathtype>
-</pathinfo>
-<is_default>FALSE</is_default>
-<enabled>TRUE</enabled>
-<compress>FALSE</compress>
-</resource>
-<resource>
-<name>Add New String</name>
-<pathinfo>
-<pathtype>project_relative</pathtype>
-</pathinfo>
-<is_default>FALSE</is_default>
-<enabled>TRUE</enabled>
-<compress>FALSE</compress>
-</resource>
-<resource>
-<name>Add New String</name>
-<pathinfo>
-<pathtype>project_relative</pathtype>
-</pathinfo>
-<is_default>FALSE</is_default>
-<enabled>TRUE</enabled>
-<compress>FALSE</compress>
-</resource>
-<resource>
-<name>Add New String</name>
-<pathinfo>
-<pathtype>project_relative</pathtype>
-</pathinfo>
-<is_default>FALSE</is_default>
-<enabled>TRUE</enabled>
-<compress>FALSE</compress>
-</resource>
 </resource>
 <vscroll_appearance>
 <scroll_width>20</scroll_width>
@@ -1870,6 +1798,7 @@
 <normal_fill_color>TEXT_INPUT_FILL</normal_fill_color>
 <selected_fill_color>WINDOW_FILL</selected_fill_color>
 <disabled_fill_color>DISABLED_FILL</disabled_fill_color>
+<id_name>ID_TEXT_VIEW</id_name>
 <template>FALSE</template>
 <visible_at_startup>FALSE</visible_at_startup>
 <string_id>STRING_3</string_id>
@@ -1896,6 +1825,7 @@
 <normal_fill_color>WIDGET_FILL</normal_fill_color>
 <selected_fill_color>SELECTED_FILL</selected_fill_color>
 <disabled_fill_color>DISABLED_FILL</disabled_fill_color>
+<id_name>ID_FPS_ICON</id_name>
 <template>FALSE</template>
 <visible_at_startup>FALSE</visible_at_startup>
 <normal_map_id>BALL_BIG_BLUE</normal_map_id>
@@ -1960,6 +1890,7 @@
 <normal_fill_color>WIDGET_FILL</normal_fill_color>
 <selected_fill_color>SELECTED_FILL</selected_fill_color>
 <disabled_fill_color>DISABLED_FILL</disabled_fill_color>
+<id_name>ID_FPS_VALUE</id_name>
 <template>FALSE</template>
 <visible_at_startup>FALSE</visible_at_startup>
 <font_id>MEDIUM</font_id>
@@ -1984,6 +1915,7 @@
 <normal_fill_color>WIDGET_FILL</normal_fill_color>
 <selected_fill_color>SELECTED_FILL</selected_fill_color>
 <disabled_fill_color>DISABLED_FILL</disabled_fill_color>
+<id_name>ID_USB_ICON</id_name>
 <template>FALSE</template>
 <visible_at_startup>FALSE</visible_at_startup>
 <normal_map_id>AUX_ICON</normal_map_id>
@@ -2004,6 +1936,7 @@
 <normal_fill_color>WIDGET_FILL</normal_fill_color>
 <selected_fill_color>SELECTED_FILL</selected_fill_color>
 <disabled_fill_color>DISABLED_FILL</disabled_fill_color>
+<id_name>ID_USB_FILL_BAR</id_name>
 <template>FALSE</template>
 <visible_at_startup>FALSE</visible_at_startup>
 <xcenter>760</xcenter>
@@ -2035,6 +1968,7 @@
 <normal_fill_color>WIDGET_FILL</normal_fill_color>
 <selected_fill_color>SELECTED_FILL</selected_fill_color>
 <disabled_fill_color>DISABLED_FILL</disabled_fill_color>
+<id_name>ID_FRAMES_ICON</id_name>
 <template>FALSE</template>
 <visible_at_startup>FALSE</visible_at_startup>
 <normal_map_id>BALL_BIG_RED</normal_map_id>
@@ -2099,6 +2033,7 @@
 <normal_fill_color>WIDGET_FILL</normal_fill_color>
 <selected_fill_color>SELECTED_FILL</selected_fill_color>
 <disabled_fill_color>DISABLED_FILL</disabled_fill_color>
+<id_name>ID_FRAMES_VALUE</id_name>
 <template>FALSE</template>
 <visible_at_startup>FALSE</visible_at_startup>
 <font_id>MEDIUM</font_id>
@@ -2123,6 +2058,7 @@
 <normal_fill_color>WIDGET_FILL</normal_fill_color>
 <selected_fill_color>SELECTED_FILL</selected_fill_color>
 <disabled_fill_color>DISABLED_FILL</disabled_fill_color>
+<id_name>ID_RECORD_ICON</id_name>
 <template>FALSE</template>
 <visible_at_startup>FALSE</visible_at_startup>
 <normal_map_id>CAMERA_BUTTON</normal_map_id>
@@ -2143,6 +2079,7 @@
 <normal_fill_color>WIDGET_FILL</normal_fill_color>
 <selected_fill_color>SELECTED_FILL</selected_fill_color>
 <disabled_fill_color>DISABLED_FILL</disabled_fill_color>
+<id_name>ID_EJECT_ICON</id_name>
 <template>FALSE</template>
 <visible_at_startup>FALSE</visible_at_startup>
 <normal_map_id>EJECT_BUTTON</normal_map_id>

@@ -6,7 +6,7 @@
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
 /*  GUIX Studio Revision 6.1.10.0                                              */
-/*  Date (dd.mm.yyyy):  5. 3.2022   Time (hh:mm): 01:34                        */
+/*  Date (dd.mm.yyyy):  9. 3.2022   Time (hh:mm): 00:05                        */
 /*******************************************************************************/
 
 
@@ -22,6 +22,15 @@ extern   "C" {
 
 /* Define widget ids                                                           */
 
+#define ID_TEXT_VIEW 1
+#define ID_FPS_ICON 2
+#define ID_FPS_VALUE 3
+#define ID_USB_ICON 4
+#define ID_USB_FILL_BAR 5
+#define ID_FRAMES_ICON 6
+#define ID_FRAMES_VALUE 7
+#define ID_RECORD_ICON 8
+#define ID_EJECT_ICON 9
 
 
 /* Define animation ids                                                        */

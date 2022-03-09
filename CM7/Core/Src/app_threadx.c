@@ -86,6 +86,7 @@ char textBuffer[LINES*COLUMNS];
 UINT lineEnd[LINES];
 UINT curLine;
 volatile UINT txCnt;
+ULONG gCounter;
 
 /* USER CODE END PV */
 
@@ -384,6 +385,7 @@ void tx_cm7_main_thread_entry(ULONG thread_input)
   	{
     	HAL_GPIO_TogglePin(LED3_GPIO_Port, LED3_Pin);
   		toggleTicks = ticks + TX_TIMER_TICKS_PER_SECOND;
+	  	gCounter += 1;
   	}
   	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 5);
   }
@@ -522,6 +524,49 @@ int _write(int file, char *ptr, int len)
 	return len;
 }
 
+char *gEventName[] = {
+	"NO_EVENT",
+	"TERMINATE",
+	"REDRAW",
+	"SHOW",
+	"HIDE",
+	"RESIZED",
+	"SLIDE",
+	"FOCUS_GAINED",
+	"FOCUS_LOST",
+	"HORIZONTAL_SCROLL",
+	"VERTICAL_SCROLL",
+	"TIMER",
+	"PEN_DOWN",
+	"PEN_UP",
+	"PEN_MOVE",
+	"PEN_DRAG",
+	"KEY_DOWN",
+	"KEY_UP",
+	"CLOSE",
+	"DELETE",
+	"SLIDER_VALUE",
+	"TOGGLE_ON",
+	"TOGGLE_OFF",
+	"RADIO_SELECT",
+	"RADIO_DESELECT",
+	"CLICKED",
+	"LIST_SELECT",
+	"VERTICAL_FLICK",
+	"HORIZONTAL_FLICK" };
+char *gWidgetName[] = {
+	"NONE",
+	"TEXT_VIEW",
+	"FPS_ICON",
+	"FPS_VALUE",
+	"USB_ICON",
+	"USB_FILL_BAR",
+	"FRAMES_ICON",
+	"FRAMES_VALUE",
+	"RECORD_ICON",
+	"EJECT_ICON"
+	};
+
 /*************************************************************************************/
 UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 {
@@ -544,7 +589,12 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 
 		default:
 			//HAL_GPIO_TogglePin(LED4_GPIO_Port, LED4_Pin);
-			printf("Got main screen event %lu\n", event_ptr->gx_event_type);
+			if ((event_ptr->gx_event_type & 0xff) == GX_EVENT_CLICKED)
+			{
+				printf("-> We have a click in %s (%lu)\n", gWidgetName[event_ptr->gx_event_type >> 8], event_ptr->gx_event_type);
+			}
+			else
+				printf("Got main screen event %lu %lu %s\n", event_ptr->gx_event_type, event_ptr->gx_event_type >> 8, gEventName[event_ptr->gx_event_type & 0xff]);
 	}
 	return gx_window_event_process(window, event_ptr);
 }

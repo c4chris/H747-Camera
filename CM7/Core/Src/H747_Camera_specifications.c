@@ -6,7 +6,7 @@
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
 /*  GUIX Studio Revision 6.1.10.0                                              */
-/*  Date (dd.mm.yyyy):  5. 3.2022   Time (hh:mm): 01:34                        */
+/*  Date (dd.mm.yyyy):  9. 3.2022   Time (hh:mm): 00:05                        */
 /*******************************************************************************/
 
 
@@ -263,7 +263,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_fps_value_define =
 {
     "fps_value",
     GX_TYPE_NUMERIC_PROMPT,                  /* widget type                    */
-    GX_ID_NONE,                              /* widget id                      */
+    ID_FPS_VALUE,                            /* widget id                      */
     #if defined(GX_WIDGET_USER_DATA)
     0,                                       /* user data                      */
     #endif
@@ -335,7 +335,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_frames_value_define =
 {
     "frames_value",
     GX_TYPE_NUMERIC_PROMPT,                  /* widget type                    */
-    GX_ID_NONE,                              /* widget id                      */
+    ID_FRAMES_VALUE,                         /* widget id                      */
     #if defined(GX_WIDGET_USER_DATA)
     0,                                       /* user data                      */
     #endif
@@ -407,7 +407,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_eject_icon_define =
 {
     "eject_icon",
     GX_TYPE_ICON,                            /* widget type                    */
-    GX_ID_NONE,                              /* widget id                      */
+    ID_EJECT_ICON,                           /* widget id                      */
     #if defined(GX_WIDGET_USER_DATA)
     0,                                       /* user data                      */
     #endif
@@ -431,7 +431,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_record_icon_define =
 {
     "record_icon",
     GX_TYPE_ICON,                            /* widget type                    */
-    GX_ID_NONE,                              /* widget id                      */
+    ID_RECORD_ICON,                          /* widget id                      */
     #if defined(GX_WIDGET_USER_DATA)
     0,                                       /* user data                      */
     #endif
@@ -455,7 +455,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_frames_icon_define =
 {
     "frames_icon",
     GX_TYPE_ICON,                            /* widget type                    */
-    GX_ID_NONE,                              /* widget id                      */
+    ID_FRAMES_ICON,                          /* widget id                      */
     #if defined(GX_WIDGET_USER_DATA)
     0,                                       /* user data                      */
     #endif
@@ -479,7 +479,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_usb_fill_bar_define =
 {
     "usb_fill_bar",
     GX_TYPE_RADIAL_PROGRESS_BAR,             /* widget type                    */
-    GX_ID_NONE,                              /* widget id                      */
+    ID_USB_FILL_BAR,                         /* widget id                      */
     #if defined(GX_WIDGET_USER_DATA)
     0,                                       /* user data                      */
     #endif
@@ -503,7 +503,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_usb_icon_define =
 {
     "usb_icon",
     GX_TYPE_ICON,                            /* widget type                    */
-    GX_ID_NONE,                              /* widget id                      */
+    ID_USB_ICON,                             /* widget id                      */
     #if defined(GX_WIDGET_USER_DATA)
     0,                                       /* user data                      */
     #endif
@@ -527,7 +527,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_fps_icon_define =
 {
     "fps_icon",
     GX_TYPE_ICON,                            /* widget type                    */
-    GX_ID_NONE,                              /* widget id                      */
+    ID_FPS_ICON,                             /* widget id                      */
     #if defined(GX_WIDGET_USER_DATA)
     0,                                       /* user data                      */
     #endif
@@ -551,7 +551,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_text_view_define =
 {
     "text_view",
     GX_TYPE_MULTI_LINE_TEXT_VIEW,            /* widget type                    */
-    GX_ID_NONE,                              /* widget id                      */
+    ID_TEXT_VIEW,                            /* widget id                      */
     #if defined(GX_WIDGET_USER_DATA)
     0,                                       /* user data                      */
     #endif
