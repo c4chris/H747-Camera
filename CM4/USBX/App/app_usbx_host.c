@@ -24,6 +24,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "main.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -146,14 +148,14 @@ UINT MX_USBX_Host_Init(VOID *memory_ptr)
 
   /* Allocate Memory for the msc_Queue  */
   if (tx_byte_allocate(byte_pool, (VOID **) &pointer,
-                       APP_QUEUE_SIZE * sizeof(FX_MEDIA*), TX_NO_WAIT) != TX_SUCCESS)
+                       APP_QUEUE_SIZE * sizeof(ULONG), TX_NO_WAIT) != TX_SUCCESS)
   {
     return TX_POOL_ERROR;
   }
 
   /* Create the msc_MsgQueue   */
   if (tx_queue_create(&ux_app_MsgQueue_msc, "Message Queue msc", sizeof(FX_MEDIA*),
-                      pointer, APP_QUEUE_SIZE * sizeof(FX_MEDIA*)) != TX_SUCCESS)
+                      pointer, APP_QUEUE_SIZE * sizeof(ULONG)) != TX_SUCCESS)
   {
     return TX_QUEUE_ERROR;
   }
@@ -198,19 +200,20 @@ void  usbx_app_thread_entry(ULONG arg)
         case MSC_Device :
           if (media ==NULL)
           {
-           break;
+						break;
           }
           else
           {
-          /* Device_information */
-          USBH_UsrLog("USB Mass Storage Device Found");
-          USBH_UsrLog("PID: %#x ", (UINT)storage -> ux_host_class_storage_device -> ux_device_descriptor.idProduct);
-          USBH_UsrLog("VID: %#x ", (UINT)storage -> ux_host_class_storage_device -> ux_device_descriptor.idVendor);
+	          ULONG msg = APP_MSG_MEDIA_READY;
+						/* Device_information */
+						USBH_UsrLog("USB Mass Storage Device Found");
+						USBH_UsrLog("PID: %#x ", (UINT)storage -> ux_host_class_storage_device -> ux_device_descriptor.idProduct);
+						USBH_UsrLog("VID: %#x ", (UINT)storage -> ux_host_class_storage_device -> ux_device_descriptor.idVendor);
 
-          /* start File operations */
-          USBH_UsrLog("\n*** Start Files operations ***\n");
-          /* send queue to msc_app_process*/
-          tx_queue_send(&ux_app_MsgQueue_msc, &media, TX_NO_WAIT);
+						/* start File operations */
+						USBH_UsrLog("\n*** Start Files operations ***\n");
+						/* send queue to msc_app_process*/
+						tx_queue_send(&ux_app_MsgQueue_msc, &msg, TX_NO_WAIT);
           }
           break;
 
@@ -232,6 +235,7 @@ void  usbx_app_thread_entry(ULONG arg)
       /*clear storage instance*/
       storage_media  = NULL;
       media = NULL;
+      /* FIXME - report device was disconnected */
       tx_thread_sleep(50);
     }
   }

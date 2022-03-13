@@ -78,23 +78,26 @@ void  msc_process_thread_entry(ULONG arg)
 
   while(1)
   {
-    status = tx_queue_receive(&ux_app_MsgQueue_msc, &media, TX_WAIT_FOREVER);
-    if ((storage != NULL) && (media != NULL))
+	  ULONG msg;
+    status = tx_queue_receive(&ux_app_MsgQueue_msc, &msg, TX_WAIT_FOREVER);
+    if ((storage != NULL) && (media != NULL) && (msg == APP_MSG_MEDIA_READY))
     {
 	    ULONG64 space = 0;
-	    ULONG spacekb;
 	    CHAR directory_name[FX_MAX_LONG_NAME_LEN];
 			UINT attributes;
 			ULONG size;
 	    UINT year, month, day;
 	    UINT hour, minute, second;
+			printf("USB inserted\r\n");
+	    sharedData.CM4_to_CM7_USB_info |= USB_INFO_STICK_INSERTED;
+	    sharedData.CM4_to_CM7_USB_stored_count = 0;
+	    fx_media_extended_space_available(media, &space);
+	    sharedData.CM4_to_CM7_USB_free_size_kb = space / 1024;
+      /* signal new USB state to CM7 */
 	    HAL_HSEM_FastTake(HSEM_ID_3);
 	    HAL_HSEM_Release(HSEM_ID_3, 0); 
-			printf("USB inserted\r\n");
-	    fx_media_extended_space_available(media, &space);
 	    /* need to use newlib instead of newlib-nano if we want to use %llu in printf - for now just print kb instead of b */
-	    spacekb = space / 1024;
-	    printf("%lu kbytes space available\r\n", spacekb);
+	    printf("%lu kbytes space available\r\n", sharedData.CM4_to_CM7_USB_free_size_kb);
 	    status = fx_directory_first_full_entry_find(media,directory_name,&attributes,&size,&year,&month,&day,&hour,&minute,&second);
 	    if (status == FX_SUCCESS)
 	    {

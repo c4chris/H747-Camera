@@ -79,7 +79,7 @@ TX_EVENT_FLAGS_GROUP cm7_event_group;
 GX_WINDOW_ROOT *root_window;
 
 /* data comning from CM4 core */
-__attribute__((section(".sram4.touchData"))) volatile uint16_t touchData[4], touchData2[4];
+__attribute__((section(".sram4.sharedData"))) volatile CM4_CM7_SharedDataTypeDef sharedData;
 __attribute__((section(".sram2.camera"))) volatile uint16_t cameraBuffer[(800 * 96)];
 
 char textBuffer[LINES*COLUMNS];
@@ -330,19 +330,19 @@ void tx_cm7_touch_thread_entry(ULONG thread_input)
 		/* If status equals TX_SUCCESS, actual_events contains the actual events obtained. */
 		if (status == TX_SUCCESS)
 		{
-  		touchData2[0] = touchData[0];
-  		touchData2[1] = touchData[1];
-  		touchData2[2] = touchData[2];
-  		touchData2[3] = touchData[3];
-  		if (touchData[3] != prevTouch[3])
+  		sharedData.touchData2[0] = sharedData.touchData[0];
+  		sharedData.touchData2[1] = sharedData.touchData[1];
+  		sharedData.touchData2[2] = sharedData.touchData[2];
+  		sharedData.touchData2[3] = sharedData.touchData[3];
+  		if (sharedData.touchData[3] != prevTouch[3])
   		{
   			/* Send a pen event for processing. */
   			GX_EVENT e = {0};
   			//e.gx_event_display_handle = LCD_FRAME_BUFFER;
-    		curTouch[0] = touchData[0];
-    		curTouch[1] = touchData[1];
-    		curTouch[2] = touchData[2];
-    		curTouch[3] = touchData[3];
+    		curTouch[0] = sharedData.touchData[0];
+    		curTouch[1] = sharedData.touchData[1];
+    		curTouch[2] = sharedData.touchData[2];
+    		curTouch[3] = sharedData.touchData[3];
   			e.gx_event_payload.gx_event_pointdata.gx_point_x = curTouch[2];       // Y value of touchscreen driver
   			e.gx_event_payload.gx_event_pointdata.gx_point_y = 480 - curTouch[1]; // X value of touchscreen driver, but reversed
   			if (curTouch[0] == 0)
@@ -429,9 +429,12 @@ void tx_cm7_usb_stick_thread_entry(ULONG thread_input)
 		/* If status equals TX_SUCCESS, actual_events contains the actual events obtained. */
 		if (status == TX_SUCCESS)
 		{
-			printf("Select USB button\n");
-			gx_widget_style_add((GX_WIDGET *)&main_window.main_window_usb_icon, GX_STYLE_DRAW_SELECTED);
-			gx_widget_style_add((GX_WIDGET *)&main_window.main_window_eject_icon, GX_STYLE_DRAW_SELECTED);
+			if (sharedData.CM4_to_CM7_USB_info & USB_INFO_STICK_INSERTED)
+			{
+				printf("Select USB button\n");
+				gx_widget_style_add((GX_WIDGET *)&main_window.main_window_usb_icon, GX_STYLE_DRAW_SELECTED);
+				gx_widget_style_add((GX_WIDGET *)&main_window.main_window_eject_icon, GX_STYLE_DRAW_SELECTED);
+			}
 		}
   }
 }

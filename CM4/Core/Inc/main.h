@@ -39,6 +39,15 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
+typedef struct
+{
+  uint16_t touchData[4], touchData2[4];
+	uint32_t CM4_to_CM7_USB_info;
+	uint32_t CM4_to_CM7_USB_free_size_kb;
+	uint32_t CM4_to_CM7_USB_stored_count;
+	uint32_t CM7_to_CM4_USB_request;
+} CM4_CM7_SharedDataTypeDef;
+
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -50,6 +59,7 @@ extern UART_HandleTypeDef huart1;
 extern DCMI_HandleTypeDef hdcmi;
 extern volatile uint16_t cameraBuffer[(800 * 96)];
 extern volatile uint32_t threadInitDone;
+extern volatile CM4_CM7_SharedDataTypeDef sharedData;
 
 /* USER CODE END EC */
 
@@ -242,18 +252,27 @@ void   MX_FMC_Init(void);
 #define HSEM_3 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_3))
 #define HSEM_4 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_4))
 
-#define ADV7533_MAIN_I2C_ADDR           0x7AU
-#define ADV7533_CEC_DSI_I2C_ADDR        0x78U
-#define ADV7533_MAIN_POWER_DOWN_REG     0x41U
+#define ADV7533_MAIN_I2C_ADDR       0x7AU
+#define ADV7533_CEC_DSI_I2C_ADDR    0x78U
+#define ADV7533_MAIN_POWER_DOWN_REG 0x41U
 
-#define I2Cx_TIMEOUT_MAX               0x3000 /* The value of the maximal timeout for I2C waiting loops */
+#define I2Cx_TIMEOUT_MAX            0x3000 /* The value of the maximal timeout for I2C waiting loops */
 
-#define CAMERA_OV5640_ADDRESS           0x78U
+#define CAMERA_OV5640_ADDRESS       0x78U
 
-#define SDRAM_BANK_0         0xD0000000UL
-#define SDRAM_BANK_1         0xD0800000UL
-#define SDRAM_BANK_2         0xD1000000UL
-#define SDRAM_BANK_3         0xD1800000UL
+#define SDRAM_BANK_0                0xD0000000UL
+#define SDRAM_BANK_1                0xD0800000UL
+#define SDRAM_BANK_2                0xD1000000UL
+#define SDRAM_BANK_3                0xD1800000UL
+
+#define USB_INFO_STICK_INSERTED     0x00000001UL
+#define USB_INFO_STICK_CLOSED       0x00000002UL
+#define USB_INFO_RECORDING          0x00000004UL
+#define USB_REQUEST_STICK_EJECT     0x00000001UL
+#define USB_REQUEST_START_RECORDING 0x00000002UL
+#define USB_REQUEST_STOP_RECORDING  0x00000004UL
+
+#define APP_MSG_MEDIA_READY         1UL
 
 /* USER CODE END Private defines */
 

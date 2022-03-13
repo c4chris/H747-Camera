@@ -71,7 +71,7 @@ volatile unsigned int u2tc;
 volatile unsigned int u2htc;
 volatile unsigned int u2ec;
 volatile unsigned int u2ic;
-__attribute__((section(".sram4.touchData"))) volatile uint16_t touchData[4], touchData2[4];
+__attribute__((section(".sram4.sharedData"))) volatile CM4_CM7_SharedDataTypeDef sharedData;
 unsigned char dbgBuf[256];
 unsigned char input[64];
 unsigned char u2tx[256];
@@ -303,7 +303,7 @@ Address Name      Default | Bit7 | Bit6 | Bit5 | Bit4 | Bit3 | Bit2 | Bit1 | Bit
 void tx_cm4_i2c4_thread_entry(ULONG thread_input)
 {
 	ULONG actual_events;
-	memset((void *)touchData, 0, sizeof(touchData));
+	memset((void *)sharedData.touchData, 0, sizeof(sharedData.touchData));
 	/* Infinite loop */
 	for(;;)
 	{
@@ -323,10 +323,10 @@ void tx_cm4_i2c4_thread_entry(ULONG thread_input)
 		    {
 		      touchX = (((uint32_t)data[0] & FT6X06_P1_XH_TP_BIT_MASK) << 8) | ((uint32_t)data[1] & FT6X06_P1_XL_TP_BIT_MASK);
 		      touchY = (((uint32_t)data[2] & FT6X06_P1_YH_TP_BIT_MASK) << 8) | ((uint32_t)data[3] & FT6X06_P1_YL_TP_BIT_MASK);
-		      touchData[0] = nb_touch;
-		      touchData[1] = touchX;
-		      touchData[2] = touchY;
-		      touchData[3] += 1;
+		      sharedData.touchData[0] = nb_touch;
+		      sharedData.touchData[1] = touchX;
+		      sharedData.touchData[2] = touchY;
+		      sharedData.touchData[3] += 1;
 		      /* Signal CM7 that we have new touch data */
 		      HAL_HSEM_FastTake(HSEM_ID_1);
 		      HAL_HSEM_Release(HSEM_ID_1,0);

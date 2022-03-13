@@ -39,6 +39,20 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
 
+typedef struct
+{
+  uint16_t touchData[4], touchData2[4];
+	uint32_t CM4_to_CM7_USB_info;
+	uint32_t CM4_to_CM7_USB_free_size_kb;
+	uint32_t CM4_to_CM7_USB_stored_count;
+	uint32_t CM7_to_CM4_USB_request;
+} CM4_CM7_SharedDataTypeDef;
+
+/* USER CODE END ET */
+
+/* Exported constants --------------------------------------------------------*/
+/* USER CODE BEGIN EC */
+
 extern __IO int32_t   front_buffer;
 extern __IO int32_t   pend_buffer;
 extern const uint32_t Buffers[];
@@ -46,11 +60,7 @@ extern DMA2D_HandleTypeDef hdma2d;
 extern DSI_HandleTypeDef hdsi;
 extern LTDC_HandleTypeDef hltdc;
 extern volatile uint32_t threadInitDone;
-
-/* USER CODE END ET */
-
-/* Exported constants --------------------------------------------------------*/
-/* USER CODE BEGIN EC */
+extern volatile CM4_CM7_SharedDataTypeDef sharedData;
 
 /* USER CODE END EC */
 
@@ -222,12 +232,19 @@ void Error_Handler(void);
 #define HSEM_3 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_3))
 #define HSEM_4 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_4))
 
-#define SDRAM_BANK_0         0xD0000000UL
-#define SDRAM_BANK_1         0xD0800000UL
-#define SDRAM_BANK_2         0xD1000000UL
-#define SDRAM_BANK_3         0xD1800000UL
-#define LCD_LAYER_0_ADDRESS  SDRAM_BANK_0
-#define LCD_LAYER_1_ADDRESS  SDRAM_BANK_1
+#define SDRAM_BANK_0                0xD0000000UL
+#define SDRAM_BANK_1                0xD0800000UL
+#define SDRAM_BANK_2                0xD1000000UL
+#define SDRAM_BANK_3                0xD1800000UL
+#define LCD_LAYER_0_ADDRESS         SDRAM_BANK_0
+#define LCD_LAYER_1_ADDRESS         SDRAM_BANK_1
+
+#define USB_INFO_STICK_INSERTED     0x00000001UL
+#define USB_INFO_STICK_CLOSED       0x00000002UL
+#define USB_INFO_RECORDING          0x00000004UL
+#define USB_REQUEST_STICK_EJECT     0x00000001UL
+#define USB_REQUEST_START_RECORDING 0x00000002UL
+#define USB_REQUEST_STOP_RECORDING  0x00000004UL
 
 /* USER CODE END Private defines */
 
