@@ -53,9 +53,8 @@ UINT MX_FileX_Init(VOID *memory_ptr);
 
 /* USER CODE BEGIN EFP */
 
-UINT  App_File_Create(FX_MEDIA *fx_media);
-UINT  App_File_Write(FX_MEDIA *fx_media);
-UINT  App_File_Read(FX_MEDIA *fx_media);
+FX_FILE *  App_File_Create(FX_MEDIA *fx_media);
+UINT  App_File_Close(FX_MEDIA *fx_media);
 
 /* USER CODE END EFP */
 

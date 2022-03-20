@@ -50,6 +50,7 @@
 
 extern UX_HOST_CLASS_STORAGE        *storage;
 extern FX_MEDIA                     *media;
+extern FX_FILE                      *file;
 extern TX_QUEUE                     ux_app_MsgQueue_msc;
 
 /* USER CODE END PV */
@@ -80,79 +81,70 @@ void  msc_process_thread_entry(ULONG arg)
   {
 	  ULONG msg;
     status = tx_queue_receive(&ux_app_MsgQueue_msc, &msg, TX_WAIT_FOREVER);
-    if ((storage != NULL) && (media != NULL) && (msg == APP_MSG_MEDIA_READY))
-    {
-	    ULONG64 space = 0;
-	    CHAR directory_name[FX_MAX_LONG_NAME_LEN];
-			UINT attributes;
-			ULONG size;
-	    UINT year, month, day;
-	    UINT hour, minute, second;
-			printf("USB inserted\r\n");
-	    sharedData.CM4_to_CM7_USB_info |= USB_INFO_STICK_INSERTED;
-	    sharedData.CM4_to_CM7_USB_stored_count = 0;
-	    fx_media_extended_space_available(media, &space);
-	    sharedData.CM4_to_CM7_USB_free_size_kb = space / 1024;
-      /* signal new USB state to CM7 */
-	    HAL_HSEM_FastTake(HSEM_ID_3);
-	    HAL_HSEM_Release(HSEM_ID_3, 0); 
-	    /* need to use newlib instead of newlib-nano if we want to use %llu in printf - for now just print kb instead of b */
-	    printf("%lu kbytes space available\r\n", sharedData.CM4_to_CM7_USB_free_size_kb);
-	    status = fx_directory_first_full_entry_find(media,directory_name,&attributes,&size,&year,&month,&day,&hour,&minute,&second);
-	    if (status == FX_SUCCESS)
-	    {
-		    printf("%.20s %u %lu %u %u %u %u:%u:%u\r\n", directory_name, attributes, size, year, month, day, hour, minute, second);
-				status = fx_directory_next_full_entry_find(media,directory_name,&attributes,&size,&year,&month,&day,&hour,&minute,&second);
-	    }
-# if 0
-      /* Create a file */
-      status = App_File_Create(media);
+	  if ((storage != NULL) && (media != NULL) && (msg == APP_MSG_MEDIA_READY))
+	  {
+		  ULONG64 space = 0;
+		  CHAR directory_name[FX_MAX_LONG_NAME_LEN];
+		  UINT attributes;
+		  ULONG size;
+		  UINT year, month, day;
+		  UINT hour, minute, second;
+		  printf("USB inserted\r\n");
+		  sharedData.CM4_to_CM7_USB_info |= USB_INFO_STICK_INSERTED;
+		  sharedData.CM4_to_CM7_USB_stored_count = 0;
+		  fx_media_extended_space_available(media, &space);
+		  sharedData.CM4_to_CM7_USB_free_size_kb = space / 1024;
+		  /* signal new USB state to CM7 */
+		  HAL_HSEM_FastTake(HSEM_ID_3);
+		  HAL_HSEM_Release(HSEM_ID_3, 0); 
+		  /* need to use newlib instead of newlib-nano if we want to use %llu in printf - for now just print kb instead of b */
+		  printf("%lu kbytes space available\r\n", sharedData.CM4_to_CM7_USB_free_size_kb);
+		  status = fx_directory_first_full_entry_find(media, directory_name, &attributes, &size, &year, &month, &day, &hour, &minute, &second);
+		  if (status == FX_SUCCESS)
+		  {
+			  printf("%.20s %u %lu %u %u %u %u:%u:%u\r\n", directory_name, attributes, size, year, month, day, hour, minute, second);
+			  status = fx_directory_next_full_entry_find(media, directory_name, &attributes, &size, &year, &month, &day, &hour, &minute, &second);
+		  }
+	  }
+	  else if ((storage != NULL) && (media != NULL) && (msg == APP_MSG_START_RECORDING))
+	  {
+		  /* Create a file */
+		  file = App_File_Create(media);
 
-      /* check status */
-      if (status == UX_SUCCESS)
-      {
-        USBH_UsrLog("File TEST.TXT Created \n");
-      }
-      else
-      {
-        USBH_ErrLog(" !! Could Not Create TEST.TXT File !! ");
-        break;
-      }
+		  /* check status */
+		  if (file != NULL)
+		  {
+			  USBH_UsrLog("File CAMERA.RAW Created");
+				sharedData.CM4_to_CM7_USB_info |= USB_INFO_RECORDING;
+				/* signal new USB state to CM7 */
+				HAL_HSEM_FastTake(HSEM_ID_3);
+				HAL_HSEM_Release(HSEM_ID_3, 0); 
+		  }
+	  }
+	  else if ((storage != NULL) && (media != NULL) && (msg == APP_MSG_STOP_RECORDING))
+	  {
+			/* signal end of recording */
+			sharedData.CM4_to_CM7_USB_info &= ~USB_INFO_RECORDING;
 
-      /* Start write File Operation */
-      USBH_UsrLog("Write Process ...... \n");
-      status = App_File_Write(media);
+		  /* wait in case there is data currently being written */
+		  while (sharedData.CM4_USB_writing)
+		  {
+				tx_thread_sleep(MS_TO_TICK(10));
+		  }
 
-      /* check status */
-      if (status == UX_SUCCESS)
-      {
-        USBH_UsrLog("Write Process Success \n");
-      }
-      else
-      {
-        USBH_ErrLog("!! Write Process Fail !! ");
-        break;
-      }
+		  /* Close the file */
+		  status = App_File_Close(media);
+		  file = NULL;
 
-      /* Start Read File Operation and comparison operation */
-      USBH_UsrLog("Read Process  ...... \n");
-      status = App_File_Read(media);
-
-      /* check status */
-      if (status == UX_SUCCESS)
-      {
-        USBH_UsrLog("Read Process Success  \n");
-        USBH_UsrLog("File Closed \n");
-        USBH_UsrLog("*** End Files operations ***\n")
-      }
-      else
-      {
-        USBH_ErrLog("!! Read Process Fail !! \n");
-        break;
-      }
-#endif
-
-    }
+		  /* check status */
+		  if (status == FX_SUCCESS)
+		  {
+			  USBH_UsrLog("File CAMERA.RAW Closed");
+				/* signal new USB state to CM7 */
+				HAL_HSEM_FastTake(HSEM_ID_3);
+				HAL_HSEM_Release(HSEM_ID_3, 0); 
+		  }
+	  }
     else
     {
       tx_thread_sleep(MS_TO_TICK(10));

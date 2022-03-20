@@ -39,6 +39,7 @@ extern "C" {
 /* USER CODE BEGIN ET */
 
 extern TX_EVENT_FLAGS_GROUP cm4_event_group;
+extern TX_QUEUE ux_app_MsgQueue_msc;
 
 /* USER CODE END ET */
 

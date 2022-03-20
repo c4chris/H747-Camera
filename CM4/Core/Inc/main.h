@@ -46,6 +46,7 @@ typedef struct
 	uint32_t CM4_to_CM7_USB_free_size_kb;
 	uint32_t CM4_to_CM7_USB_stored_count;
 	uint32_t CM7_to_CM4_USB_request;
+	uint32_t CM4_USB_writing;
 } CM4_CM7_SharedDataTypeDef;
 
 /* USER CODE END ET */
@@ -272,7 +273,11 @@ void   MX_FMC_Init(void);
 #define USB_REQUEST_START_RECORDING 0x00000002UL
 #define USB_REQUEST_STOP_RECORDING  0x00000004UL
 
+#define APP_MSG_UNKNOWN             0UL
 #define APP_MSG_MEDIA_READY         1UL
+#define APP_MSG_START_RECORDING     2UL
+#define APP_MSG_STOP_RECORDING      3UL
+#define APP_MSG_CLOSE_MEDIA         4UL
 
 /* USER CODE END Private defines */
 

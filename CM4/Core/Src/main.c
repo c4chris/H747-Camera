@@ -575,10 +575,27 @@ void HAL_HSEM_FreeCallback(uint32_t SemMask)
 	if (threadInitDone != 0)
 	{
 		__HAL_HSEM_CLEAR_FLAG(SemMask);
-		/* Signal we are done */
-		if (tx_event_flags_set(&cm4_event_group, SemMask, TX_OR) != TX_SUCCESS)
+		if (SemMask & HSEM_4)
 		{
-		  Error_Handler();
+			/* Signal we are done */
+      /* FIXME - probably should just pass sharedData.CM7_to_CM4_USB_request */
+			ULONG msg = APP_MSG_UNKNOWN;
+			switch (sharedData.CM7_to_CM4_USB_request)
+			{
+			case USB_REQUEST_START_RECORDING:
+				msg = APP_MSG_START_RECORDING;
+				break;
+			case USB_REQUEST_STOP_RECORDING:
+				msg = APP_MSG_STOP_RECORDING;
+				break;
+			case USB_REQUEST_STICK_EJECT:
+				msg = APP_MSG_CLOSE_MEDIA;
+				break;
+			}
+			if (tx_queue_send(&ux_app_MsgQueue_msc, &msg, TX_NO_WAIT) != TX_SUCCESS)
+			{
+				Error_Handler();
+			}
 		}
 	}
   HAL_HSEM_ActivateNotification(HSEM_0|HSEM_4);

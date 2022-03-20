@@ -46,6 +46,7 @@ typedef struct
 	uint32_t CM4_to_CM7_USB_free_size_kb;
 	uint32_t CM4_to_CM7_USB_stored_count;
 	uint32_t CM7_to_CM4_USB_request;
+	uint32_t CM4_USB_writing;
 } CM4_CM7_SharedDataTypeDef;
 
 /* USER CODE END ET */

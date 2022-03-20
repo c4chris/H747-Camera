@@ -58,6 +58,7 @@ TX_QUEUE                                  ux_app_MsgQueue_msc;
 UX_HOST_CLASS_STORAGE                     *storage;
 UX_HOST_CLASS_STORAGE_MEDIA               *storage_media;
 FX_MEDIA                                  *media;
+FX_FILE                                   *file;
 __ALIGN_BEGIN ux_app_devInfotypeDef        ux_dev_info  __ALIGN_END;
 
 /* USER CODE END PV */
