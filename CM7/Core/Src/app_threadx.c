@@ -573,6 +573,7 @@ char *gWidgetName[] = {
 /*************************************************************************************/
 UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 {
+	ULONG style;
 	switch (event_ptr->gx_event_type)
 	{
 		case GX_EVENT_SHOW:
@@ -588,6 +589,23 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 			{
 				status_update();
 			}
+			break;
+
+		case (ID_RECORD_ICON << 8) | GX_EVENT_CLICKED:
+			style = 0;
+			gx_widget_style_get((GX_WIDGET *)&main_window.main_window_record_icon, &style);
+			if (style & GX_STYLE_DRAW_SELECTED)
+			{
+				gx_widget_style_remove((GX_WIDGET *)&main_window.main_window_record_icon, GX_STYLE_DRAW_SELECTED);
+				sharedData.CM7_to_CM4_USB_request = USB_REQUEST_STOP_RECORDING;
+			}
+			else
+			{
+				gx_widget_style_add((GX_WIDGET *)&main_window.main_window_record_icon, GX_STYLE_DRAW_SELECTED);
+				sharedData.CM7_to_CM4_USB_request = USB_REQUEST_START_RECORDING;
+			}
+			HAL_HSEM_FastTake(HSEM_ID_4);
+			HAL_HSEM_Release(HSEM_ID_4, 0); 
 			break;
 
 		default:
