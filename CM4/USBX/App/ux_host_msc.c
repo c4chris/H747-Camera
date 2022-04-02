@@ -81,6 +81,10 @@ void  msc_process_thread_entry(ULONG arg)
   {
 	  ULONG msg;
     status = tx_queue_receive(&ux_app_MsgQueue_msc, &msg, TX_WAIT_FOREVER);
+	  if (msg == APP_MSG_START_RECORDING)
+			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_RESET);
+	  if (msg == APP_MSG_STOP_RECORDING)
+			HAL_GPIO_WritePin(LED1_GPIO_Port, LED1_Pin, GPIO_PIN_SET);
 	  if ((storage != NULL) && (media != NULL) && (msg == APP_MSG_MEDIA_READY))
 	  {
 		  ULONG64 space = 0;

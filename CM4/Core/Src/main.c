@@ -578,7 +578,7 @@ void HAL_HSEM_FreeCallback(uint32_t SemMask)
 		if (SemMask & HSEM_4)
 		{
 			/* Signal we are done */
-      /* FIXME - probably should just pass sharedData.CM7_to_CM4_USB_request */
+      /* TODO - probably should just pass sharedData.CM7_to_CM4_USB_request */
 			ULONG msg = APP_MSG_UNKNOWN;
 			switch (sharedData.CM7_to_CM4_USB_request)
 			{

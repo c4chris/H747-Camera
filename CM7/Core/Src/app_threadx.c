@@ -637,7 +637,7 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 	ULONG actual_events;
 	static int notfirst = 0;
 
-	/* FIXME - maybe make sure the event is cleared here ?  */
+	/* TODO - maybe make sure the event is cleared here ?  */
 
 	/* swap the buffers */
 	if (pend_buffer < 0)

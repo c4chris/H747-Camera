@@ -64,6 +64,9 @@ TX_THREAD            cm4_uart_thread;
  */
 TX_EVENT_FLAGS_GROUP cm4_event_group;
 
+extern FX_MEDIA                     *media;
+extern FX_FILE                      *file;
+
 /* ...  */
 volatile unsigned int u2rc;
 volatile unsigned int u2hrc;
@@ -246,6 +249,12 @@ void tx_cm4_main_thread_entry(ULONG thread_input)
 		  HAL_HSEM_FastTake(HSEM_ID_2);
 		  HAL_HSEM_Release(HSEM_ID_2,0);
 			frame_cnt += 1;
+			if ((media != NULL) && (sharedData.CM4_to_CM7_USB_info & USB_INFO_RECORDING))
+			{
+				sharedData.CM4_USB_writing = 1;
+				fx_file_write(file, (void *) cameraBuffer, 800 * 92 * 2);
+				sharedData.CM4_USB_writing = 0;
+			}
 			if (ticks - prev_ticks >= 60 * TX_TIMER_TICKS_PER_SECOND)
 			{
 				printf("WS %5lu %u %u",ticks / TX_TIMER_TICKS_PER_SECOND,hdcmi.State,frame_cnt);
@@ -308,7 +317,7 @@ void tx_cm4_i2c4_thread_entry(ULONG thread_input)
 	for(;;)
 	{
 		UINT status = tx_event_flags_get(&cm4_event_group, 0x2, TX_AND_CLEAR, &actual_events, TX_WAIT_FOREVER);
-		// FIXME - could read all the touch info and gestures maybe ?
+		// TODO - could read all the touch info and gestures maybe ?
 		if (status == TX_SUCCESS)
 		{
 			// read status register

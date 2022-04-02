@@ -236,7 +236,7 @@ void  usbx_app_thread_entry(ULONG arg)
       /*clear storage instance*/
       storage_media  = NULL;
       media = NULL;
-      /* FIXME - report device was disconnected */
+      /* TODO - report device was disconnected */
       tx_thread_sleep(50);
     }
   }
