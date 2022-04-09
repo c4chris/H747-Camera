@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
+#include "app_filex.h"
 #include <stdio.h>
 
 /* USER CODE END Includes */
@@ -251,9 +252,23 @@ void tx_cm4_main_thread_entry(ULONG thread_input)
 			frame_cnt += 1;
 			if ((media != NULL) && (sharedData.CM4_to_CM7_USB_info & USB_INFO_RECORDING))
 			{
-				sharedData.CM4_USB_writing = 1;
-				fx_file_write(file, (void *) cameraBuffer, 800 * 92 * 2);
-				sharedData.CM4_USB_writing = 0;
+				UINT res;
+				if (sharedData.CM4_to_CM7_USB_stored_count == 0)
+				{
+					// TODO - we seem to deal with 16 sectors of 512 bytes per cluster, so let's try to write 1 cluster at a time
+					printf("Cluster size %u sectors of %u bytes per cluster\r\n", media->fx_media_sectors_per_cluster, media->fx_media_bytes_per_sector);
+					printf("Starting to write on USB stick\r\n");
+					sharedData.CM4_USB_writing = 1;
+					for (unsigned int k = 0; k < 4; k++)
+					{
+						res = fx_file_write(file, (void *) (cameraBuffer + k * 24), 800 * 24 * 2);
+						if (res != FX_SUCCESS)
+							printf("Failed to write part %u of 4 on USB stick : %u\r\n", k, res);
+					}
+					sharedData.CM4_USB_writing = 0;
+					sharedData.CM4_to_CM7_USB_stored_count += 1;
+					printf("Done writing on USB stick\r\n");
+				}
 			}
 			if (ticks - prev_ticks >= 60 * TX_TIMER_TICKS_PER_SECOND)
 			{

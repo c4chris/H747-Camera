@@ -585,6 +585,7 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 			break;
 
 		case GX_EVENT_TIMER:
+			gx_numeric_prompt_value_set(&main_window.main_window_frames_value, sharedData.CM4_to_CM7_USB_stored_count);
 			if (event_ptr->gx_event_payload.gx_event_timer_id == CLOCK_TIMER)
 			{
 				status_update();
