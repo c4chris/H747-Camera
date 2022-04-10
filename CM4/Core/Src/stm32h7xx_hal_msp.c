@@ -78,6 +78,7 @@ void HAL_MspInit(void)
   /* Peripheral interrupt init */
   /* HSEM2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(HSEM2_IRQn, 10, 0);
+  /* HSEM2_IRQn interrupt configuration */
   HAL_NVIC_EnableIRQ(HSEM2_IRQn);
 
   /* USER CODE BEGIN MspInit 1 */
@@ -265,6 +266,7 @@ void HAL_I2C_MspInit(I2C_HandleTypeDef* hi2c)
   /* USER CODE BEGIN I2C4_MspInit 0 */
 
   /* USER CODE END I2C4_MspInit 0 */
+
   /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_I2C4;
@@ -341,6 +343,7 @@ void HAL_UART_MspInit(UART_HandleTypeDef* huart)
   /* USER CODE BEGIN USART1_MspInit 0 */
 
   /* USER CODE END USART1_MspInit 0 */
+
   /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART1;
@@ -462,6 +465,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hhcd)
   /* USER CODE BEGIN USB_OTG_HS_MspInit 0 */
 
   /* USER CODE END USB_OTG_HS_MspInit 0 */
+
   /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
@@ -470,6 +474,7 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef* hhcd)
     {
       Error_Handler();
     }
+
   /** Enable USB Voltage detector
   */
     HAL_PWREx_EnableUSBVoltageDetector();
@@ -667,4 +672,3 @@ void HAL_SDRAM_MspDeInit(SDRAM_HandleTypeDef* hsdram){
 /* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */
-

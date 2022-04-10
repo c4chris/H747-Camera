@@ -197,6 +197,8 @@ int main(void)
   /* USER CODE END 2 */
 
   MX_ThreadX_Init();
+
+  /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -273,12 +275,14 @@ static void MX_I2C4_Init(void)
   {
     Error_Handler();
   }
+
   /** Configure Analogue filter
   */
   if (HAL_I2CEx_ConfigAnalogFilter(&hi2c4, I2C_ANALOGFILTER_ENABLE) != HAL_OK)
   {
     Error_Handler();
   }
+
   /** Configure Digital filter
   */
   if (HAL_I2CEx_ConfigDigitalFilter(&hi2c4, 0) != HAL_OK)
@@ -757,6 +761,7 @@ void MPU_Config(void)
 
   /* Disables the MPU */
   HAL_MPU_Disable();
+
   /** Initializes and configures the Region and the memory to be protected
   */
   MPU_InitStruct.Enable = MPU_REGION_ENABLE;
@@ -772,6 +777,7 @@ void MPU_Config(void)
   MPU_InitStruct.IsBufferable = MPU_ACCESS_NOT_BUFFERABLE;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
   /** Initializes and configures the Region and the memory to be protected
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER1;
@@ -782,6 +788,7 @@ void MPU_Config(void)
   MPU_InitStruct.IsCacheable = MPU_ACCESS_NOT_CACHEABLE;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
   /** Initializes and configures the Region and the memory to be protected
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER2;
@@ -790,6 +797,7 @@ void MPU_Config(void)
   MPU_InitStruct.TypeExtField = MPU_TEX_LEVEL1;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
   /** Initializes and configures the Region and the memory to be protected
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER3;
@@ -797,6 +805,7 @@ void MPU_Config(void)
   MPU_InitStruct.Size = MPU_REGION_SIZE_32KB;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
   /** Initializes and configures the Region and the memory to be protected
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER4;
@@ -804,6 +813,7 @@ void MPU_Config(void)
   MPU_InitStruct.Size = MPU_REGION_SIZE_128KB;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
   /** Initializes and configures the Region and the memory to be protected
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER5;
@@ -811,6 +821,7 @@ void MPU_Config(void)
   MPU_InitStruct.Size = MPU_REGION_SIZE_8KB;
 
   HAL_MPU_ConfigRegion(&MPU_InitStruct);
+
   /** Initializes and configures the Region and the memory to be protected
   */
   MPU_InitStruct.Number = MPU_REGION_NUMBER6;
@@ -880,4 +891,3 @@ void assert_failed(uint8_t *file, uint32_t line)
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-

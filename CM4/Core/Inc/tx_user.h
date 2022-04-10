@@ -118,7 +118,7 @@
    define is negated, thereby forcing the stack fill which is necessary for the stack checking
    logic.  */
 
-/*#define TX_ENABLE_STACK_CHECKING*/
+#define TX_ENABLE_STACK_CHECKING
 
 /* Determine if preemption-threshold should be disabled. By default, preemption-threshold is
    enabled. If the application does not use preemption-threshold, it may be disabled to reduce
@@ -166,7 +166,7 @@
    code size and overhead, but provides the ability to generate system trace information which
    is available for viewing in TraceX.  */
 
-/*#define TX_ENABLE_EVENT_TRACE*/
+#define TX_ENABLE_EVENT_TRACE
 
 /* Determine if block pool performance gathering is required by the application. When the following is
    defined, ThreadX gathers various block pool performance information. */
@@ -207,6 +207,14 @@
    defined, ThreadX gathers various timer performance information. */
 
 /*#define TX_TIMER_ENABLE_PERFORMANCE_INFO*/
+
+/* Define the clock source for trace event entry time stamp. */
+
+/*#define TX_TRACE_TIME_SOURCE  *((ULONG *) 0xE0001004)*/
+
+/* Define the clock source for trace mask. */
+
+/*#define TX_TRACE_TIME_MASK  0xFFFFFFFFUL*/
 
 /* Define if the execution change notify is enabled. */
 

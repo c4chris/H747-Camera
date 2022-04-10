@@ -35,6 +35,16 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Common</locationURI>
 		</link>
 		<link>
+			<name>Core/ThreadSafe/newlib_lock_glue.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/ThreadSafe/newlib_lock_glue.c</locationURI>
+		</link>
+		<link>
+			<name>Core/ThreadSafe/stm32_lock.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/ThreadSafe/stm32_lock.h</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32H7xx_HAL_Driver/stm32h7xx_hal.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal.c</locationURI>
@@ -993,6 +1003,66 @@
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/txe_timer_info_get.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/txe_timer_info_get.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_buffer_full_notify.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_buffer_full_notify.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_disable.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_disable.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_enable.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_enable.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_event_filter.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_event_filter.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_event_unfilter.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_event_unfilter.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_initialize.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_initialize.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_interrupt_control.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_interrupt_control.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_isr_enter_insert.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_isr_enter_insert.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_isr_exit_insert.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_isr_exit_insert.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_object_register.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_object_register.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_object_unregister.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_object_unregister.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_user_event_insert.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_user_event_insert.c</locationURI>
 		</link>
 	</linkedResources>
 </projectDescription>

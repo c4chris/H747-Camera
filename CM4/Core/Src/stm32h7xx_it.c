@@ -282,7 +282,7 @@ void EXTI9_5_IRQHandler(void)
   /* USER CODE BEGIN EXTI9_5_IRQn 0 */
 
   /* USER CODE END EXTI9_5_IRQn 0 */
-  HAL_GPIO_EXTI_IRQHandler(TOUCH_INT_Pin);
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_7);
   /* USER CODE BEGIN EXTI9_5_IRQn 1 */
 
   /* USER CODE END EXTI9_5_IRQn 1 */
@@ -310,9 +310,8 @@ void TIM7_IRQHandler(void)
   /* USER CODE BEGIN TIM7_IRQn 0 */
 
   /* USER CODE END TIM7_IRQn 0 */
-  HAL_TIM_IRQHandler(&htim7);
   /* USER CODE BEGIN TIM7_IRQn 1 */
-
+  HAL_TIM_IRQHandler(&htim7);
   /* USER CODE END TIM7_IRQn 1 */
 }
 
@@ -413,4 +412,3 @@ static void my_Delay(uint32_t Delay)
 }
 
 /* USER CODE END 1 */
-

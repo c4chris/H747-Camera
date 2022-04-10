@@ -39,9 +39,9 @@ extern "C" {
 
 /* Exported constants --------------------------------------------------------*/
 /* define the size of static threadX byte memory pools */
-#define TX_APP_MEM_POOL_SIZE                     (10 * 1024)
+#define TX_APP_MEM_POOL_SIZE                     (16 * 1024)
 
-#define FX_APP_MEM_POOL_SIZE                     1024
+#define FX_APP_MEM_POOL_SIZE                     (2 * 1024)
 
 #define UX_HOST_APP_MEM_POOL_SIZE                (70 * 1024)
 

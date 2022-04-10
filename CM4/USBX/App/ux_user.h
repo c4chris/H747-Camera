@@ -200,7 +200,7 @@
 /* Defined, this value represents the maximum number of media for the host storage class.
    Default is 8 but for memory constrained resource systems this can ne reduced to 1. */
 
-/* #define UX_HOST_CLASS_STORAGE_MAX_MEDIA                                           2 */
+#define UX_HOST_CLASS_STORAGE_MAX_MEDIA                                   1
 
 /* Defined, this value includes code to handle storage devices that use the CB
    or CBI protocol (such as floppy disks). It is off by default because these
@@ -302,7 +302,7 @@
 /* Defined, this value represents the maximum size of single tansfers for the SCSI data phase.
 */
 
-/* #define UX_HOST_CLASS_STORAGE_MAX_TRANSFER_SIZE             (1024 * 1) */
+#define UX_HOST_CLASS_STORAGE_MAX_TRANSFER_SIZE             8192
 
 /* Defined, this value represents the size of the log pool.
 */
@@ -342,7 +342,7 @@
 
 /* Determine if tracing is enabled.  */
 
-/*#define UX_TRACE_INSERT_MACROS*/
+#define UX_TRACE_INSERT_MACROS
 
 #endif
 
