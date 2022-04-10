@@ -71,6 +71,7 @@ extern volatile CM4_CM7_SharedDataTypeDef sharedData;
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+void my_Delay(uint32_t);
 
 /* USER CODE BEGIN EFP */
 

@@ -66,8 +66,6 @@ extern TIM_HandleTypeDef htim7;
 
 /* USER CODE BEGIN EV */
 
-static void my_Delay(uint32_t);
-
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -401,7 +399,7 @@ void HSEM2_IRQHandler(void)
 
 /* USER CODE BEGIN 1 */
 
-static void my_Delay(uint32_t Delay)
+void my_Delay(uint32_t Delay)
 {
   uint32_t count = Delay * 50000;
   while (count > 0)

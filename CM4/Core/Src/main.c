@@ -867,9 +867,9 @@ void Error_Handler(void)
   while (1)
   {
 		HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
-		HAL_Delay(250);
+		my_Delay(250);
 		HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
-		HAL_Delay(250);
+		my_Delay(250);
   }
   /* USER CODE END Error_Handler_Debug */
 }
