@@ -36,7 +36,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define DEFAULT_STACK_SIZE               (1 * 1024)
+#define DEFAULT_STACK_SIZE               (2 * 1024)
 /* fx_sd_thread priority */
 #define DEFAULT_THREAD_PRIO              10
 
