@@ -581,12 +581,16 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 			//status_update();
 
 			/* Start a timer to update weight. */
-			gx_system_timer_start(&main_window, CLOCK_TIMER, 60 * GX_TICKS_SECOND, 60 * GX_TICKS_SECOND);
+			gx_system_timer_start(&main_window, CLOCK_TIMER_MIN, 60 * GX_TICKS_SECOND, 60 * GX_TICKS_SECOND);
+			gx_system_timer_start(&main_window, CLOCK_TIMER_SEC, GX_TICKS_SECOND, GX_TICKS_SECOND);
 			break;
 
 		case GX_EVENT_TIMER:
-			gx_numeric_prompt_value_set(&main_window.main_window_frames_value, sharedData.CM4_to_CM7_USB_stored_count);
-			if (event_ptr->gx_event_payload.gx_event_timer_id == CLOCK_TIMER)
+			if (event_ptr->gx_event_payload.gx_event_timer_id == CLOCK_TIMER_SEC)
+			{
+				gx_numeric_prompt_value_set(&main_window.main_window_frames_value, sharedData.CM4_to_CM7_USB_stored_count);
+			}
+			if (event_ptr->gx_event_payload.gx_event_timer_id == CLOCK_TIMER_MIN)
 			{
 				status_update();
 			}
