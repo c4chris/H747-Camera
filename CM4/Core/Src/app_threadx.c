@@ -37,7 +37,7 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
-#define DEFAULT_STACK_SIZE               (1 * 1024)
+#define DEFAULT_STACK_SIZE               (2 * 1024)
 /* fx_sd_thread priority */
 #define DEFAULT_THREAD_PRIO              10
 
@@ -112,7 +112,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   /* USER CODE BEGIN App_ThreadX_Init */
 
   /*Allocate memory for main_thread_entry*/
-  ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
+  ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, 2 * DEFAULT_STACK_SIZE, TX_NO_WAIT);
 
   /* Check DEFAULT_STACK_SIZE allocation*/
   if (ret != TX_SUCCESS)
@@ -121,7 +121,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   }
 
   /* Create the main thread.  */
-  ret = tx_thread_create(&cm4_main_thread, "tx_cm4_main_thread", tx_cm4_main_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
+  ret = tx_thread_create(&cm4_main_thread, "tx_cm4_main_thread", tx_cm4_main_thread_entry, 0, pointer, 2 * DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
 		  DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
 
   /* Check main thread creation */
@@ -258,17 +258,13 @@ void tx_cm4_main_thread_entry(ULONG thread_input)
 					// TODO - we seem to deal with 16 sectors of 512 bytes per cluster, so let's try to write 1 cluster at a time
 					printf("Cluster size %u sectors of %u bytes per cluster\r\n", media->fx_media_sectors_per_cluster, media->fx_media_bytes_per_sector);
 					printf("Starting to write on USB stick\r\n");
-					sharedData.CM4_USB_writing = 1;
-					for (unsigned int k = 0; k < 4; k++)
-					{
-						res = fx_file_write(file, (void *) (cameraBuffer + k * 24), 800 * 24 * 2);
-						if (res != FX_SUCCESS)
-							printf("Failed to write part %u of 4 on USB stick : %u\r\n", k, res);
-					}
-					sharedData.CM4_USB_writing = 0;
-					sharedData.CM4_to_CM7_USB_stored_count += 1;
-					printf("Done writing on USB stick\r\n");
 				}
+				sharedData.CM4_USB_writing = 1;
+				res = fx_file_write(file, (void *) cameraBuffer, 800 * 96 * 2);
+				if (res != FX_SUCCESS)
+					printf("Failed to write on USB stick : %u\r\n", res);
+				sharedData.CM4_USB_writing = 0;
+				sharedData.CM4_to_CM7_USB_stored_count += 1;
 			}
 			if (ticks - prev_ticks >= 60 * TX_TIMER_TICKS_PER_SECOND)
 			{
