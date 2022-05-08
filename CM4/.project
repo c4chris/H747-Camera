@@ -3580,6 +3580,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/usbx/common/usbx_host_classes/src/ux_host_class_storage_unit_ready_test.c</locationURI>
 		</link>
 		<link>
+			<name>Middlewares/USBX/USB/USBX/UX Host Controllers/ux_hcd_stm32.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/usbx/common/usbx_stm32_host_controllers/ux_hcd_stm32.h</locationURI>
+		</link>
+		<link>
 			<name>Middlewares/USBX/USB/USBX/UX Host Controllers/ux_hcd_stm32_callback.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/usbx/common/usbx_stm32_host_controllers/ux_hcd_stm32_callback.c</locationURI>

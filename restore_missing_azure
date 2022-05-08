@@ -1,0 +1,22 @@
+#!/bin/bash
+#repo=../../Repository/Packs/STMicroelectronics/X-CUBE-AZRTOS-H7/2.1.0
+repo=$1
+if [[ "X$repo" = "X" ]]; then
+  echo "Usage : $0 <Azure_repo>"
+  exit 1
+fi
+if [[ ! -d $repo ]]; then
+  echo "$repo should be a directory"
+  exit 1
+fi
+for f in `git status | grep -w deleted: | awk '{print $2}'`; do
+  d=`dirname $f`
+  if [[ -f $repo/$f ]]; then
+    echo "Retrieving $f from $repo"
+    mkdir -p $d
+    cp $repo/$f $d
+  else
+    echo "Not found - $f"
+  fi
+done
+exit 0
