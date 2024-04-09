@@ -27,7 +27,8 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "ux_api.h"
-
+#include "main.h"
+#include "ux_host_msc.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -45,19 +46,17 @@ extern "C" {
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
+#define USBX_HOST_MEMORY_STACK_SIZE     1024
+
+#define UX_HOST_APP_THREAD_STACK_SIZE   1024
+#define UX_HOST_APP_THREAD_PRIO         10
+
 /* USER CODE BEGIN EC */
 
 /* USER CODE END EC */
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
-#define USBH_UsrLog(...)   printf(__VA_ARGS__);\
-                           printf("\n");
-
-#define USBH_ErrLog(...)   printf("ERROR: ") ;\
-                           printf(__VA_ARGS__);\
-                           printf("\n");
 
 /* USER CODE END EM */
 
@@ -68,10 +67,7 @@ UINT MX_USBX_Host_Init(VOID *memory_ptr);
 
 UINT  App_USBX_Host_Init(VOID *memory_ptr);
 UINT  MX_USB_Host_Init(void);
-void  usbx_app_thread_entry(ULONG arg);
 UINT  USB_App_class_storage_get(void);
-UINT  ux_host_event_callback(ULONG event, UX_HOST_CLASS *Current_class, VOID *Current_instance);
-VOID  ux_host_error_callback(UINT system_level, UINT system_context, UINT error_code);
 
 /* USER CODE END EFP */
 
@@ -99,6 +95,22 @@ typedef struct
 } ux_app_devInfotypeDef;
 
 /* USER CODE END PD */
+
+#ifndef UX_HOST_APP_THREAD_NAME
+#define UX_HOST_APP_THREAD_NAME  "USBX App Host Main Thread"
+#endif
+
+#ifndef UX_HOST_APP_THREAD_PREEMPTION_THRESHOLD
+#define UX_HOST_APP_THREAD_PREEMPTION_THRESHOLD  UX_HOST_APP_THREAD_PRIO
+#endif
+
+#ifndef UX_HOST_APP_THREAD_TIME_SLICE
+#define UX_HOST_APP_THREAD_TIME_SLICE  TX_NO_TIME_SLICE
+#endif
+
+#ifndef UX_HOST_APP_THREAD_START_OPTION
+#define UX_HOST_APP_THREAD_START_OPTION  TX_AUTO_START
+#endif
 
 /* USER CODE BEGIN 1 */
 

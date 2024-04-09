@@ -17,8 +17,9 @@
   */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 #include "app_threadx.h"
+#include "main.h"
+#include "app_x-cube-ai.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -44,13 +45,15 @@
 
 /* Private variables ---------------------------------------------------------*/
 
+CRC_HandleTypeDef hcrc;
+
 DMA2D_HandleTypeDef hdma2d;
 
 DSI_HandleTypeDef hdsi;
 
 LTDC_HandleTypeDef hltdc;
 
-MDMA_HandleTypeDef hmdma_mdma_channel40_sw_0;
+MDMA_HandleTypeDef hmdma_mdma_channel0_sw_0;
 SDRAM_HandleTypeDef hsdram1;
 
 /* USER CODE BEGIN PV */
@@ -74,11 +77,12 @@ void SystemClock_Config(void);
 static void MPU_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
-static void MX_DMA2D_Init(void);
+static void MX_MDMA_Init(void);
 static void MX_FMC_Init(void);
 static void MX_LTDC_Init(void);
 static void MX_DSIHOST_DSI_Init(void);
-static void MX_MDMA_Init(void);
+static void MX_DMA2D_Init(void);
+static void MX_CRC_Init(void);
 /* USER CODE BEGIN PFP */
 
 static int32_t DSI_IO_Write(uint16_t ChannelNbr, uint16_t Reg, uint8_t *pData, uint16_t Size);
@@ -97,6 +101,7 @@ static int32_t DSI_IO_Read(uint16_t ChannelNbr, uint16_t Reg, uint8_t *pData, ui
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -106,6 +111,8 @@ int main(void)
 
   /* MPU Configuration--------------------------------------------------------*/
   MPU_Config();
+
+  /* Enable the CPU Cache */
 
   /* Enable I-Cache---------------------------------------------------------*/
   SCB_EnableICache();
@@ -157,11 +164,12 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
-  MX_DMA2D_Init();
+  MX_MDMA_Init();
   MX_FMC_Init();
   MX_LTDC_Init();
   MX_DSIHOST_DSI_Init();
-  MX_MDMA_Init();
+  MX_DMA2D_Init();
+  MX_CRC_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -169,6 +177,7 @@ int main(void)
   MX_ThreadX_Init();
 
   /* We should never get here as control is now taken by the scheduler */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -198,10 +207,6 @@ void SystemClock_Config(void)
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
   while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
-
-  /** Macro to configure the PLL clock source
-  */
-  __HAL_RCC_PLL_PLLSOURCE_CONFIG(RCC_PLLSOURCE_HSE);
 
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
@@ -240,6 +245,37 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief CRC Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_CRC_Init(void)
+{
+
+  /* USER CODE BEGIN CRC_Init 0 */
+
+  /* USER CODE END CRC_Init 0 */
+
+  /* USER CODE BEGIN CRC_Init 1 */
+
+  /* USER CODE END CRC_Init 1 */
+  hcrc.Instance = CRC;
+  hcrc.Init.DefaultPolynomialUse = DEFAULT_POLYNOMIAL_ENABLE;
+  hcrc.Init.DefaultInitValueUse = DEFAULT_INIT_VALUE_ENABLE;
+  hcrc.Init.InputDataInversionMode = CRC_INPUTDATA_INVERSION_NONE;
+  hcrc.Init.OutputDataInversionMode = CRC_OUTPUTDATA_INVERSION_DISABLE;
+  hcrc.InputDataFormat = CRC_INPUTDATA_FORMAT_BYTES;
+  if (HAL_CRC_Init(&hcrc) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN CRC_Init 2 */
+
+  /* USER CODE END CRC_Init 2 */
+
 }
 
 /**
@@ -309,7 +345,7 @@ static void MX_DSIHOST_DSI_Init(void)
   hdsi.Init.AutomaticClockLaneControl = DSI_AUTO_CLK_LANE_CTRL_DISABLE;
   hdsi.Init.TXEscapeCkdiv = 3;
   hdsi.Init.NumberOfLanes = DSI_TWO_DATA_LANES;
-  PLLInit.PLLNDIV = 96;
+  PLLInit.PLLNDIV = 100;
   PLLInit.PLLIDF = DSI_PLL_IN_DIV5;
   PLLInit.PLLODF = DSI_PLL_OUT_DIV1;
   if (HAL_DSI_Init(&hdsi, &PLLInit) != HAL_OK)
@@ -502,7 +538,7 @@ static void MX_DMA_Init(void)
 /**
   * Enable MDMA controller clock
   * Configure MDMA for global transfers
-  *   hmdma_mdma_channel40_sw_0
+  *   hmdma_mdma_channel0_sw_0
   */
 static void MX_MDMA_Init(void)
 {
@@ -512,23 +548,23 @@ static void MX_MDMA_Init(void)
   /* Local variables */
 
   /* Configure MDMA channel MDMA_Channel0 */
-  /* Configure MDMA request hmdma_mdma_channel40_sw_0 on MDMA_Channel0 */
-  hmdma_mdma_channel40_sw_0.Instance = MDMA_Channel0;
-  hmdma_mdma_channel40_sw_0.Init.Request = MDMA_REQUEST_SW;
-  hmdma_mdma_channel40_sw_0.Init.TransferTriggerMode = MDMA_BLOCK_TRANSFER;
-  hmdma_mdma_channel40_sw_0.Init.Priority = MDMA_PRIORITY_HIGH;
-  hmdma_mdma_channel40_sw_0.Init.Endianness = MDMA_LITTLE_ENDIANNESS_PRESERVE;
-  hmdma_mdma_channel40_sw_0.Init.SourceInc = MDMA_SRC_INC_WORD;
-  hmdma_mdma_channel40_sw_0.Init.DestinationInc = MDMA_DEST_INC_WORD;
-  hmdma_mdma_channel40_sw_0.Init.SourceDataSize = MDMA_SRC_DATASIZE_WORD;
-  hmdma_mdma_channel40_sw_0.Init.DestDataSize = MDMA_DEST_DATASIZE_WORD;
-  hmdma_mdma_channel40_sw_0.Init.DataAlignment = MDMA_DATAALIGN_PACKENABLE;
-  hmdma_mdma_channel40_sw_0.Init.BufferTransferLength = 128;
-  hmdma_mdma_channel40_sw_0.Init.SourceBurst = MDMA_SOURCE_BURST_SINGLE;
-  hmdma_mdma_channel40_sw_0.Init.DestBurst = MDMA_DEST_BURST_SINGLE;
-  hmdma_mdma_channel40_sw_0.Init.SourceBlockAddressOffset = 0;
-  hmdma_mdma_channel40_sw_0.Init.DestBlockAddressOffset = 0;
-  if (HAL_MDMA_Init(&hmdma_mdma_channel40_sw_0) != HAL_OK)
+  /* Configure MDMA request hmdma_mdma_channel0_sw_0 on MDMA_Channel0 */
+  hmdma_mdma_channel0_sw_0.Instance = MDMA_Channel0;
+  hmdma_mdma_channel0_sw_0.Init.Request = MDMA_REQUEST_SW;
+  hmdma_mdma_channel0_sw_0.Init.TransferTriggerMode = MDMA_BLOCK_TRANSFER;
+  hmdma_mdma_channel0_sw_0.Init.Priority = MDMA_PRIORITY_HIGH;
+  hmdma_mdma_channel0_sw_0.Init.Endianness = MDMA_LITTLE_ENDIANNESS_PRESERVE;
+  hmdma_mdma_channel0_sw_0.Init.SourceInc = MDMA_SRC_INC_WORD;
+  hmdma_mdma_channel0_sw_0.Init.DestinationInc = MDMA_DEST_INC_WORD;
+  hmdma_mdma_channel0_sw_0.Init.SourceDataSize = MDMA_SRC_DATASIZE_WORD;
+  hmdma_mdma_channel0_sw_0.Init.DestDataSize = MDMA_DEST_DATASIZE_WORD;
+  hmdma_mdma_channel0_sw_0.Init.DataAlignment = MDMA_DATAALIGN_PACKENABLE;
+  hmdma_mdma_channel0_sw_0.Init.BufferTransferLength = 128;
+  hmdma_mdma_channel0_sw_0.Init.SourceBurst = MDMA_SOURCE_BURST_SINGLE;
+  hmdma_mdma_channel0_sw_0.Init.DestBurst = MDMA_DEST_BURST_SINGLE;
+  hmdma_mdma_channel0_sw_0.Init.SourceBlockAddressOffset = 0;
+  hmdma_mdma_channel0_sw_0.Init.DestBlockAddressOffset = 0;
+  if (HAL_MDMA_Init(&hmdma_mdma_channel0_sw_0) != HAL_OK)
   {
     Error_Handler();
   }
@@ -612,11 +648,14 @@ void MX_FMC_Init(void)
 static void MX_GPIO_Init(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
+/* USER CODE BEGIN MX_GPIO_Init_1 */
+/* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOI_CLK_ENABLE();
   __HAL_RCC_GPIOK_CLK_ENABLE();
   __HAL_RCC_GPIOE_CLK_ENABLE();
+  __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
@@ -641,6 +680,14 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOK, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : PB6 */
+  GPIO_InitStruct.Pin = GPIO_PIN_6;
+  GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  GPIO_InitStruct.Alternate = GPIO_AF5_CEC;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LCD_BL_CTRL_Pin */
   GPIO_InitStruct.Pin = LCD_BL_CTRL_Pin;
@@ -677,6 +724,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(LCD_TE_GPIO_Port, &GPIO_InitStruct);
 
+/* USER CODE BEGIN MX_GPIO_Init_2 */
+/* USER CODE END MX_GPIO_Init_2 */
 }
 
 /* USER CODE BEGIN 4 */
@@ -794,7 +843,7 @@ void HAL_LTDC_LineEventCallback(LTDC_HandleTypeDef *hltdc)
 
 /* USER CODE END 4 */
 
-/* MPU Configuration */
+ /* MPU Configuration */
 
 void MPU_Config(void)
 {

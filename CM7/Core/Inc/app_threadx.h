@@ -17,6 +17,7 @@
   ******************************************************************************
   */
 /* USER CODE END Header */
+
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __APP_THREADX_H__
 #define __APP_THREADX_H__
@@ -24,7 +25,6 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 /* Includes ------------------------------------------------------------------*/
 #include "tx_api.h"
 
@@ -51,7 +51,22 @@ extern TX_EVENT_FLAGS_GROUP cm7_event_group;
 
 /* USER CODE END EC */
 
+/* Private defines -----------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+
+#define LCD_FRAME_BUFFER        0xD0000000
+#define CLOCK_TIMER_MIN         0x01
+#define CLOCK_TIMER_SEC         0x02
+
+/* USER CODE END PD */
+
+/* Main thread defines -------------------------------------------------------*/
+/* USER CODE BEGIN MTD */
+
+/* USER CODE END MTD */
+
 /* Exported macro ------------------------------------------------------------*/
+
 /* USER CODE BEGIN EM */
 
 /* USER CODE END EM */
@@ -64,15 +79,6 @@ void MX_ThreadX_Init(void);
 void update_image(void);
 
 /* USER CODE END EFP */
-
-/* Private defines -----------------------------------------------------------*/
-/* USER CODE BEGIN PD */
-
-#define LCD_FRAME_BUFFER        0xD0000000
-#define CLOCK_TIMER_MIN         0x01
-#define CLOCK_TIMER_SEC         0x02
-
-/* USER CODE END PD */
 
 /* USER CODE BEGIN 1 */
 

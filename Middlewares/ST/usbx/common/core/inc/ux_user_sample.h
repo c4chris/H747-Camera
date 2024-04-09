@@ -26,7 +26,7 @@
 /*  PORT SPECIFIC C INFORMATION                            RELEASE        */ 
 /*                                                                        */ 
 /*    ux_user.h                                           PORTABLE C      */ 
-/*                                                           6.1.10       */
+/*                                                           6.2.1        */
 /*                                                                        */
 /*  AUTHOR                                                                */
 /*                                                                        */
@@ -78,6 +78,27 @@
 /*                                            added option to validate    */
 /*                                            class code in enumeration,  */
 /*                                            resulting in version 6.1.10 */
+/*  07-29-2022     Chaoqiong Xiao           Modified comment(s),          */
+/*                                            added audio class features, */
+/*                                            added device CDC_ACM and    */
+/*                                            printer write auto ZLP,     */
+/*                                            resulting in version 6.1.12 */
+/*  10-31-2022     Chaoqiong Xiao           Modified comment(s),          */
+/*                                            deprecated ECM pool option, */
+/*                                            added align minimal config, */
+/*                                            added host stack instance   */
+/*                                            creation strategy control,  */
+/*                                            resulting in version 6.2.0  */
+/*  03-08-2023     Chaoqiong Xiao           Modified comment(s),          */
+/*                                            added option to disable dev */
+/*                                            alternate setting support,  */
+/*                                            added option to disable dev */
+/*                                            framework initialize scan,  */
+/*                                            added option to reference   */
+/*                                            names by pointer to chars,  */
+/*                                            added option to enable      */
+/*                                            basic USBX error checking,  */
+/*                                            resulting in version 6.2.1  */
 /*                                                                        */
 /**************************************************************************/
 
@@ -88,6 +109,8 @@
 /* Define various build options for the USBX port.  The application should either make changes
    here by commenting or un-commenting the conditional compilation defined OR supply the defines 
    though the compiler's equivalent of the -D option.  */
+
+/* Define USBX Generic Thread Stack Size.  */
 /* #define UX_THREAD_STACK_SIZE                                (2 * 1024) */
 
 /* Define USBX Host Enum Thread Stack Size. The default is to use UX_THREAD_STACK_SIZE */
@@ -96,7 +119,7 @@
 */
 
 
-/* Define USBX Host Thread Stack Size.  The default is to use UX_THREAD_STACK_SIZE */
+/* Define USBX Host HCD Thread Stack Size.  The default is to use UX_THREAD_STACK_SIZE */
 /*
 #define UX_HOST_HCD_THREAD_STACK_SIZE                       UX_THREAD_STACK_SIZE
 */
@@ -108,6 +131,10 @@
 
 /* Override various options with default values already assigned in ux_api.h or ux_port.h. Please 
    also refer to ux_port.h for descriptions on each of these options.  */
+
+/* Defined, this value represents minimal allocated memory alignment in number of bytes.
+   The default is UX_ALIGN_16 (0x0f) to align allocated memory to 16 bytes.  */
+/* #define UX_ALIGN_MIN UX_ALIGN_16  */
 
 /* Defined, this value represents how many ticks per seconds for a specific hardware platform. 
    The default is 1000 indicating 1 tick per millisecond.  */
@@ -310,7 +337,9 @@
 
 /* #define UX_HOST_CLASS_CDC_ECM_PACKET_POOL_INSTANCE_WAIT  10 */
 
-/* Defined, this enables CDC ECM class to use the packet pool from NetX instance.  */
+/* Defined, this enables CDC ECM class to use the packet pool from NetX instance.
+   It's deprecated, packet pool from NetX instance is always used now.
+ */
 
 /* #define UX_HOST_CLASS_CDC_ECM_USE_PACKET_POOL_FROM_NETX */
 
@@ -369,17 +398,50 @@
 
 /* #define UX_DEVICE_CLASS_CDC_ACM_TRANSMISSION_DISABLE  */
 
-/* defined, this macro enables device audio feedback endpoint support.  */
-
-/* #define UX_DEVICE_CLASS_AUDIO_FEEDBACK_SUPPORT  */
-
 /* Defined, device HID interrupt OUT transfer is supported.  */
 
 /* #define UX_DEVICE_CLASS_HID_INTERRUPT_OUT_SUPPORT  */
 
+/* defined, this macro enables device audio feedback endpoint support.  */
+
+/* #define UX_DEVICE_CLASS_AUDIO_FEEDBACK_SUPPORT  */
+
+/* Defined, class _write is pending ZLP automatically (complete transfer) after buffer is sent.  */
+
+/* #define UX_DEVICE_CLASS_CDC_ACM_WRITE_AUTO_ZLP  */
+/* #define UX_DEVICE_CLASS_PRINTER_WRITE_AUTO_ZLP  */
+
+/* defined, this macro enables device audio interrupt endpoint support.  */
+
+/* define UX_DEVICE_CLASS_AUDIO_INTERRUPT_SUPPORT  */
+
 /* Defined, this macro enables device bi-directional-endpoint support.  */
 
 /* #define UX_DEVICE_BIDIRECTIONAL_ENDPOINT_SUPPORT  */
+
+/* Defined, this macro disables interface alternate setting support.
+   Device stalls 
+ */
+/* UX_DEVICE_ALTERNATE_SETTING_SUPPORT_DISABLE  */
+
+
+/* Defined, this macro disables device framework scan, where max number of endpoints (except EP0)
+   and max number of interfaces are calculated at runtime, as a base to allocate memory for
+   interfaces and endpoints structures and their buffers.
+   Undefined, the following two macros must be defined to initialize memory structures.
+ */
+/* #define UX_DEVICE_INITIALIZE_FRAMEWORK_SCAN_DISABLE  */
+
+/* Works if UX_DEVICE_INITIALIZE_FRAMEWORK_SCAN_DISABLE is defined.
+   This value represents max number of endpoints (except EP0) activated at the same time.
+ */
+/* #define UX_MAX_DEVICE_ENDPOINTS                         2  */
+
+/* Works if UX_DEVICE_INITIALIZE_FRAMEWORK_SCAN_DISABLE is defined.
+   This value represents max number of interfaces activated at the same time.
+ */
+/* #define UX_MAX_DEVICE_INTERFACES                        1  */
+
 
 /* Defined, this macro enables device/host PIMA MTP support.  */
 
@@ -393,6 +455,7 @@
 
 /* #define UX_HOST_DEVICE_CLASS_CODE_VALIDATION_ENABLE  */
 
+
 /* Defined, host HID interrupt OUT transfer is supported.  */
 
 /* #define UX_HOST_CLASS_HID_INTERRUPT_OUT_SUPPORT  */
@@ -401,6 +464,30 @@
    The default is 10000 milliseconds.  */
 
 /* #define UX_HOST_CLASS_HID_REPORT_TRANSFER_TIMEOUT               10000 */
+
+/* Defined, host audio UAC 2.0 is supported.  */
+/* #define UX_HOST_CLASS_AUDIO_2_SUPPORT  */
+
+/* Defined, host audio optional feedback endpoint is supported.  */
+/* #define UX_HOST_CLASS_AUDIO_FEEDBACK_SUPPORT  */
+
+/* Defined, host audio optional interrupt endpoint is support.  */
+/* #define UX_HOST_CLASS_AUDIO_INTERRUPT_SUPPORT  */
+
+/* Defined, this value controls host configuration instance creation, include all
+   interfaces and endpoints physical resources.
+   Possible settings:
+    UX_HOST_STACK_CONFIGURATION_INSTANCE_CREATE_ALL (0) - The default, create all inside configuration.
+    UX_HOST_STACK_CONFIGURATION_INSTANCE_CREATE_OWNED (1) - Create things owned by class driver.
+   Not defined, default setting is applied.
+ */
+/* #define UX_HOST_STACK_CONFIGURATION_INSTANCE_CREATE_CONTROL UX_HOST_STACK_CONFIGURATION_INSTANCE_CREATE_OWNED */
+
+/* Defined, the _name in structs are referenced by pointer instead of by contents.
+   By default the _name is an array of string that saves characters, the contents are compared to confirm match.
+   If referenced by pointer the address pointer to const string is saved, the pointers are compared to confirm match.
+ */
+/* #define UX_NAME_REFERENCED_BY_POINTER  */
 
 /* Defined, this value will only enable the host side of usbx.  */
 /* #define UX_HOST_SIDE_ONLY   */
@@ -474,6 +561,13 @@
 /* Defined, this defines the assert action taken when failure detected. By default
    it halts without any output.  */
 /* #define UX_ASSERT_FAIL  for (;;) {tx_thread_sleep(UX_WAIT_FOREVER); }  */
+
+
+/* Defined, this option enables the basic USBX error checking. This define is typically used
+   when the application is debugging and removed after the application is fully debugged.  */
+/*
+#define UX_ENABLE_ERROR_CHECKING
+*/
 
 
 /* DEBUG includes and macros for a specific platform go here.  */

@@ -67,10 +67,18 @@ extern volatile CM4_CM7_SharedDataTypeDef sharedData;
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
 
+#define USBH_UsrLog(...)   printf(__VA_ARGS__);\
+                           printf("\n");
+
+#define USBH_ErrLog(...)   printf("ERROR: ") ;\
+                           printf(__VA_ARGS__);\
+                           printf("\n");
+
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
+void MX_FMC_Init(void);
 
 /* USER CODE BEGIN EFP */
 
@@ -241,7 +249,7 @@ void my_Delay(uint32_t);
 #define ULPI_D6_GPIO_Port GPIOB
 #define FMC_D13_Pin GPIO_PIN_8
 #define FMC_D13_GPIO_Port GPIOD
-void   MX_FMC_Init(void);
+
 /* USER CODE BEGIN Private defines */
 
 #define HSEM_ID_0 (0U) /* HW semaphore 0 - used to coordinate boot with CM4 */

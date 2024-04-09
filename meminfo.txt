@@ -1,0 +1,12 @@
+The regular memory passed by ux_system_initialize splits to two part: the system structures and memory pool for allocation.
+So at any time the memory usage is as follow:
+
+ ux_global_structure_memory_bytes = (ALIGN_TYPE)_ux_system -> ux_system_regular_memory_pool_start - (ALIGN_TYPE)_ux_system;
+ ux_allocated_regular_memory_bytes = _ux_system -> ux_system_regular_memory_pool_size - _ux_system -> ux_system_regular_memory_pool_free;
+
+
+The total usage is the sum of above two.
+
+Thus the size of memory usage can be estimated.
+
+Note with UX_ENABLE_MEMORY_STATISTICS defined there is another variable _ux_system -> ux_system_regular_memory_pool_min_free can be used to check max memory usage.

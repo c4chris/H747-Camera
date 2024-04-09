@@ -67,6 +67,7 @@ extern DMA_HandleTypeDef hdma_usart1_tx;
   */
 void HAL_MspInit(void)
 {
+
   /* USER CODE BEGIN MspInit 0 */
 
   /* USER CODE END MspInit 0 */
@@ -78,7 +79,6 @@ void HAL_MspInit(void)
   /* Peripheral interrupt init */
   /* HSEM2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(HSEM2_IRQn, 10, 0);
-  /* HSEM2_IRQn interrupt configuration */
   HAL_NVIC_EnableIRQ(HSEM2_IRQn);
 
   /* USER CODE BEGIN MspInit 1 */

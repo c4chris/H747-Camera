@@ -22,8 +22,11 @@
 #define  __RTE_COMPONENTS_H__
 
 /* Defines ------------------------------------------------------------------*/
-/* STMicroelectronics.X-CUBE-AZRTOS-H7.2.1.0 */
+/* STMicroelectronics.X-CUBE-AZRTOS-H7.3.2.0 */
 #define IS42S32800G_SDRAM
 #define THREADX_ENABLED
+#define TRACEX_SUPPORT_ENABLED
+/* STMicroelectronics.X-CUBE-AI.8.1.0 */
+#define AI_ApplicationTemplate
 
 #endif /* __RTE_COMPONENTS_H__ */

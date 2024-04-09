@@ -55,6 +55,16 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_cortex.c</locationURI>
 		</link>
 		<link>
+			<name>Drivers/STM32H7xx_HAL_Driver/stm32h7xx_hal_crc.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_crc.c</locationURI>
+		</link>
+		<link>
+			<name>Drivers/STM32H7xx_HAL_Driver/stm32h7xx_hal_crc_ex.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_crc_ex.c</locationURI>
+		</link>
+		<link>
 			<name>Drivers/STM32H7xx_HAL_Driver/stm32h7xx_hal_dma.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Drivers/STM32H7xx_HAL_Driver/Src/stm32h7xx_hal_dma.c</locationURI>
@@ -188,6 +198,16 @@
 			<name>Drivers/BSP/Components/otm8009a_reg.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Drivers/BSP/Components/otm8009a/otm8009a_reg.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/guix/ports/generic</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/guix/ports/generic</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/guix/ports/cortex_m7/gnu</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/guix/ports/cortex_m7/gnu</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_block_allocate.c</name>
@@ -523,6 +543,16 @@
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_interrupt_control.S</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m7/gnu/src/tx_thread_interrupt_control.S</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_interrupt_disable.S</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m7/gnu/src/tx_thread_interrupt_disable.S</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_interrupt_restore.S</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/ports/cortex_m7/gnu/src/tx_thread_interrupt_restore.S</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_thread_preemption_change.c</name>

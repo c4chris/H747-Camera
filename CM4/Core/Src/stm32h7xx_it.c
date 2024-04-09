@@ -32,6 +32,9 @@
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
 
+#define ERR_Port LED2_GPIO_Port
+#define ERR_Pin  LED2_Pin
+
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -55,7 +58,7 @@
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
-extern MDMA_HandleTypeDef hmdma_mdma_channel40_sw_0;
+extern MDMA_HandleTypeDef hmdma_mdma_channel0_sw_0;
 extern DMA_HandleTypeDef hdma_dcmi;
 extern DCMI_HandleTypeDef hdcmi;
 extern DMA_HandleTypeDef hdma_usart1_rx;
@@ -82,21 +85,21 @@ void NMI_Handler(void)
   /* USER CODE BEGIN NonMaskableInt_IRQn 1 */
   while (1)
   {
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(500);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(500);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(500);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(500);
   }
   /* USER CODE END NonMaskableInt_IRQn 1 */
@@ -113,21 +116,21 @@ void HardFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_HardFault_IRQn 0 */
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(500);
     /* USER CODE END W1_HardFault_IRQn 0 */
   }
@@ -144,21 +147,21 @@ void MemManage_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_MemoryManagement_IRQn 0 */
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(500);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(500);
     /* USER CODE END W1_MemoryManagement_IRQn 0 */
   }
@@ -175,21 +178,21 @@ void BusFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_BusFault_IRQn 0 */
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(500);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(500);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(500);
     /* USER CODE END W1_BusFault_IRQn 0 */
   }
@@ -206,21 +209,21 @@ void UsageFault_Handler(void)
   while (1)
   {
     /* USER CODE BEGIN W1_UsageFault_IRQn 0 */
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(500);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_SET);
     my_Delay(250);
-    HAL_GPIO_WritePin(LED2_GPIO_Port, LED2_Pin, GPIO_PIN_RESET);
+    HAL_GPIO_WritePin(ERR_Port, ERR_Pin, GPIO_PIN_RESET);
     my_Delay(500);
     /* USER CODE END W1_UsageFault_IRQn 0 */
   }

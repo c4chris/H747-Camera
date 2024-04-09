@@ -222,6 +222,7 @@ void my_Delay(uint32_t);
 #define FMC_SDCKE1_GPIO_Port GPIOH
 #define FMC_D13_Pin GPIO_PIN_8
 #define FMC_D13_GPIO_Port GPIOD
+
 /* USER CODE BEGIN Private defines */
 
 #define HSEM_ID_0 (0U) /* HW semaphore 0 - used to coordinate boot with CM4 */

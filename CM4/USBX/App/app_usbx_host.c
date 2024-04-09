@@ -48,6 +48,9 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+
+static TX_THREAD ux_host_app_thread;
+
 /* USER CODE BEGIN PV */
 
 extern HCD_HandleTypeDef                  hhcd_USB_OTG_HS;
@@ -64,119 +67,117 @@ __ALIGN_BEGIN ux_app_devInfotypeDef        ux_dev_info  __ALIGN_END;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
+static VOID app_ux_host_thread_entry(ULONG thread_input);
+static VOID ux_host_error_callback(UINT system_level, UINT system_context, UINT error_code);
 /* USER CODE BEGIN PFP */
 
+UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *current_class, VOID *current_instance);
 extern void msc_process_thread_entry(ULONG arg);
 extern void Error_Handler(void);
 
 /* USER CODE END PFP */
+
 /**
   * @brief  Application USBX Host Initialization.
-  * @param memory_ptr: memory pointer
-  * @retval int
+  * @param  memory_ptr: memory pointer
+  * @retval status
   */
 UINT MX_USBX_Host_Init(VOID *memory_ptr)
 {
   UINT ret = UX_SUCCESS;
+  UCHAR *pointer;
   TX_BYTE_POOL *byte_pool = (TX_BYTE_POOL*)memory_ptr;
 
-  /* USER CODE BEGIN MX_USBX_Host_MEM_POOL */
+  /* USER CODE BEGIN MX_USBX_Host_Init0 */
 
-  CHAR *pointer;
+  /* USER CODE END MX_USBX_Host_Init0 */
 
-  /* USER CODE END MX_USBX_Host_MEM_POOL */
-
-  /* USER CODE BEGIN MX_USBX_Host_Init */
-
-  /* Allocate the stack for thread 0.  */
+  /* Allocate the stack for USBX Memory */
   if (tx_byte_allocate(byte_pool, (VOID **) &pointer,
-                       USBX_MEMORY_SIZE, TX_NO_WAIT) != TX_SUCCESS)
+                       USBX_HOST_MEMORY_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
   {
+    /* USER CODE BEGIN USBX_ALLOCATE_STACK_ERORR */
     return TX_POOL_ERROR;
+    /* USER CODE END USBX_ALLOCATE_STACK_ERORR */
   }
 
-  /* Initialize USBX memory. */
-  if (ux_system_initialize(pointer, USBX_MEMORY_SIZE, UX_NULL, 0) != UX_SUCCESS)
+  /* Initialize USBX Memory */
+  if (ux_system_initialize(pointer, USBX_HOST_MEMORY_STACK_SIZE, UX_NULL, 0) != UX_SUCCESS)
+  {
+    /* USER CODE BEGIN USBX_SYSTEM_INITIALIZE_ERORR */
+    return UX_ERROR;
+    /* USER CODE END USBX_SYSTEM_INITIALIZE_ERORR */
+  }
+
+  /* Install the host portion of USBX */
+  if (ux_host_stack_initialize(ux_host_event_callback) != UX_SUCCESS)
+  {
+    /* USER CODE BEGIN USBX_HOST_INITIALIZE_ERORR */
+    return UX_ERROR;
+    /* USER CODE END USBX_HOST_INITIALIZE_ERORR */
+  }
+
+  /* Register a callback error function */
+  ux_utility_error_callback_register(&ux_host_error_callback);
+
+  /* Initialize the host storage class */
+  if (ux_host_stack_class_register(_ux_system_host_class_storage_name,
+                                   ux_host_class_storage_entry) != UX_SUCCESS)
+  {
+    /* USER CODE BEGIN USBX_HOST_STORAGE_REGISTER_ERORR */
+    return UX_ERROR;
+    /* USER CODE END USBX_HOST_STORAGE_REGISTER_ERORR */
+  }
+
+  /* Allocate the stack for host application main thread */
+  if (tx_byte_allocate(byte_pool, (VOID **) &pointer, UX_HOST_APP_THREAD_STACK_SIZE,
+                       TX_NO_WAIT) != TX_SUCCESS)
+  {
+    /* USER CODE BEGIN MAIN_THREAD_ALLOCATE_STACK_ERORR */
+    return TX_POOL_ERROR;
+    /* USER CODE END MAIN_THREAD_ALLOCATE_STACK_ERORR */
+  }
+
+  /* Create the host application main thread */
+  if (tx_thread_create(&ux_host_app_thread, UX_HOST_APP_THREAD_NAME, app_ux_host_thread_entry,
+                       0, pointer, UX_HOST_APP_THREAD_STACK_SIZE, UX_HOST_APP_THREAD_PRIO,
+                       UX_HOST_APP_THREAD_PREEMPTION_THRESHOLD, UX_HOST_APP_THREAD_TIME_SLICE,
+                       UX_HOST_APP_THREAD_START_OPTION) != TX_SUCCESS)
+  {
+    /* USER CODE BEGIN MAIN_THREAD_CREATE_ERORR */
+    return TX_THREAD_ERROR;
+    /* USER CODE END MAIN_THREAD_CREATE_ERORR */
+  }
+
+  /* USER CODE BEGIN MX_USBX_Host_Init1 */
+
+  /* Register all the USB host controllers available in this system. */
+  if (ux_host_stack_hcd_register(_ux_system_host_hcd_stm32_name,
+                                 _ux_hcd_stm32_initialize,
+                                 USB_OTG_HS_PERIPH_BASE,
+                                 (ULONG)&hhcd_USB_OTG_HS) != UX_SUCCESS)
   {
     return UX_ERROR;
   }
-  /* register a callback error function */
 
-  _ux_utility_error_callback_register(&ux_host_error_callback);
+  /* Enable USB Global Interrupt */
+  HAL_HCD_Start(&hhcd_USB_OTG_HS);
 
-  /* Allocate the stack for thread 0.  */
-  if (tx_byte_allocate(byte_pool, (VOID **) &pointer,
-                       USBX_APP_STACK_SIZE, TX_NO_WAIT) != TX_SUCCESS)
-  {
-    return TX_POOL_ERROR;
-  }
-
-  /* Create the main App thread.  */
-  if (tx_thread_create(&ux_app_thread, "thread 0", usbx_app_thread_entry, 0,
-                       pointer, USBX_APP_STACK_SIZE, 25, 25, 0,
-                       TX_AUTO_START) != TX_SUCCESS)
-  {
-    return TX_THREAD_ERROR;
-  }
-
-    /* Allocate the stack for thread 1.  */
-  if (tx_byte_allocate(byte_pool, (VOID **) &pointer,
-                      (USBX_APP_STACK_SIZE * 2), TX_NO_WAIT) != TX_SUCCESS)
-  {
-    return TX_POOL_ERROR;
-  }
-
-  /* Create the storage applicative process thread.  */
-  if (tx_thread_create(&msc_app_thread, "thread 1", msc_process_thread_entry, 0,
-                       pointer, (USBX_APP_STACK_SIZE * 2), 30, 30, 0,
-                       TX_AUTO_START) != TX_SUCCESS)
-  {
-    return TX_THREAD_ERROR;
-  }
-  /* Allocate Memory for the Queue  */
-  if (tx_byte_allocate(byte_pool, (VOID **) &pointer,
-                       APP_QUEUE_SIZE * sizeof(ux_app_devInfotypeDef), TX_NO_WAIT) != TX_SUCCESS)
-  {
-    return TX_POOL_ERROR;
-  }
-
-  /* Create the MsgQueue   */
-  if (tx_queue_create(&ux_app_MsgQueue, "Message Queue app", sizeof(ux_app_devInfotypeDef),
-                      pointer, APP_QUEUE_SIZE * sizeof(ux_app_devInfotypeDef)) != TX_SUCCESS)
-  {
-    return TX_QUEUE_ERROR;
-  }
-
-  /* Allocate Memory for the msc_Queue  */
-  if (tx_byte_allocate(byte_pool, (VOID **) &pointer,
-                       APP_QUEUE_SIZE * sizeof(ULONG), TX_NO_WAIT) != TX_SUCCESS)
-  {
-    return TX_POOL_ERROR;
-  }
-
-  /* Create the msc_MsgQueue   */
-  if (tx_queue_create(&ux_app_MsgQueue_msc, "Message Queue msc", sizeof(FX_MEDIA*),
-                      pointer, APP_QUEUE_SIZE * sizeof(ULONG)) != TX_SUCCESS)
-  {
-    return TX_QUEUE_ERROR;
-  }
-
-  /* USER CODE END MX_USBX_Host_Init */
+  /* USER CODE END MX_USBX_Host_Init1 */
 
   return ret;
 }
 
-/* USER CODE BEGIN 1 */
-
 /**
-  * @brief  Application_thread_entry .
-  * @param  ULONG arg
-  * @retval Void
+  * @brief  Function implementing app_ux_host_thread_entry.
+  * @param  thread_input: User thread input parameter.
+  * @retval none
   */
-void  usbx_app_thread_entry(ULONG arg)
+static VOID app_ux_host_thread_entry(ULONG thread_input)
 {
-  /* Initialize USBX_Host */
-  MX_USB_Host_Init();
+  /* USER CODE BEGIN app_ux_host_thread_entry */
+
+  TX_PARAMETER_NOT_USED(thread_input);
 
   /* Start Application */
   USBH_UsrLog(" **** USB OTG HS in FS MSC Host **** \n");
@@ -240,73 +241,41 @@ void  usbx_app_thread_entry(ULONG arg)
       tx_thread_sleep(50);
     }
   }
+  /* USER CODE END app_ux_host_thread_entry */
 }
 
 /**
-  * @brief MX_USB_Host_Init
-  *        Initialization of USB Host.
-  * Init USB Host Library, add supported class and start the library
-  * @retval None
+  * @brief  ux_host_event_callback
+  *         This callback is invoked to notify application of instance changes.
+  * @param  event: event code.
+  * @param  current_class: Pointer to class.
+  * @param  current_instance: Pointer to class instance.
+  * @retval status
   */
-UINT MX_USB_Host_Init(void)
+UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *current_class, VOID *current_instance)
 {
-  UINT ret = UX_SUCCESS;
+  UINT status = UX_SUCCESS;
 
-  /* The code below is required for installing the host portion of USBX.  */
-  if (ux_host_stack_initialize(ux_host_event_callback) != UX_SUCCESS)
-  {
-    return UX_ERROR;
-  }
+  /* USER CODE BEGIN ux_host_event_callback0 */
 
-  /* Register storage class. */
-  if (ux_host_stack_class_register(_ux_system_host_class_storage_name,
-                                   _ux_host_class_storage_entry) != UX_SUCCESS)
-  {
-    return UX_ERROR;
-  }
-
-  /* Register all the USB host controllers available in this system. */
-  if (ux_host_stack_hcd_register(_ux_system_host_hcd_stm32_name,
-                                 _ux_hcd_stm32_initialize,
-                                 USB_OTG_HS_PERIPH_BASE,
-                                 (ULONG)&hhcd_USB_OTG_HS) != UX_SUCCESS)
-  {
-    return UX_ERROR;
-  }
-
-  /* Enable USB Global Interrupt */
-  HAL_HCD_Start(&hhcd_USB_OTG_HS);
-
-  return ret ;
-}
-
-/**
-* @brief ux_host_event_callback
-* @param ULONG event
-           This parameter can be one of the these values:
-             1 : UX_DEVICE_INSERTION
-             2 : UX_DEVICE_REMOVAL
-         UX_HOST_CLASS * Current_class
-         VOID * Current_instance
-* @retval Status
-*/
-UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *Current_class, VOID *Current_instance)
-{
-  UINT status;
-  UX_HOST_CLASS *msc_class;
+  /* USER CODE END ux_host_event_callback0 */
 
   switch (event)
   {
-    case UX_DEVICE_INSERTION :
+    case UX_DEVICE_INSERTION:
+
+      /* USER CODE BEGIN UX_DEVICE_INSERTION */
+
       /* Get current Hid Class */
+      UX_HOST_CLASS *msc_class;
       status = ux_host_stack_class_get(_ux_system_host_class_storage_name, &msc_class);
 
       if (status == UX_SUCCESS)
       {
-        if ((msc_class == Current_class) && (storage == NULL))
+        if ((msc_class == current_class) && (storage == NULL))
         {
           /* get current msc Instance */
-          storage = Current_instance;
+          storage = current_instance;
 
           if (storage == NULL)
           {
@@ -347,11 +316,16 @@ UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *Current_class, VOID *Cur
         /* No MSC class found */
         USBH_ErrLog("NO MSC Class found");
       }
+
+      /* USER CODE END UX_DEVICE_INSERTION */
+
       break;
 
-    case UX_DEVICE_REMOVAL :
+    case UX_DEVICE_REMOVAL:
 
-      if (Current_instance == storage)
+      /* USER CODE BEGIN UX_DEVICE_REMOVAL */
+
+      if (current_instance == storage)
       {
         /* free Instance */
         storage = NULL;
@@ -360,39 +334,114 @@ UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *Current_class, VOID *Cur
         ux_dev_info.Device_Type = Unknown_Device;
         tx_queue_send(&ux_app_MsgQueue, &ux_dev_info, TX_NO_WAIT);
       }
+
+      /* USER CODE END UX_DEVICE_REMOVAL */
+
+      break;
+
+#if defined (UX_HOST_CLASS_STORAGE_NO_FILEX)
+    case UX_STORAGE_MEDIA_INSERTION:
+
+      /* USER CODE BEGIN UX_STORAGE_MEDIA_INSERTION */
+
+      /* USER CODE END UX_STORAGE_MEDIA_INSERTION */
+
+      break;
+
+    case UX_STORAGE_MEDIA_REMOVAL:
+
+      /* USER CODE BEGIN UX_STORAGE_MEDIA_REMOVAL */
+
+      /* USER CODE END UX_STORAGE_MEDIA_REMOVAL */
+
+      break;
+#endif
+
+    case UX_DEVICE_CONNECTION:
+
+      /* USER CODE BEGIN UX_DEVICE_CONNECTION */
+
+      /* USER CODE END UX_DEVICE_CONNECTION */
+
+      break;
+
+    case UX_DEVICE_DISCONNECTION:
+
+      /* USER CODE BEGIN UX_DEVICE_DISCONNECTION */
+
+      /* USER CODE END UX_DEVICE_DISCONNECTION */
+
       break;
 
     default:
+
+      /* USER CODE BEGIN EVENT_DEFAULT */
+
+      /* USER CODE END EVENT_DEFAULT */
+
       break;
   }
 
-  return (UINT) UX_SUCCESS;
+  /* USER CODE BEGIN ux_host_event_callback1 */
+
+  /* USER CODE END ux_host_event_callback1 */
+
+  return status;
 }
 
 /**
-* @brief ux_host_error_callback
-* @param ULONG event
-         UINT system_context
-         UINT error_code
-* @retval Status
-*/
+  * @brief ux_host_error_callback
+  *         This callback is invoked to notify application of error changes.
+  * @param  system_level: system level parameter.
+  * @param  system_context: system context code.
+  * @param  error_code: error event code.
+  * @retval Status
+  */
 VOID ux_host_error_callback(UINT system_level, UINT system_context, UINT error_code)
 {
+  /* USER CODE BEGIN ux_host_error_callback0 */
+  UX_PARAMETER_NOT_USED(system_level);
+  UX_PARAMETER_NOT_USED(system_context);
+  /* USER CODE END ux_host_error_callback0 */
+
   switch (error_code)
   {
-    case UX_DEVICE_ENUMERATION_FAILURE :
+    case UX_DEVICE_ENUMERATION_FAILURE:
+
+      /* USER CODE BEGIN UX_DEVICE_ENUMERATION_FAILURE */
+
       ux_dev_info.Device_Type = Unknown_Device;
       ux_dev_info.Dev_state   = Device_connected;
       tx_queue_send(&ux_app_MsgQueue, &ux_dev_info, TX_NO_WAIT);
+
+      /* USER CODE END UX_DEVICE_ENUMERATION_FAILURE */
+
       break;
 
-    case UX_NO_DEVICE_CONNECTED :
+    case  UX_NO_DEVICE_CONNECTED:
+
+      /* USER CODE BEGIN UX_NO_DEVICE_CONNECTED */
+
       USBH_UsrLog("USB Device disconnected");
+
+      /* USER CODE END UX_NO_DEVICE_CONNECTED */
+
       break;
 
     default:
+
+      /* USER CODE BEGIN ERROR_DEFAULT */
+
+      /* USER CODE END ERROR_DEFAULT */
+
       break;
   }
+
+  /* USER CODE BEGIN ux_host_error_callback1 */
+
+  /* USER CODE END ux_host_error_callback1 */
 }
+
+/* USER CODE BEGIN 1 */
 
 /* USER CODE END 1 */

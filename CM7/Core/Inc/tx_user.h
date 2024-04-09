@@ -24,7 +24,7 @@
 /*  PORT SPECIFIC C INFORMATION                            RELEASE        */
 /*                                                                        */
 /*    tx_user.h                                           PORTABLE C      */
-/*                                                           6.1.9        */
+/*                                                           6.1.11       */
 /*                                                                        */
 /*  AUTHOR                                                                */
 /*                                                                        */
@@ -56,11 +56,19 @@
 /*                                            user-configurable symbol    */
 /*                                            TX_TIMER_TICKS_PER_SECOND   */
 /*                                            resulting in version 6.1.9  */
+/*  04-25-2022      Wenhui Xie              Modified comment(s),          */
+/*                                            optimized the definition of */
+/*                                            TX_TIMER_TICKS_PER_SECOND,  */
+/*                                            resulting in version 6.1.11 */
 /*                                                                        */
 /**************************************************************************/
 
 #ifndef TX_USER_H
 #define TX_USER_H
+
+/* USER CODE BEGIN 1 */
+
+/* USER CODE END 1 */
 
 /* Define various build options for the ThreadX port.  The application should either make changes
    here by commenting or un-commenting the conditional compilation defined OR supply the defines
@@ -77,6 +85,7 @@
         TX_REACTIVATE_INLINE
         TX_DISABLE_STACK_FILLING
         TX_INLINE_THREAD_RESUME_SUSPEND
+        TX_DISABLE_ERROR_CHECKING
 
    For minimum size, the following should be defined:
 
@@ -99,7 +108,6 @@
    to tx_port.h for descriptions on each of these options.  */
 
 /*#define TX_MAX_PRIORITIES                32*/
-/*#define TX_THREAD_USER_EXTENSION                ????*/
 /*#define TX_TIMER_THREAD_STACK_SIZE                1024*/
 /*#define TX_TIMER_THREAD_PRIORITY                0*/
 
@@ -164,6 +172,10 @@
    code size and improve performance.  */
 
 #define TX_DISABLE_NOTIFY_CALLBACKS
+
+/*Defined, the basic parameter error checking is disabled.*/
+
+/*#define TX_DISABLE_ERROR_CHECKING*/
 
 /* Determine if the tx_thread_resume and tx_thread_suspend services should have their internal
    code in-line. This results in a larger image, but improves the performance of the thread
@@ -230,19 +242,6 @@
 
 /*#define TX_TRACE_TIME_MASK  0xFFFFFFFFUL*/
 
-/* Define if the execution change notify is enabled. */
-
-/*#define TX_ENABLE_EXECUTION_CHANGE_NOTIFY*/
-
-/* Define the get system state macro. */
-
-/*#define TX_THREAD_GET_SYSTEM_STATE() _tx_thread_system_state */
-
-/* Define the check for whether or not to call the
-    _tx_thread_system_return function (TX_THREAD_SYSTEM_RETURN_CHECK(c)). */
-
-/*#define TX_THREAD_SYSTEM_RETURN_CHECK (c)  ((ULONG) _tx_thread_preempt_disable)*/
-
 /* Define the common timer tick reference for use by other middleware components. */
 
 /*#define TX_TIMER_TICKS_PER_SECOND                100*/
@@ -275,6 +274,13 @@
 /* Define if the safety critical configuration is enabled. */
 
 /*#define TX_SAFETY_CRITICAL*/
+
+/* USER CODE BEGIN 2 */
+
+/* Define the user extension field of the thread control block.*/
+/*#define TX_THREAD_USER_EXTENSION                ????*/
+
+/* USER CODE END 2 */
 
 #endif
 

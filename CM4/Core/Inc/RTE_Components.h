@@ -22,10 +22,12 @@
 #define  __RTE_COMPONENTS_H__
 
 /* Defines ------------------------------------------------------------------*/
-/* STMicroelectronics.X-CUBE-AZRTOS-H7.2.1.0 */
+/* STMicroelectronics.X-CUBE-AZRTOS-H7.3.2.0 */
 #define USBXHOST_ENABLED
 #define UX_HOST_CONTROLLERS_ENABLED
+#define UX_HOST_STORAGE
 #define FILEX_ENABLED
 #define THREADX_ENABLED
+#define TRACEX_SUPPORT_ENABLED
 
 #endif /* __RTE_COMPONENTS_H__ */

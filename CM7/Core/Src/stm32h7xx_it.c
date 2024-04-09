@@ -59,7 +59,7 @@ extern DMA2D_HandleTypeDef hdma2d;
 extern DSI_HandleTypeDef hdsi;
 extern SDRAM_HandleTypeDef hsdram1;
 extern LTDC_HandleTypeDef hltdc;
-extern MDMA_HandleTypeDef hmdma_mdma_channel40_sw_0;
+extern MDMA_HandleTypeDef hmdma_mdma_channel0_sw_0;
 extern TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN EV */
@@ -307,7 +307,7 @@ void MDMA_IRQHandler(void)
   /* USER CODE BEGIN MDMA_IRQn 0 */
 
   /* USER CODE END MDMA_IRQn 0 */
-  HAL_MDMA_IRQHandler(&hmdma_mdma_channel40_sw_0);
+  HAL_MDMA_IRQHandler(&hmdma_mdma_channel0_sw_0);
   /* USER CODE BEGIN MDMA_IRQn 1 */
 
   /* USER CODE END MDMA_IRQn 1 */
