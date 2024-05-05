@@ -234,6 +234,14 @@ void tx_cm4_main_thread_entry(ULONG thread_input)
 	ULONG actual_events;
 	ULONG prev_ticks = tx_time_get();
 	UINT frame_cnt = 0;
+	// We are ready to receive events
+	if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, (800 * 96 * 2 / 4)) != HAL_OK)
+	//if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 192000UL) != HAL_OK)
+	//if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 153600UL) != HAL_OK)
+	//if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 38400UL) != HAL_OK)
+	{
+	  Error_Handler();
+	}
 	/* Infinite loop */
 	for(;;)
 	{

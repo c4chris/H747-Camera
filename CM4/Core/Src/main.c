@@ -187,14 +187,6 @@ int main(void)
   //  Error_Handler();
   //}
 
-  if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, (800 * 96 * 2 / 4)) != HAL_OK)
-  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 192000UL) != HAL_OK)
-  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 153600UL) != HAL_OK)
-  //if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 38400UL) != HAL_OK)
-  {
-    Error_Handler();
-  }
-
   /* USER CODE END 2 */
 
   MX_ThreadX_Init();
