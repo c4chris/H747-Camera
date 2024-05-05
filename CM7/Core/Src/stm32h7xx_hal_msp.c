@@ -193,7 +193,8 @@ void HAL_DSI_MspInit(DSI_HandleTypeDef* hdsi)
   /** Initializes the peripherals clock
   */
     PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_DSI;
-    PeriphClkInitStruct.DsiClockSelection = RCC_DSICLKSOURCE_PLL2;
+    //PeriphClkInitStruct.DsiClockSelection = RCC_DSICLKSOURCE_PLL2;
+    PeriphClkInitStruct.DsiClockSelection = RCC_DSICLKSOURCE_PHY;
     if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
     {
       Error_Handler();
