@@ -1340,26 +1340,6 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/filex/common/src/fxe_unicode_short_name_get_extended.c</locationURI>
 		</link>
 		<link>
-			<name>Middlewares/FileX/File System/FileX/TraceX Support/fx_trace_event_insert.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/filex/common/src/fx_trace_event_insert.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/FileX/File System/FileX/TraceX Support/fx_trace_event_update.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/filex/common/src/fx_trace_event_update.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/FileX/File System/FileX/TraceX Support/fx_trace_object_register.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/filex/common/src/fx_trace_object_register.c</locationURI>
-		</link>
-		<link>
-			<name>Middlewares/FileX/File System/FileX/TraceX Support/fx_trace_object_unregister.c</name>
-			<type>1</type>
-			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/filex/common/src/fx_trace_object_unregister.c</locationURI>
-		</link>
-		<link>
 			<name>Middlewares/ThreadX/RTOS/ThreadX/Core/tx_block_allocate.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_block_allocate.c</locationURI>
@@ -2185,6 +2165,26 @@
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/txe_timer_info_get.c</locationURI>
 		</link>
 		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/fx_trace_event_insert.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/filex/common/src/fx_trace_event_insert.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/fx_trace_event_update.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/filex/common/src/fx_trace_event_update.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/fx_trace_object_register.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/filex/common/src/fx_trace_object_register.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/fx_trace_object_unregister.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/filex/common/src/fx_trace_object_unregister.c</locationURI>
+		</link>
+		<link>
 			<name>Middlewares/ThreadX/RTOS/ThreadX/TraceX support/tx_trace_buffer_full_notify.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/threadx/common/src/tx_trace_buffer_full_notify.c</locationURI>
@@ -2538,6 +2538,11 @@
 			<name>Middlewares/USBX/USB/USBX/CoreSystem/ux_utility_timer_create.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/usbx/common/core/src/ux_utility_timer_create.c</locationURI>
+		</link>
+		<link>
+			<name>Middlewares/USBX/USB/USBX/CoreSystem/ux_utility_timer_delete.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/Middlewares/ST/usbx/common/core/src/ux_utility_timer_delete.c</locationURI>
 		</link>
 		<link>
 			<name>Middlewares/USBX/USB/USBX/CoreSystem/ux_utility_unicode_to_string.c</name>

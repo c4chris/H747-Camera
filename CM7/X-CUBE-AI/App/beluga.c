@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    beluga.c
   * @author  AST Embedded Analytics Research Platform
-  * @date    Fri Apr  5 18:59:58 2024
+  * @date    Sun May  5 21:48:36 2024
   * @brief   AI Tool Automatic Code Generator for Embedded NN computing
   ******************************************************************************
   * @attention
@@ -42,7 +42,7 @@
 #endif
 
 #undef AI_TOOLS_DATE_TIME
-#define AI_TOOLS_DATE_TIME   "Fri Apr  5 18:59:58 2024"
+#define AI_TOOLS_DATE_TIME   "Sun May  5 21:48:36 2024"
 
 #undef AI_TOOLS_COMPILE_TIME
 #define AI_TOOLS_COMPILE_TIME    __DATE__ " " __TIME__

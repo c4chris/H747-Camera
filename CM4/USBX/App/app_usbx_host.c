@@ -68,6 +68,7 @@ __ALIGN_BEGIN ux_app_devInfotypeDef        ux_dev_info  __ALIGN_END;
 
 /* Private function prototypes -----------------------------------------------*/
 static VOID app_ux_host_thread_entry(ULONG thread_input);
+static UINT ux_host_event_callback(ULONG event, UX_HOST_CLASS *current_class, VOID *current_instance);
 static VOID ux_host_error_callback(UINT system_level, UINT system_context, UINT error_code);
 /* USER CODE BEGIN PFP */
 

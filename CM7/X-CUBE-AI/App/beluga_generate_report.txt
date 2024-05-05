@@ -1,6 +1,6 @@
 Neural Network Tools for STM32 family v1.7.0 (stm.ai v8.1.0-19520)
-Created date          : 2024-04-05 18:59:58
-Parameters            : generate --name beluga -m C:/Users/xtian/source/repos/stm32ai-modelzoo/image_classification/src/experiments_outputs/2024_03_29_23_40_31/quantized_models/quantized_model.tflite --type tflite --compression lossless --verbosity 1 --workspace C:\Users\xtian\AppData\Local\Temp\mxAI_workspace3514368617260003770311816869496465 --output C:\Users\xtian\.stm32cubemx\beluga_output --allocate-inputs --series stm32h7 -O time --allocate-outputs
+Created date          : 2024-05-05 21:48:37
+Parameters            : generate --name beluga -m C:/Users/xtian/source/repos/stm32ai-modelzoo/image_classification/src/experiments_outputs/2024_03_29_23_40_31/quantized_models/quantized_model.tflite --type tflite --compression lossless --verbosity 1 --workspace C:\Users\xtian\AppData\Local\Temp\mxAI_workspace824600284662003061976171940646224 --output C:\Users\xtian\.stm32cubemx\beluga_output --allocate-inputs --series stm32h7 -O time --allocate-outputs
 
 Exec/report summary (generate)
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -11,7 +11,7 @@ compression        :   lossless
 options            :   allocate-inputs, allocate-outputs                                                                                                                       
 optimization       :   time                                                                                                                                                    
 target/series      :   stm32h7                                                                                                                                                 
-workspace dir      :   C:\Users\xtian\AppData\Local\Temp\mxAI_workspace3514368617260003770311816869496465                                                                      
+workspace dir      :   C:\Users\xtian\AppData\Local\Temp\mxAI_workspace824600284662003061976171940646224                                                                       
 output dir         :   C:\Users\xtian\.stm32cubemx\beluga_output                                                                                                               
 model_fmt          :   ss/sa per channel                                                                                                                                       
 model_name         :   quantized_model                                                                                                                                         

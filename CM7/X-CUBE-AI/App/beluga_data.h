@@ -2,7 +2,7 @@
   ******************************************************************************
   * @file    beluga_data.h
   * @author  AST Embedded Analytics Research Platform
-  * @date    Fri Apr  5 18:59:58 2024
+  * @date    Sun May  5 21:48:36 2024
   * @brief   AI Tool Automatic Code Generator for Embedded NN computing
   ******************************************************************************
   * Copyright (c) 2024 STMicroelectronics.
