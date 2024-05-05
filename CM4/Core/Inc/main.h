@@ -68,11 +68,11 @@ extern volatile CM4_CM7_SharedDataTypeDef sharedData;
 /* USER CODE BEGIN EM */
 
 #define USBH_UsrLog(...)   printf(__VA_ARGS__);\
-                           printf("\n");
+                           printf("\r\n");
 
 #define USBH_ErrLog(...)   printf("ERROR: ") ;\
                            printf(__VA_ARGS__);\
-                           printf("\n");
+                           printf("\r\n");
 
 /* USER CODE END EM */
 
