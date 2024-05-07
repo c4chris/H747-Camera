@@ -230,6 +230,7 @@ int UART_Receive(unsigned char *dest, const unsigned char *rx, UART_HandleTypeDe
 
 void tx_cm4_main_thread_entry(ULONG thread_input)
 {
+	printf("Main thread going to sleep\r\n");
 	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
 	ULONG actual_events;
 	ULONG prev_ticks = tx_time_get();
@@ -240,8 +241,10 @@ void tx_cm4_main_thread_entry(ULONG thread_input)
 	//if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 153600UL) != HAL_OK)
 	//if (HAL_DCMI_Start_DMA(&hdcmi, DCMI_MODE_CONTINUOUS, (uint32_t) cameraBuffer, 38400UL) != HAL_OK)
 	{
+		printf("Error starting DCMI DMA receive\r\n");
 	  Error_Handler();
 	}
+	printf("Started DCMI DMA receive\r\n");
 	/* Infinite loop */
 	for(;;)
 	{

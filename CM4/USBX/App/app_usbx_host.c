@@ -193,7 +193,8 @@ static VOID app_ux_host_thread_entry(ULONG thread_input)
     /* wait for message queue from callback event */
     if (tx_queue_receive(&ux_app_MsgQueue, &ux_dev_info, TX_WAIT_FOREVER)!= TX_SUCCESS)
     {
-     Error_Handler();
+    	USBH_UsrLog("*** host_thread - failed receive");
+    	Error_Handler();
     }
 
     if (ux_dev_info.Dev_state == Device_connected)
