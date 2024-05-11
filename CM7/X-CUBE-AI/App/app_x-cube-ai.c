@@ -58,6 +58,7 @@
 #include "beluga_data.h"
 
 /* USER CODE BEGIN includes */
+#include "app_threadx.h"
 /* USER CODE END includes */
 
 /* IO buffers ----------------------------------------------------------------*/
@@ -178,6 +179,7 @@ int acquire_and_process_data(ai_i8* data[])
   }
 
   */
+	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND * 10);
   return 0;
 }
 
@@ -190,6 +192,9 @@ int post_process(ai_i8* data[])
   }
 
   */
+	ai_i8 *res = data[0];
+	printf("Results : %02x%02x%02x %02x%02x%02x %02x%02x%02x\n",
+				 res[0]&0xff,res[1]&0xff,res[2]&0xff,res[3]&0xff,res[4]&0xff,res[5]&0xff,res[6]&0xff,res[7]&0xff,res[8]&0xff);
   return 0;
 }
 /* USER CODE END 2 */

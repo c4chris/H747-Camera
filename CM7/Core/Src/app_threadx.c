@@ -25,6 +25,7 @@
 /* USER CODE BEGIN Includes */
 
 #include <stdio.h>
+#include "app_x-cube-ai.h"
 
 /* USER CODE END Includes */
 
@@ -378,6 +379,8 @@ void tx_cm7_main_thread_entry(ULONG thread_input)
 
 	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND/5);
 	printf("Starting CM7 Run on %s\n", _tx_version_id);
+	MX_X_CUBE_AI_Init();
+	MX_X_CUBE_AI_Process();
   /* Infinite Loop */
   for( ;; )
   {
