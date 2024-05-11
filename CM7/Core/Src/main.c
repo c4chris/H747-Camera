@@ -788,6 +788,7 @@ void HAL_HSEM_FreeCallback(uint32_t SemMask)
   HAL_HSEM_ActivateNotification(HSEM_1|HSEM_2|HSEM_3);
 }
 
+/* Sometimes the display flickers even when both Callback are active... */
 // It seems both HAL_DSI_EndOfRefreshCallback() and HAL_LTDC_LineEventCallback()
 // do get calls and there is some flickering when for example I comment out
 // HAL_DSI_EndOfRefreshCallback() - not sure what the deal is here.
