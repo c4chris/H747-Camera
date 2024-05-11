@@ -67,8 +67,10 @@ TX_THREAD            cm7_lcd_thread;
 TX_THREAD            cm7_usb_stick_thread;
 TX_THREAD            cm7_camera_thread;
 /* 
- * event flag 0 is from LCD refresh done
- * event flag 1 is from HSEM_1 when core M4 signals touch data is available
+ * event flag 0 (1) is from LCD refresh done
+ * event flag 1 (2) is from HSEM_1 when core M4 signals touch data is available
+ * event flag 2 (4) is from HSEM_2 when core M4 signals camera data is available
+ * event flag 3 (8) is from HSEM_3 when core M4 signals USB event is available
  */
 TX_EVENT_FLAGS_GROUP cm7_event_group;
 
@@ -494,6 +496,24 @@ int _write(int file, char *ptr, int len)
 {
 	if (len <= 0)
 		return len;
+	/* transmit to CM4 if there is some room in the buffer */
+	if (((sharedData.writePos + 1) & 0xff) != (sharedData.readPos & 0xff))
+	{
+		int p = 0;
+		while (p < len)
+		{
+			int max = (sharedData.writePos >= sharedData.readPos) ? 256 : sharedData.readPos - 1;
+			max -= sharedData.writePos;
+			if (max > 255) max = 255; // cannot have writePos == readPos with full buffer
+			if (max + p > len) max = len - p;
+			memcpy(sharedData.charBuffer + sharedData.writePos, ptr + p, max);
+			p += max;
+			sharedData.writePos = (sharedData.writePos + max) & 0xff;
+			if (((sharedData.writePos + 1) & 0xff) == (sharedData.readPos & 0xff)) break; // no more room
+		}
+		HAL_HSEM_FastTake(HSEM_ID_5);
+		HAL_HSEM_Release(HSEM_ID_5, 0);
+	}
 	int cur = 0;
 	while (cur < len)
 	{
@@ -609,7 +629,7 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 				sharedData.CM7_to_CM4_USB_request = USB_REQUEST_START_RECORDING;
 			}
 			HAL_HSEM_FastTake(HSEM_ID_4);
-			HAL_HSEM_Release(HSEM_ID_4, 0); 
+			HAL_HSEM_Release(HSEM_ID_4, 0);
 			break;
 
 		default:

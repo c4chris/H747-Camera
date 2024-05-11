@@ -788,6 +788,12 @@ void HAL_HSEM_FreeCallback(uint32_t SemMask)
   HAL_HSEM_ActivateNotification(HSEM_1|HSEM_2|HSEM_3);
 }
 
+// It seems both HAL_DSI_EndOfRefreshCallback() and HAL_LTDC_LineEventCallback()
+// do get calls and there is some flickering when for example I comment out
+// HAL_DSI_EndOfRefreshCallback() - not sure what the deal is here.
+// Found this discussion but it does not help explain what happens:
+// https://community.st.com/t5/stm32-mcus-touchgfx-and-gui/how-to-get-a-touchgfx-demo-working-in-dsi-video-mode
+
 /**
   * @brief  End of Refresh DSI callback.
   * @param  hdsi: pointer to a DSI_HandleTypeDef structure that contains
@@ -796,25 +802,25 @@ void HAL_HSEM_FreeCallback(uint32_t SemMask)
   */
 void HAL_DSI_EndOfRefreshCallback(DSI_HandleTypeDef *hdsi)
 {
-  if(pend_buffer >= 0)
-  { 
-  /* Disable DSI Wrapper */
-    __HAL_DSI_WRAPPER_DISABLE(hdsi);
-    /* Update LTDC configuaration */
-    LTDC_LAYER(&hltdc, 0)->CFBAR = ((uint32_t)Buffers[pend_buffer]);
-    __HAL_LTDC_RELOAD_CONFIG(&hltdc);
-    /* Enable DSI Wrapper */
-    __HAL_DSI_WRAPPER_ENABLE(hdsi);
-    
-    front_buffer = pend_buffer;  
-    pend_buffer = -1;
-    /* Signal we are done */
-    if (tx_event_flags_set(&cm7_event_group, 0x1, TX_OR) != TX_SUCCESS)
-    {
-      Error_Handler();
-    }
-    HAL_GPIO_TogglePin(LED4_GPIO_Port, LED4_Pin);
-  }
+	if(pend_buffer >= 0)
+	{
+		/* Disable DSI Wrapper */
+		__HAL_DSI_WRAPPER_DISABLE(hdsi);
+		/* Update LTDC configuaration */
+		LTDC_LAYER(&hltdc, 0)->CFBAR = ((uint32_t)Buffers[pend_buffer]);
+		__HAL_LTDC_RELOAD_CONFIG(&hltdc);
+		/* Enable DSI Wrapper */
+		__HAL_DSI_WRAPPER_ENABLE(hdsi);
+
+		front_buffer = pend_buffer;
+		pend_buffer = -1;
+		/* Signal we are done */
+		if (tx_event_flags_set(&cm7_event_group, 0x1, TX_OR) != TX_SUCCESS)
+		{
+			Error_Handler();
+		}
+		//HAL_GPIO_TogglePin(LED4_GPIO_Port, LED4_Pin);
+	}
 }
 
 /**

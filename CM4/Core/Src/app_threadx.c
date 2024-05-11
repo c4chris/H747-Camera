@@ -55,18 +55,22 @@
 /* USER CODE BEGIN PV */
 
 /* Define ThreadX global data structures.  */
-TX_THREAD            cm4_main_thread;
-TX_THREAD            cm4_i2c4_thread;
-TX_THREAD            cm4_uart_thread;
+TX_THREAD cm4_main_thread;
+TX_THREAD cm4_i2c4_thread;
+TX_THREAD cm4_uart_thread;
+TX_THREAD cm4_cm7_printf_thread;
 /* 
- * event flag 0 is from DCMI transfer done
- * event flag 1 is from TOUCH_INT
- * event flag 4 is from HSEM_4
+ * event flag 0 (1) is from DCMI transfer done
+ * event flag 1 (2) is from TOUCH_INT
+ * event flag 2 (4) is for UART transmit done
+ * event flag 3 (8) is for new printf data from CM7
  */
 TX_EVENT_FLAGS_GROUP cm4_event_group;
+/* mutex for printf */
+TX_MUTEX mutex_0;
 
-extern FX_MEDIA                     *media;
-extern FX_FILE                      *file;
+extern FX_MEDIA *media;
+extern FX_FILE  *file;
 
 /* ...  */
 volatile unsigned int u2rc;
@@ -77,8 +81,8 @@ volatile unsigned int u2ec;
 volatile unsigned int u2ic;
 __attribute__((section(".sram4.sharedData"))) volatile CM4_CM7_SharedDataTypeDef sharedData;
 unsigned char dbgBuf[256];
+volatile unsigned int dbgBufCnt;
 unsigned char input[64];
-unsigned char u2tx[256];
 ULONG gCounter;
 
 /* USER CODE END PV */
@@ -89,6 +93,7 @@ ULONG gCounter;
 void tx_cm4_main_thread_entry(ULONG thread_input);
 void tx_cm4_i2c4_thread_entry(ULONG thread_input);
 void tx_cm4_uart_thread_entry(ULONG thread_input);
+void tx_cm4_cm7_printf_thread_entry(ULONG thread_input);
 void Error_Handler(void);
 
 /* USER CODE END PFP */
@@ -138,6 +143,9 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
 	  Error_Handler();
   }
 
+  /* Create the mutex used by printf without priority inheritance. */
+  tx_mutex_create(&mutex_0, "mutex 0", TX_NO_INHERIT);
+
   /*Allocate memory for i2c4_thread_entry*/
   ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
 
@@ -175,6 +183,25 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   {
 	  Error_Handler();
   }
+
+  /*Allocate memory for cm7_printf_thread_entry*/
+  ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
+
+  /* Check DEFAULT_STACK_SIZE allocation*/
+  if (ret != TX_SUCCESS)
+  {
+  	Error_Handler();
+  }
+
+  /* Create the cm7_printf thread.  */
+  ret = tx_thread_create(&cm4_cm7_printf_thread, "tx_cm4_cm7_printf_thread", tx_cm4_cm7_printf_thread_entry, 0, pointer, DEFAULT_STACK_SIZE, DEFAULT_THREAD_PRIO,
+												 DEFAULT_PREEMPTION_THRESHOLD, TX_NO_TIME_SLICE, TX_AUTO_START);
+
+  /* Check uart thread creation */
+  if (ret != TX_SUCCESS)
+  {
+  	Error_Handler();
+  }
   /* signal the data structures are ready */
   threadInitDone = 1;
   /* USER CODE END App_ThreadX_Init */
@@ -202,6 +229,20 @@ void MX_ThreadX_Init(void)
 
 /* USER CODE BEGIN 1 */
 
+/**
+  * @brief  Tx Transfer completed callback.
+  * @param  huart UART handle.
+  * @retval none
+  */
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
+  /* Set tx completed flag */
+  if (tx_event_flags_set(&cm4_event_group, 0x4, TX_OR) != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+}
+
 int UART_Receive(unsigned char *dest, const unsigned char *rx, UART_HandleTypeDef *huart, unsigned int *uxcc, const unsigned int max)
 {
 	unsigned int cc = __HAL_DMA_GET_COUNTER(huart->hdmarx);
@@ -226,6 +267,33 @@ int UART_Receive(unsigned char *dest, const unsigned char *rx, UART_HandleTypeDe
   	return len;
 	}
 	return 0;
+}
+
+int _write(int file, char *ptr, int len)
+{
+	if (len <= 0)
+		return len;
+	/* Get the mutex with suspension. */
+	UINT status = tx_mutex_get(&mutex_0, TX_WAIT_FOREVER);
+	/* Check status. */
+	if (status != TX_SUCCESS)
+	{
+		Error_Handler();
+	}
+	/* Copy the data to output. */
+	int max = 256 - dbgBufCnt;
+	if (len < max) max = len;
+	/* copy th eend of the message in case it is too long */
+	memcpy(dbgBuf + dbgBufCnt, ptr + len - max, max);
+	dbgBufCnt += max;
+	/* Release the mutex. */
+	status = tx_mutex_put(&mutex_0);
+	/* Check status. */
+	if (status != TX_SUCCESS)
+	{
+		Error_Handler();
+	}
+	return len;
 }
 
 void tx_cm4_main_thread_entry(ULONG thread_input)
@@ -370,20 +438,12 @@ void tx_cm4_i2c4_thread_entry(ULONG thread_input)
 
 void tx_cm4_uart_thread_entry(ULONG thread_input)
 {
-	//UINT status;
+	UINT status;
+	ULONG actual_events;
 	UCHAR read_buffer[32];
 	CHAR data[] = "This is ThreadX working on STM32 CM4";
 
 	printf("\r\n%s\r\nStarting Run on %s\r\n", data, _tx_version_id);
-	/* Infinite Loop */
-	for( ;; )
-	{
-
-		HAL_GPIO_TogglePin(LED2_GPIO_Port, LED2_Pin);
-		tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 2);
-		gCounter += 1;
-
-	}
 	HAL_UART_Receive_DMA(&huart1, read_buffer, 32);
 	unsigned int u2cc = __HAL_DMA_GET_COUNTER(huart1.hdmarx);
 	//HAL_StatusTypeDef res;
@@ -405,7 +465,63 @@ void tx_cm4_uart_thread_entry(ULONG thread_input)
 					printf("u2rc = %u u2hrc = %u u2tc = %u u2htc = %u u2ec = %u u2ic = %u u2cc = %u\r\n# ", u2rc, u2hrc, u2tc, u2htc, u2ec, u2ic, u2cc);
 			}
 		}
+		if (dbgBufCnt > 0)
+		{
+			status = tx_mutex_get(&mutex_0, TX_WAIT_FOREVER);
+			if (status != TX_SUCCESS)
+			{
+				Error_Handler();
+			}
+			/* Send the data via UART */
+			if (HAL_UART_Transmit_DMA(&huart1, (uint8_t *)dbgBuf, dbgBufCnt) != HAL_OK)
+			{
+				Error_Handler();
+			}
+			/* Wait until the requested flag TX_NEW_TRANSMITTED_DATA is received */
+			if (tx_event_flags_get(&cm4_event_group, 0x4, TX_OR_CLEAR,
+														 &actual_events, TX_WAIT_FOREVER) != TX_SUCCESS)
+			{
+				Error_Handler();
+			}
+			dbgBufCnt = 0;
+			status = tx_mutex_put(&mutex_0);
+			if (status != TX_SUCCESS)
+			{
+				Error_Handler();
+			}
+		}
 		tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 20);
+	}
+}
+
+void tx_cm4_cm7_printf_thread_entry(ULONG thread_input)
+{
+	ULONG actual_events;
+	/* Infinite loop */
+	for(;;)
+	{
+		UINT status = tx_event_flags_get(&cm4_event_group, 0x8, TX_AND_CLEAR, &actual_events, TX_WAIT_FOREVER);
+		if (status == TX_SUCCESS)
+		{
+			if (sharedData.writePos != sharedData.readPos)
+			{
+				int r = sharedData.readPos;
+				int w = sharedData.writePos;
+				if (sharedData.readPos < w)
+				{
+					/* single block */
+					printf("\e[31m%.*s\e[0m", w - r, sharedData.charBuffer + r);
+				}
+				else
+				{
+					/* double block */
+					printf("\e[31m%.*s%.*s\e[0m", 256 - r, sharedData.charBuffer + r, w, sharedData.charBuffer);
+				}
+				sharedData.readPos = w;
+			}
+		}
+		else
+			HAL_GPIO_TogglePin(LED1_GPIO_Port, LED1_Pin);
 	}
 }
 

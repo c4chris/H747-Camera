@@ -112,7 +112,7 @@ int main(void)
   /*HW semaphore Clock enable*/
   __HAL_RCC_HSEM_CLK_ENABLE();
   /* Activate HSEM notification for Cortex-M4*/
-  HAL_HSEM_ActivateNotification(HSEM_0|HSEM_4);
+  HAL_HSEM_ActivateNotification(HSEM_0|HSEM_4|HSEM_5);
   /*
   Domain D2 goes to STOP mode (Cortex-M4 in deep-sleep) waiting for Cortex-M7 to
   perform system initialization (system clock config, external memory configuration.. )
@@ -541,6 +541,7 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE BEGIN 4 */
 
+#if 0
 /**
 * @brief  Retargets the C library printf function to the USART.
 * @param  None
@@ -554,6 +555,7 @@ PUTCHAR_PROTOTYPE
 
 	return ch;
 }
+#endif
 
 /**
   * @brief  EXTI line detection callback.
@@ -605,8 +607,16 @@ void HAL_HSEM_FreeCallback(uint32_t SemMask)
 				Error_Handler();
 			}
 		}
+		if (SemMask & HSEM_5)
+		{
+			/* Signal new printf data from CM7 */
+			if (tx_event_flags_set(&cm4_event_group, 0x8, TX_OR) != TX_SUCCESS)
+			{
+				Error_Handler();
+			}
+		}
 	}
-  HAL_HSEM_ActivateNotification(HSEM_0|HSEM_4);
+  HAL_HSEM_ActivateNotification(HSEM_0|HSEM_4|HSEM_5);
 }
 
 /**
