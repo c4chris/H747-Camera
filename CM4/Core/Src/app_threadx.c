@@ -507,15 +507,32 @@ void tx_cm4_cm7_printf_thread_entry(ULONG thread_input)
 			{
 				int r = sharedData.readPos;
 				int w = sharedData.writePos;
-				if (sharedData.readPos < w)
+				status = tx_mutex_get(&mutex_0, TX_WAIT_FOREVER);
+				if (status != TX_SUCCESS)
 				{
-					/* single block */
-					printf("\e[31m%.*s\e[0m", w - r, sharedData.charBuffer + r);
+					Error_Handler();
 				}
-				else
+				// leave room for escape sequences
+				if (dbgBufCnt < 246)
 				{
-					/* double block */
-					printf("\e[31m%.*s%.*s\e[0m", 256 - r, sharedData.charBuffer + r, w, sharedData.charBuffer);
+					memcpy(dbgBuf + dbgBufCnt, "\e[31m", 5);
+					dbgBufCnt += 5;
+					while (r != w)
+					{
+						if (dbgBufCnt < 251) dbgBuf[dbgBufCnt++] = sharedData.charBuffer[r];
+						if (sharedData.charBuffer[r] == '\n')
+						{
+							if (dbgBufCnt < 252) dbgBuf[dbgBufCnt++] = '\r';
+						}
+						r = (r + 1) & 0xff;
+					}
+					memcpy(dbgBuf + dbgBufCnt, "\e[0m", 4);
+					dbgBufCnt += 4;
+				}
+				status = tx_mutex_put(&mutex_0);
+				if (status != TX_SUCCESS)
+				{
+					Error_Handler();
 				}
 				sharedData.readPos = w;
 			}
