@@ -112,7 +112,7 @@ int main(void)
   /*HW semaphore Clock enable*/
   __HAL_RCC_HSEM_CLK_ENABLE();
   /* Activate HSEM notification for Cortex-M4*/
-  HAL_HSEM_ActivateNotification(HSEM_0|HSEM_4|HSEM_5);
+  HAL_HSEM_ActivateNotification(HSEM_0|HSEM_4|HSEM_5|HSEM_6);
   /*
   Domain D2 goes to STOP mode (Cortex-M4 in deep-sleep) waiting for Cortex-M7 to
   perform system initialization (system clock config, external memory configuration.. )
@@ -615,8 +615,16 @@ void HAL_HSEM_FreeCallback(uint32_t SemMask)
 				Error_Handler();
 			}
 		}
+		if (SemMask & HSEM_6)
+		{
+			/* We can start the next capture */
+			if (hdcmi.State == HAL_DCMI_STATE_SUSPENDED && ((sharedData.CM4_to_CM7_USB_info & USB_INFO_RECORDING) == 0))
+			{
+				HAL_DCMI_Resume(&hdcmi);
+			}
+		}
 	}
-  HAL_HSEM_ActivateNotification(HSEM_0|HSEM_4|HSEM_5);
+  HAL_HSEM_ActivateNotification(HSEM_0|HSEM_4|HSEM_5|HSEM_6);
 }
 
 /**

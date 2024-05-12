@@ -5,8 +5,8 @@
 /*  specification file(s). For more information please refer to the Azure RTOS */
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
-/*  GUIX Studio Revision 6.1.10.0                                              */
-/*  Date (dd.mm.yyyy):  9. 3.2022   Time (hh:mm): 00:05                        */
+/*  GUIX Studio Revision 6.4.0.0                                               */
+/*  Date (dd.mm.yyyy): 12. 5.2024   Time (hh:mm): 17:56                        */
 /*******************************************************************************/
 
 
@@ -31,6 +31,15 @@ extern   "C" {
 #define ID_FRAMES_VALUE 7
 #define ID_RECORD_ICON 8
 #define ID_EJECT_ICON 9
+#define ID_BTN_0 10
+#define ID_BTN_1 11
+#define ID_BTN_2 12
+#define ID_BTN_3 13
+#define ID_BTN_4 14
+#define ID_BTN_5 15
+#define ID_BTN_6 16
+#define ID_BTN_7 17
+#define ID_BTN_8 18
 
 
 /* Define animation ids                                                        */
@@ -136,6 +145,15 @@ typedef struct MAIN_WINDOW_CONTROL_BLOCK_STRUCT
     GX_NUMERIC_PROMPT main_window_frames_value;
     GX_ICON main_window_record_icon;
     GX_ICON main_window_eject_icon;
+    GX_BUTTON main_window_button_0;
+    GX_BUTTON main_window_button_1;
+    GX_BUTTON main_window_button_2;
+    GX_BUTTON main_window_button_3;
+    GX_BUTTON main_window_button_4;
+    GX_BUTTON main_window_button_5;
+    GX_BUTTON main_window_button_6;
+    GX_BUTTON main_window_button_7;
+    GX_BUTTON main_window_button_8;
 } MAIN_WINDOW_CONTROL_BLOCK;
 
 
@@ -174,6 +192,7 @@ typedef struct GX_STUDIO_DISPLAY_INFO_STRUCT
 
 /* Declare Studio-generated functions for creating top-level widgets           */
 
+UINT gx_studio_button_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);
 UINT gx_studio_icon_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);
 UINT gx_studio_radial_progress_bar_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);
 UINT gx_studio_prompt_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent);

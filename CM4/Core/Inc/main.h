@@ -261,12 +261,14 @@ void my_Delay(uint32_t);
 #define HSEM_ID_3 (3U) /* HW semaphore 3 - CM4 signals USB stick status change to CM7 */
 #define HSEM_ID_4 (4U) /* HW semaphore 4 - CM7 asks CM4 to perform some actions on USB stick */
 #define HSEM_ID_5 (5U) /* HW semaphore 5 - CM7 sends printf data to CM4 */
+#define HSEM_ID_6 (6U) /* HW semaphore 6 - CM7 signals CM4 that it is done with the camera data */
 #define HSEM_0 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_0))
 #define HSEM_1 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_1))
 #define HSEM_2 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_2))
 #define HSEM_3 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_3))
 #define HSEM_4 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_4))
 #define HSEM_5 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_5))
+#define HSEM_6 (__HAL_HSEM_SEMID_TO_MASK(HSEM_ID_6))
 
 #define ADV7533_MAIN_I2C_ADDR       0x7AU
 #define ADV7533_CEC_DSI_I2C_ADDR    0x78U

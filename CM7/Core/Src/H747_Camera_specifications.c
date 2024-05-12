@@ -5,15 +5,15 @@
 /*  specification file(s). For more information please refer to the Azure RTOS */
 /*  GUIX Studio User Guide, or visit our web site at azure.com/rtos            */
 /*                                                                             */
-/*  GUIX Studio Revision 6.1.10.0                                              */
-/*  Date (dd.mm.yyyy):  9. 3.2022   Time (hh:mm): 00:05                        */
+/*  GUIX Studio Revision 6.4.0.0                                               */
+/*  Date (dd.mm.yyyy): 12. 5.2024   Time (hh:mm): 17:56                        */
 /*******************************************************************************/
 
 
 #define GUIX_STUDIO_GENERATED_FILE
 #include <stddef.h>
-#include "H747_Camera_resources.h"
-#include "H747_Camera_specifications.h"
+#include "h747_camera_resources.h"
+#include "h747_camera_specifications.h"
 
 static GX_WIDGET *gx_studio_nested_widget_create(GX_BYTE *control, GX_CONST GX_STUDIO_WIDGET *definition, GX_WIDGET *parent);
 MAIN_WINDOW_CONTROL_BLOCK main_window;
@@ -23,7 +23,7 @@ GX_CANVAS  main_display_canvas_control_block;
 extern GX_CONST GX_THEME *main_display_theme_table[];
 extern GX_CONST GX_STRING *main_display_language_table[];
 
-GX_STUDIO_DISPLAY_INFO H747_Camera_display_table[1] =
+GX_STUDIO_DISPLAY_INFO h747_camera_display_table[1] =
 {
     {
     "main_display",
@@ -45,6 +45,14 @@ GX_STUDIO_DISPLAY_INFO H747_Camera_display_table[1] =
 };
 
 
+UINT gx_studio_button_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent)
+{
+    UINT status;
+    GX_BUTTON *button = (GX_BUTTON *) control_block;
+    status = gx_button_create(button, info->widget_name, parent, info->style, info->widget_id, &info->size);
+    return status;
+}
+
 UINT gx_studio_icon_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_block, GX_WIDGET *parent)
 {
     UINT status;
@@ -54,6 +62,10 @@ UINT gx_studio_icon_create(GX_CONST GX_STUDIO_WIDGET *info, GX_WIDGET *control_b
     if (props->selected_pixelmap_id)
     {
         gx_icon_pixelmap_set(icon, props->normal_pixelmap_id, props->selected_pixelmap_id);
+    }
+    else
+    {
+        gx_widget_resize((GX_WIDGET *)icon, (GX_RECTANGLE *)&info->size);
     }
     return status;
 }
@@ -403,6 +415,222 @@ GX_CONST GX_STUDIO_WIDGET main_window_frames_label_define =
     (void *) &main_window_frames_label_properties /* extended properties       */
 };
 
+GX_CONST GX_STUDIO_WIDGET main_window_button_8_define =
+{
+    "button_8",
+    GX_TYPE_BUTTON,                          /* widget type                    */
+    ID_BTN_8,                                /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_ENABLED,   /* style flags                    */
+    0,                                       /* status flags                   */
+    sizeof(GX_BUTTON),                       /* control block size             */
+    GX_COLOR_ID_BTN_BORDER,                  /* normal color id                */
+    GX_COLOR_ID_BTN_UPPER,                   /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_button_create,                 /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {704, 96, 799, 99},                      /* widget size                    */
+    GX_NULL,                                 /* no next widget                 */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_button_8), /* control block */
+    (void *) GX_NULL                         /* no extended properties         */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_button_7_define =
+{
+    "button_7",
+    GX_TYPE_BUTTON,                          /* widget type                    */
+    ID_BTN_7,                                /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_ENABLED,   /* style flags                    */
+    0,                                       /* status flags                   */
+    sizeof(GX_BUTTON),                       /* control block size             */
+    GX_COLOR_ID_BTN_BORDER,                  /* normal color id                */
+    GX_COLOR_ID_BTN_UPPER,                   /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_button_create,                 /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {616, 96, 703, 99},                      /* widget size                    */
+    &main_window_button_8_define,            /* next widget definition         */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_button_7), /* control block */
+    (void *) GX_NULL                         /* no extended properties         */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_button_6_define =
+{
+    "button_6",
+    GX_TYPE_BUTTON,                          /* widget type                    */
+    ID_BTN_6,                                /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_ENABLED,   /* style flags                    */
+    0,                                       /* status flags                   */
+    sizeof(GX_BUTTON),                       /* control block size             */
+    GX_COLOR_ID_BTN_BORDER,                  /* normal color id                */
+    GX_COLOR_ID_BTN_UPPER,                   /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_button_create,                 /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {528, 96, 615, 99},                      /* widget size                    */
+    &main_window_button_7_define,            /* next widget definition         */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_button_6), /* control block */
+    (void *) GX_NULL                         /* no extended properties         */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_button_5_define =
+{
+    "button_5",
+    GX_TYPE_BUTTON,                          /* widget type                    */
+    ID_BTN_5,                                /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_ENABLED,   /* style flags                    */
+    0,                                       /* status flags                   */
+    sizeof(GX_BUTTON),                       /* control block size             */
+    GX_COLOR_ID_BTN_BORDER,                  /* normal color id                */
+    GX_COLOR_ID_BTN_UPPER,                   /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_button_create,                 /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {440, 96, 527, 99},                      /* widget size                    */
+    &main_window_button_6_define,            /* next widget definition         */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_button_5), /* control block */
+    (void *) GX_NULL                         /* no extended properties         */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_button_4_define =
+{
+    "button_4",
+    GX_TYPE_BUTTON,                          /* widget type                    */
+    ID_BTN_4,                                /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_ENABLED,   /* style flags                    */
+    0,                                       /* status flags                   */
+    sizeof(GX_BUTTON),                       /* control block size             */
+    GX_COLOR_ID_BTN_BORDER,                  /* normal color id                */
+    GX_COLOR_ID_BTN_UPPER,                   /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_button_create,                 /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {352, 96, 439, 99},                      /* widget size                    */
+    &main_window_button_5_define,            /* next widget definition         */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_button_4), /* control block */
+    (void *) GX_NULL                         /* no extended properties         */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_button_3_define =
+{
+    "button_3",
+    GX_TYPE_BUTTON,                          /* widget type                    */
+    ID_BTN_3,                                /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_ENABLED,   /* style flags                    */
+    0,                                       /* status flags                   */
+    sizeof(GX_BUTTON),                       /* control block size             */
+    GX_COLOR_ID_BTN_BORDER,                  /* normal color id                */
+    GX_COLOR_ID_BTN_UPPER,                   /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_button_create,                 /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {264, 96, 351, 99},                      /* widget size                    */
+    &main_window_button_4_define,            /* next widget definition         */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_button_3), /* control block */
+    (void *) GX_NULL                         /* no extended properties         */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_button_2_define =
+{
+    "button_2",
+    GX_TYPE_BUTTON,                          /* widget type                    */
+    ID_BTN_2,                                /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_ENABLED,   /* style flags                    */
+    0,                                       /* status flags                   */
+    sizeof(GX_BUTTON),                       /* control block size             */
+    GX_COLOR_ID_BTN_BORDER,                  /* normal color id                */
+    GX_COLOR_ID_BTN_UPPER,                   /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_button_create,                 /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {176, 96, 263, 99},                      /* widget size                    */
+    &main_window_button_3_define,            /* next widget definition         */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_button_2), /* control block */
+    (void *) GX_NULL                         /* no extended properties         */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_button_1_define =
+{
+    "button_1",
+    GX_TYPE_BUTTON,                          /* widget type                    */
+    ID_BTN_1,                                /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_ENABLED,   /* style flags                    */
+    0,                                       /* status flags                   */
+    sizeof(GX_BUTTON),                       /* control block size             */
+    GX_COLOR_ID_BTN_BORDER,                  /* normal color id                */
+    GX_COLOR_ID_BTN_UPPER,                   /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_button_create,                 /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {88, 96, 175, 99},                       /* widget size                    */
+    &main_window_button_2_define,            /* next widget definition         */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_button_1), /* control block */
+    (void *) GX_NULL                         /* no extended properties         */
+};
+
+GX_CONST GX_STUDIO_WIDGET main_window_button_0_define =
+{
+    "button_0",
+    GX_TYPE_BUTTON,                          /* widget type                    */
+    ID_BTN_0,                                /* widget id                      */
+    #if defined(GX_WIDGET_USER_DATA)
+    0,                                       /* user data                      */
+    #endif
+    GX_STYLE_BORDER_NONE|GX_STYLE_ENABLED,   /* style flags                    */
+    0,                                       /* status flags                   */
+    sizeof(GX_BUTTON),                       /* control block size             */
+    GX_COLOR_ID_BTN_BORDER,                  /* normal color id                */
+    GX_COLOR_ID_BTN_UPPER,                   /* selected color id              */
+    GX_COLOR_ID_DISABLED_FILL,               /* disabled color id              */
+    gx_studio_button_create,                 /* create function                */
+    GX_NULL,                                 /* drawing function override      */
+    GX_NULL,                                 /* event function override        */
+    {0, 96, 87, 99},                         /* widget size                    */
+    &main_window_button_1_define,            /* next widget definition         */
+    GX_NULL,                                 /* no child widgets               */ 
+    offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_button_0), /* control block */
+    (void *) GX_NULL                         /* no extended properties         */
+};
+
 GX_CONST GX_STUDIO_WIDGET main_window_eject_icon_define =
 {
     "eject_icon",
@@ -421,7 +649,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_eject_icon_define =
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
     {730, 414, 793, 477},                    /* widget size                    */
-    GX_NULL,                                 /* no next widget                 */
+    &main_window_button_0_define,            /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_eject_icon), /* control block */
     (void *) &main_window_eject_icon_properties /* extended properties         */
@@ -564,7 +792,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_text_view_define =
     gx_studio_multi_line_text_view_create,     /* create function              */
     GX_NULL,                                 /* drawing function override      */
     GX_NULL,                                 /* event function override        */
-    {0, 96, 719, 479},                       /* widget size                    */
+    {0, 100, 719, 479},                      /* widget size                    */
     &main_window_fps_icon_define,            /* next widget definition         */
     GX_NULL,                                 /* no child widgets               */ 
     offsetof(MAIN_WINDOW_CONTROL_BLOCK, main_window_text_view), /* control block */
@@ -594,7 +822,7 @@ GX_CONST GX_STUDIO_WIDGET main_window_define =
     0,                                       /* control block                  */
     (void *) &main_window_properties         /* extended properties            */
 };
-GX_CONST GX_STUDIO_WIDGET_ENTRY H747_Camera_widget_table[] =
+GX_CONST GX_STUDIO_WIDGET_ENTRY h747_camera_widget_table[] =
 {
     { &main_window_define, (GX_WIDGET *) &main_window },
     {GX_NULL, GX_NULL}
@@ -697,7 +925,7 @@ GX_WIDGET *gx_studio_widget_create(GX_BYTE *control, GX_CONST GX_STUDIO_WIDGET *
 UINT gx_studio_named_widget_create(char *name, GX_WIDGET *parent, GX_WIDGET **new_widget)
 {
     UINT status = GX_FAILURE;
-    GX_CONST GX_STUDIO_WIDGET_ENTRY *entry = H747_Camera_widget_table;
+    GX_CONST GX_STUDIO_WIDGET_ENTRY *entry = h747_camera_widget_table;
     GX_WIDGET *widget = GX_NULL;
 
     while(entry->widget_information)
@@ -728,7 +956,7 @@ UINT gx_studio_display_configure(USHORT display, UINT (*driver)(GX_DISPLAY *),
     GX_CONST GX_THEME *theme_ptr;
     GX_RECTANGLE size;
 
-    GX_STUDIO_DISPLAY_INFO *display_info = &H747_Camera_display_table[display];
+    GX_STUDIO_DISPLAY_INFO *display_info = &h747_camera_display_table[display];
 
 
 /* create the requested display                                                */

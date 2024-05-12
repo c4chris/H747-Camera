@@ -170,7 +170,21 @@ static int ai_run(void)
 }
 
 /* USER CODE BEGIN 2 */
-int acquire_and_process_data(ai_i8* data[])
+#define NB_SUB_IMAGES 9
+#define SUB_IMAGE_STEP 88
+GX_BUTTON *outButton[] = {
+		&main_window.main_window_button_0,
+		&main_window.main_window_button_1,
+		&main_window.main_window_button_2,
+		&main_window.main_window_button_3,
+		&main_window.main_window_button_4,
+		&main_window.main_window_button_5,
+		&main_window.main_window_button_6,
+		&main_window.main_window_button_7,
+		&main_window.main_window_button_8,
+};
+
+int acquire_and_process_data(ai_i8* data[], int subImg)
 {
   /* fill the inputs of the c-model
   for (int idx=0; idx < AI_BELUGA_IN_NUM; idx++ )
@@ -179,11 +193,10 @@ int acquire_and_process_data(ai_i8* data[])
   }
 
   */
-	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND * 20);
   return 0;
 }
 
-int post_process(ai_i8* data[])
+int post_process(ai_i8* data[], int subImg)
 {
   /* process the predictions
   for (int idx=0; idx < AI_BELUGA_OUT_NUM; idx++ )
@@ -193,7 +206,12 @@ int post_process(ai_i8* data[])
 
   */
 	float *res = (float *)data[0];
-	printf("Results : %f %f %f\n", res[0], res[1], res[2]);
+	int color = GX_COLOR_ID_BTN_BORDER;
+	if (res[0] >= 0.9) color = GX_COLOR_ID_SELECTED_TEXT; // white
+	if (res[1] >= 0.9) color = GX_COLOR_ID_BTN_LOWER; // green
+	if (res[2] >= 0.9) color = GX_COLOR_ID_BTN_UPPER; // red-ish
+	printf("Results %d : %f %f %f\n", subImg, res[0], res[1], res[2]);
+	gx_widget_fill_color_set(outButton[subImg], color, color, color);
   return 0;
 }
 /* USER CODE END 2 */
@@ -219,14 +237,32 @@ void MX_X_CUBE_AI_Process(void)
   if (beluga) {
 
     do {
-      /* 1 - acquire and pre-process input data */
-      res = acquire_and_process_data(data_ins);
-      /* 2 - process the data - call inference engine */
-      if (res == 0)
-        res = ai_run();
-      /* 3- post-process the predictions */
-      if (res == 0)
-        res = post_process(data_outs);
+    	ULONG actual_events;
+    	/* Request that event flag 2 is set (camera dat aavailable). If it is set it should be cleared. */
+  		res = 0;
+    	UINT status = tx_event_flags_get(&cm7_event_group, 0x4, TX_AND_CLEAR, &actual_events, TX_TIMER_TICKS_PER_SECOND/4);
+    	if (status == TX_SUCCESS)
+    	{
+    		for (int j = 0; (res == 0) && (j < NB_SUB_IMAGES); j++)
+    		{
+    			/* 1 - acquire and pre-process input data */
+    			res = acquire_and_process_data(data_ins, j);
+    			/* 2 - process the data - call inference engine */
+    			if (res == 0)
+    				res = ai_run();
+    			/* 3- post-process the predictions */
+    			if (res == 0)
+    				res = post_process(data_outs, j);
+    		}
+    	}
+    	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND * 5);
+    	/* Signal we are done with the camera data */
+    	HAL_HSEM_FastTake(HSEM_ID_6);
+    	HAL_HSEM_Release(HSEM_ID_6, 0);
+    	if (tx_event_flags_set(&cm7_event_group, 0x16, TX_OR) != TX_SUCCESS)
+    	{
+    		res = 1;
+    	}
     } while (res==0);
   }
 

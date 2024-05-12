@@ -68,10 +68,11 @@ TX_THREAD            cm7_lcd_thread;
 TX_THREAD            cm7_usb_stick_thread;
 TX_THREAD            cm7_camera_thread;
 /* 
- * event flag 0 (1) is from LCD refresh done
- * event flag 1 (2) is from HSEM_1 when core M4 signals touch data is available
- * event flag 2 (4) is from HSEM_2 when core M4 signals camera data is available
- * event flag 3 (8) is from HSEM_3 when core M4 signals USB event is available
+ * event flag 0  (1) is from LCD refresh done
+ * event flag 1  (2) is from HSEM_1 when core M4 signals touch data is available
+ * event flag 2  (4) is from HSEM_2 when core M4 signals camera data is available
+ * event flag 3  (8) is from HSEM_3 when core M4 signals USB event is available
+ * event flag 4 (16) is from main thread when done with the camera data
  */
 TX_EVENT_FLAGS_GROUP cm7_event_group;
 
@@ -397,13 +398,13 @@ void tx_cm7_main_thread_entry(ULONG thread_input)
 
 void tx_cm7_lcd_thread_entry(ULONG thread_input)
 {
-  extern GX_STUDIO_DISPLAY_INFO H747_Camera_display_table[]; // meh...
+  extern GX_STUDIO_DISPLAY_INFO h747_camera_display_table[]; // meh...
 
   /* Initialize GUIX. */
   gx_system_initialize();
 
   /* Configure the main display. */
-  H747_Camera_display_table[MAIN_DISPLAY].canvas_memory = (GX_COLOR *) Buffers[0]; // I think...
+  h747_camera_display_table[MAIN_DISPLAY].canvas_memory = (GX_COLOR *) Buffers[0]; // I think...
   gx_studio_display_configure(MAIN_DISPLAY,                         /* Display to configure*/
 															stm32h7_graphics_driver_setup_32argb, /* Driver to use */
                               LANGUAGE_ENGLISH,                     /* Language to install */
@@ -451,8 +452,8 @@ void tx_cm7_camera_thread_entry(ULONG thread_input)
   for( ;; )
   {
 		ULONG actual_events;
-		/* Request that event flag 1 is set. If it is set it should be cleared. */
-		UINT status = tx_event_flags_get(&cm7_event_group, 0x4, TX_AND_CLEAR, &actual_events, TX_WAIT_FOREVER);
+		/* Request that event flag 4 is set. If it is set it should be cleared. */
+		UINT status = tx_event_flags_get(&cm7_event_group, 0x16, TX_AND_CLEAR, &actual_events, TX_WAIT_FOREVER);
 
 		/* If status equals TX_SUCCESS, actual_events contains the actual events obtained. */
 		if (status == TX_SUCCESS)
@@ -509,7 +510,7 @@ int _write(int file, char *ptr, int len)
 			max -= sharedData.writePos;
 			if (max > 255) max = 255; // cannot have writePos == readPos with full buffer
 			if (max + p > len) max = len - p;
-			memcpy(sharedData.charBuffer + sharedData.writePos, ptr + p, max);
+			memcpy((void *)(sharedData.charBuffer + sharedData.writePos), ptr + p, max);
 			p += max;
 			sharedData.writePos = (sharedData.writePos + max) & 0xff;
 			if (((sharedData.writePos + 1) & 0xff) == (sharedData.readPos & 0xff)) break; // no more room

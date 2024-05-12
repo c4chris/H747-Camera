@@ -5,8 +5,8 @@
 /*  resource file(s). For more information please refer to the Azure RTOS GUIX */
 /*  Studio User Guide, or visit our web site at azure.com/rtos                 */
 /*                                                                             */
-/*  GUIX Studio Revision 6.1.10.0                                              */
-/*  Date (dd.mm.yyyy):  9. 3.2022   Time (hh:mm): 00:05                        */
+/*  GUIX Studio Revision 6.4.0.0                                               */
+/*  Date (dd.mm.yyyy): 12. 5.2024   Time (hh:mm): 17:56                        */
 /*******************************************************************************/
 
 

@@ -356,7 +356,8 @@ void tx_cm4_main_thread_entry(ULONG thread_input)
 				prev_ticks = ticks;
 				frame_cnt = 0;
 			}
-			if (hdcmi.State == HAL_DCMI_STATE_SUSPENDED)
+			/* TODO - resume when CM7 signals it is done with this camera data - special case when recording to USB stick */
+			if ((hdcmi.State == HAL_DCMI_STATE_SUSPENDED) && (media != NULL) && (sharedData.CM4_to_CM7_USB_info & USB_INFO_RECORDING))
 			{
 				tx_thread_sleep(2);
 				HAL_DCMI_Resume(&hdcmi);
