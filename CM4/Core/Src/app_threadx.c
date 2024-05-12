@@ -67,7 +67,7 @@ TX_THREAD cm4_cm7_printf_thread;
  */
 TX_EVENT_FLAGS_GROUP cm4_event_group;
 /* mutex for printf */
-TX_MUTEX mutex_0;
+TX_MUTEX cm4_mutex_0;
 
 extern FX_MEDIA *media;
 extern FX_FILE  *file;
@@ -144,7 +144,7 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   }
 
   /* Create the mutex used by printf without priority inheritance. */
-  tx_mutex_create(&mutex_0, "mutex 0", TX_NO_INHERIT);
+  tx_mutex_create(&cm4_mutex_0, "cm4 mutex 0", TX_NO_INHERIT);
 
   /*Allocate memory for i2c4_thread_entry*/
   ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
@@ -274,7 +274,7 @@ int _write(int file, char *ptr, int len)
 	if (len <= 0)
 		return len;
 	/* Get the mutex with suspension. */
-	UINT status = tx_mutex_get(&mutex_0, TX_WAIT_FOREVER);
+	UINT status = tx_mutex_get(&cm4_mutex_0, TX_WAIT_FOREVER);
 	/* Check status. */
 	if (status != TX_SUCCESS)
 	{
@@ -287,7 +287,7 @@ int _write(int file, char *ptr, int len)
 	memcpy(dbgBuf + dbgBufCnt, ptr + len - max, max);
 	dbgBufCnt += max;
 	/* Release the mutex. */
-	status = tx_mutex_put(&mutex_0);
+	status = tx_mutex_put(&cm4_mutex_0);
 	/* Check status. */
 	if (status != TX_SUCCESS)
 	{
@@ -468,7 +468,7 @@ void tx_cm4_uart_thread_entry(ULONG thread_input)
 		}
 		if (dbgBufCnt > 0)
 		{
-			status = tx_mutex_get(&mutex_0, TX_WAIT_FOREVER);
+			status = tx_mutex_get(&cm4_mutex_0, TX_WAIT_FOREVER);
 			if (status != TX_SUCCESS)
 			{
 				Error_Handler();
@@ -485,7 +485,7 @@ void tx_cm4_uart_thread_entry(ULONG thread_input)
 				Error_Handler();
 			}
 			dbgBufCnt = 0;
-			status = tx_mutex_put(&mutex_0);
+			status = tx_mutex_put(&cm4_mutex_0);
 			if (status != TX_SUCCESS)
 			{
 				Error_Handler();
@@ -508,7 +508,7 @@ void tx_cm4_cm7_printf_thread_entry(ULONG thread_input)
 			{
 				int r = sharedData.readPos;
 				int w = sharedData.writePos;
-				status = tx_mutex_get(&mutex_0, TX_WAIT_FOREVER);
+				status = tx_mutex_get(&cm4_mutex_0, TX_WAIT_FOREVER);
 				if (status != TX_SUCCESS)
 				{
 					Error_Handler();
@@ -530,7 +530,7 @@ void tx_cm4_cm7_printf_thread_entry(ULONG thread_input)
 					memcpy(dbgBuf + dbgBufCnt, "\e[0m", 4);
 					dbgBufCnt += 4;
 				}
-				status = tx_mutex_put(&mutex_0);
+				status = tx_mutex_put(&cm4_mutex_0);
 				if (status != TX_SUCCESS)
 				{
 					Error_Handler();

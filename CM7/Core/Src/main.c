@@ -849,6 +849,21 @@ void HAL_LTDC_LineEventCallback(LTDC_HandleTypeDef *hltdc)
   //HAL_LTDC_ProgramLineEvent(hltdc, 0);
 }
 
+/**
+  * @brief  DMA2D transfer complete callback.
+  * @param  hdma2d: pointer to a DMA2D_HandleTypeDef structure that contains
+  *                 the configuration information for the DMA2D.
+  * @retval None
+  */
+void HAL_DMA2D_XferCompleteCallback(DMA2D_HandleTypeDef *hdma2d)
+{
+  /* Signal we are done */
+  if (tx_event_flags_set(&cm7_event_group, 0x20, TX_OR) != TX_SUCCESS)
+  {
+    Error_Handler();
+  }
+}
+
 /* USER CODE END 4 */
 
  /* MPU Configuration */

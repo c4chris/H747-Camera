@@ -137,6 +137,8 @@ void HAL_DMA2D_MspInit(DMA2D_HandleTypeDef* hdma2d)
   {
   /* USER CODE BEGIN DMA2D_MspInit 0 */
 
+    hdma2d->XferCpltCallback = HAL_DMA2D_XferCompleteCallback;
+
   /* USER CODE END DMA2D_MspInit 0 */
     /* Peripheral clock enable */
     __HAL_RCC_DMA2D_CLK_ENABLE();

@@ -172,17 +172,6 @@ static int ai_run(void)
 /* USER CODE BEGIN 2 */
 #define NB_SUB_IMAGES 9
 #define SUB_IMAGE_STEP 88
-GX_BUTTON *outButton[] = {
-		&main_window.main_window_button_0,
-		&main_window.main_window_button_1,
-		&main_window.main_window_button_2,
-		&main_window.main_window_button_3,
-		&main_window.main_window_button_4,
-		&main_window.main_window_button_5,
-		&main_window.main_window_button_6,
-		&main_window.main_window_button_7,
-		&main_window.main_window_button_8,
-};
 
 int acquire_and_process_data(ai_i8* data[], int subImg)
 {
@@ -210,8 +199,8 @@ int post_process(ai_i8* data[], int subImg)
 	if (res[0] >= 0.9) color = GX_COLOR_ID_SELECTED_TEXT; // white
 	if (res[1] >= 0.9) color = GX_COLOR_ID_BTN_LOWER; // green
 	if (res[2] >= 0.9) color = GX_COLOR_ID_BTN_UPPER; // red-ish
-	printf("Results %d : %f %f %f\n", subImg, res[0], res[1], res[2]);
-	gx_widget_fill_color_set(outButton[subImg], color, color, color);
+	//printf("Results %d : %f %f %f\n", subImg, res[0], res[1], res[2]);
+	btnColor[subImg] = color;
   return 0;
 }
 /* USER CODE END 2 */
@@ -255,7 +244,6 @@ void MX_X_CUBE_AI_Process(void)
     				res = post_process(data_outs, j);
     		}
     	}
-    	tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND * 5);
     	/* Signal we are done with the camera data */
     	HAL_HSEM_FastTake(HSEM_ID_6);
     	HAL_HSEM_Release(HSEM_ID_6, 0);
@@ -263,6 +251,7 @@ void MX_X_CUBE_AI_Process(void)
     	{
     		res = 1;
     	}
+    	tx_thread_sleep(5);
     } while (res==0);
   }
 

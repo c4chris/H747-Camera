@@ -73,8 +73,11 @@ TX_THREAD            cm7_camera_thread;
  * event flag 2  (4) is from HSEM_2 when core M4 signals camera data is available
  * event flag 3  (8) is from HSEM_3 when core M4 signals USB event is available
  * event flag 4 (16) is from main thread when done with the camera data
+ * event flag 5 (32) is from the DMA2D transfer complete interrupt
  */
 TX_EVENT_FLAGS_GROUP cm7_event_group;
+/* mutex for DMA2D */
+TX_MUTEX cm7_mutex_0;
 
 /* Define the GUIX resources. */
 
@@ -91,6 +94,8 @@ UINT lineEnd[LINES];
 UINT curLine;
 volatile UINT txCnt;
 ULONG gCounter;
+int btnColor[9];
+static int curBtnColor[9];
 
 /* USER CODE END PV */
 
@@ -124,6 +129,9 @@ UINT App_ThreadX_Init(VOID *memory_ptr)
   /* USER CODE END App_ThreadX_MEM_POOL */
 
   /* USER CODE BEGIN App_ThreadX_Init */
+
+  /* Create the mutex used for DMA2D without priority inheritance. */
+  tx_mutex_create(&cm7_mutex_0, "cm7 mutex 0", TX_NO_INHERIT);
 
   /*Allocate memory for tx_cm7_main_thread_entry */
   ret = tx_byte_allocate(byte_pool, (VOID **) &pointer, DEFAULT_STACK_SIZE, TX_NO_WAIT);
@@ -592,6 +600,17 @@ char *gWidgetName[] = {
 	"RECORD_ICON",
 	"EJECT_ICON"
 	};
+GX_BUTTON *outButton[] = {
+		&main_window.main_window_button_0,
+		&main_window.main_window_button_1,
+		&main_window.main_window_button_2,
+		&main_window.main_window_button_3,
+		&main_window.main_window_button_4,
+		&main_window.main_window_button_5,
+		&main_window.main_window_button_6,
+		&main_window.main_window_button_7,
+		&main_window.main_window_button_8,
+};
 
 /*************************************************************************************/
 UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
@@ -612,6 +631,14 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
 			if (event_ptr->gx_event_payload.gx_event_timer_id == CLOCK_TIMER_SEC)
 			{
 				gx_numeric_prompt_value_set(&main_window.main_window_frames_value, sharedData.CM4_to_CM7_USB_stored_count);
+				for (int i = 0; i < 9; i++)
+				{
+					if (btnColor[i] != 0 && btnColor[i] != curBtnColor[i])
+					{
+						curBtnColor[i] = btnColor[i];
+						gx_widget_fill_color_set(outButton[i], btnColor[i], btnColor[i], btnColor[i]);
+					}
+				}
 			}
 			if (event_ptr->gx_event_payload.gx_event_timer_id == CLOCK_TIMER_MIN)
 			{
@@ -657,6 +684,7 @@ UINT main_screen_event_handler(GX_WINDOW *window, GX_EVENT *event_ptr)
  */
 static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_area)
 {
+	UINT  status;
 	ULONG offset;
 	INT   copy_width;
 	INT   copy_height;
@@ -673,6 +701,11 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 		/* Switch to other buffer */
 		pend_buffer = 1 - front_buffer;
 
+		status = tx_mutex_get(&cm7_mutex_0, TX_WAIT_FOREVER);
+		if (status != TX_SUCCESS)
+		{
+			Error_Handler();
+		}
 		/* Configure the DMA2D Mode, Color Mode and output offset */
 		hdma2d.Init.Mode          = DMA2D_M2M_PFC;
 		hdma2d.Init.ColorMode     = DMA2D_OUTPUT_ARGB8888; /* Output color out of PFC */
@@ -691,23 +724,26 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 		hdma2d.LayerCfg[1].RedBlueSwap    = DMA2D_RB_REGULAR; /* No ForeGround Red/Blue swap */
 		hdma2d.LayerCfg[1].AlphaInverted  = DMA2D_REGULAR_ALPHA; /* No ForeGround Alpha inversion */
 
-		hdma2d.Instance = DMA2D;
-
 		/* DMA2D Initialization */
 		if(HAL_DMA2D_Init(&hdma2d) == HAL_OK)
 		{
 			if(HAL_DMA2D_ConfigLayer(&hdma2d, 1) == HAL_OK)
 			{
-				if (HAL_DMA2D_Start(&hdma2d, (uint32_t)cameraBuffer, Buffers[pend_buffer], 800, 96) == HAL_OK)
+				if (HAL_DMA2D_Start_IT(&hdma2d, (uint32_t)cameraBuffer, Buffers[pend_buffer], 800, 96) == HAL_OK)
 				{
-					/* Polling For DMA transfer */
-					if(HAL_DMA2D_PollForTransfer(&hdma2d, 10) == HAL_OK)
-					{
-						/* return good status on exit */
-						txCnt += 1;
-					}
+					txCnt += 1;
+				}
+				else
+				{
+					Error_Handler();
 				}
 			}
+		}
+		status = tx_event_flags_get(&cm7_event_group, 0x20, TX_AND_CLEAR, &actual_events, TX_WAIT_FOREVER);
+		status = tx_mutex_put(&cm7_mutex_0);
+		if (status != TX_SUCCESS)
+		{
+			Error_Handler();
 		}
 
 		/* Refresh the display */
@@ -717,7 +753,7 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 
 	/* Request that event flags 0 is set. If it is set it should be cleared. If the event
 	flags are not set, this service suspends for a maximum of 200 timer-ticks. */
-	UINT status = tx_event_flags_get(&cm7_event_group, 0x1, TX_AND_CLEAR, &actual_events, 200);
+	status = tx_event_flags_get(&cm7_event_group, 0x1, TX_AND_CLEAR, &actual_events, 200);
 
 	/* If status equals TX_SUCCESS, actual_events contains the actual events obtained. */
 	if (status == TX_SUCCESS)
@@ -745,16 +781,59 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 		put += offset;
 
 		// RM0388 - pp 780...  not sure about interrupt vs polling yet
-		DMA2D->CR = 0x00000000UL; // | DMA2D_CR_TCIE;
-		DMA2D->FGMAR = (uint32_t) get;
-		DMA2D->OMAR = (uint32_t) put;
-		DMA2D->FGOR = canvas->gx_canvas_x_resolution - copy_width;
-		DMA2D->OOR = MAIN_DISPLAY_X_RESOLUTION - copy_width;
-		DMA2D->FGPFCCR = LTDC_PIXEL_FORMAT_ARGB8888;
-		DMA2D->OPFCCR = LTDC_PIXEL_FORMAT_ARGB8888;
-		DMA2D->NLR = (uint32_t) (copy_width << 16) | (uint16_t) copy_height;
-		DMA2D->CR |= DMA2D_CR_START;
-		while (DMA2D->CR & DMA2D_CR_START) {}
+//		DMA2D->CR = 0x00000000UL; // | DMA2D_CR_TCIE;
+//		DMA2D->FGMAR = (uint32_t) get;
+//		DMA2D->OMAR = (uint32_t) put;
+//		DMA2D->FGOR = canvas->gx_canvas_x_resolution - copy_width;
+//		DMA2D->OOR = MAIN_DISPLAY_X_RESOLUTION - copy_width;
+//		DMA2D->FGPFCCR = LTDC_PIXEL_FORMAT_ARGB8888;
+//		DMA2D->OPFCCR = LTDC_PIXEL_FORMAT_ARGB8888;
+//		DMA2D->NLR = (uint32_t) (copy_width << 16) | (uint16_t) copy_height;
+//		DMA2D->CR |= DMA2D_CR_START;
+//		while (DMA2D->CR & DMA2D_CR_START) {}
+
+		status = tx_mutex_get(&cm7_mutex_0, TX_WAIT_FOREVER);
+		if (status != TX_SUCCESS)
+		{
+			Error_Handler();
+		}
+		/* Configure the DMA2D Mode, Color Mode and output offset */
+		hdma2d.Init.Mode          = DMA2D_M2M;
+		hdma2d.Init.ColorMode     = DMA2D_OUTPUT_ARGB8888; /* Output color out of PFC */
+		hdma2d.Init.AlphaInverted = DMA2D_REGULAR_ALPHA;  /* No Output Alpha Inversion*/
+		hdma2d.Init.RedBlueSwap   = DMA2D_RB_REGULAR;     /* No Output Red & Blue swap */
+
+		/* Output offset in pixels == nb of pixels to be added at end of line to come to the  */
+		/* first pixel of the next line : on the output side of the DMA2D computation         */
+		hdma2d.Init.OutputOffset = MAIN_DISPLAY_X_RESOLUTION - copy_width;
+
+		/* Foreground Configuration */
+		hdma2d.LayerCfg[1].AlphaMode      = DMA2D_NO_MODIF_ALPHA;
+		hdma2d.LayerCfg[1].InputAlpha     = 0xFF; /* fully opaque */
+		hdma2d.LayerCfg[1].InputColorMode = DMA2D_INPUT_ARGB8888;
+		hdma2d.LayerCfg[1].InputOffset    = canvas->gx_canvas_x_resolution - copy_width;
+		hdma2d.LayerCfg[1].RedBlueSwap    = DMA2D_RB_REGULAR; /* No ForeGround Red/Blue swap */
+		hdma2d.LayerCfg[1].AlphaInverted  = DMA2D_REGULAR_ALPHA; /* No ForeGround Alpha inversion */
+
+		/* DMA2D Initialization */
+		if (HAL_DMA2D_Init(&hdma2d) != HAL_OK)
+		{
+			Error_Handler();
+		}
+		if (HAL_DMA2D_ConfigLayer(&hdma2d, 1) != HAL_OK)
+		{
+			Error_Handler();
+		}
+		if (HAL_DMA2D_Start_IT(&hdma2d, get, put, copy_width, copy_height) != HAL_OK)
+		{
+			Error_Handler();
+		}
+		status = tx_event_flags_get(&cm7_event_group, 0x20, TX_AND_CLEAR, &actual_events, TX_WAIT_FOREVER);
+		status = tx_mutex_put(&cm7_mutex_0);
+		if (status != TX_SUCCESS)
+		{
+			Error_Handler();
+		}
 
 		/* Assign canvas memory block. */
 		status = gx_canvas_memory_define(canvas, (GX_COLOR *) Buffers[1 - front_buffer], (800*480*4));

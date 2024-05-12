@@ -79,6 +79,7 @@ void Error_Handler(void);
 /* USER CODE BEGIN EFP */
 
 void my_Delay(uint32_t);
+void HAL_DMA2D_XferCompleteCallback(DMA2D_HandleTypeDef *);
 
 /* USER CODE END EFP */
 
