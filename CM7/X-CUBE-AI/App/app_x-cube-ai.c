@@ -182,6 +182,52 @@ int acquire_and_process_data(ai_i8* data[], int subImg)
   }
 
   */
+	volatile uint16_t *get = cameraBuffer + subImg * SUB_IMAGE_STEP;
+	ULONG actual_events;
+	UINT status = tx_mutex_get(&cm7_mutex_0, TX_WAIT_FOREVER);
+	if (status != TX_SUCCESS)
+	{
+		Error_Handler();
+	}
+	/* Invalidate camera memory */
+	SCB_InvalidateDCache_by_Addr((void *)data[0], 96*96*3);
+	/* Configure the DMA2D Mode, Color Mode and output offset */
+	hdma2d.Init.Mode          = DMA2D_M2M_PFC;
+	hdma2d.Init.ColorMode     = DMA2D_OUTPUT_RGB888; /* Output color out of PFC */
+	hdma2d.Init.AlphaInverted = DMA2D_REGULAR_ALPHA;  /* No Output Alpha Inversion*/
+	hdma2d.Init.RedBlueSwap   = DMA2D_RB_REGULAR;     /* No Output Red & Blue swap */
+
+	/* Output offset in pixels == nb of pixels to be added at end of line to come to the  */
+	/* first pixel of the next line : on the output side of the DMA2D computation         */
+	hdma2d.Init.OutputOffset = 0;
+
+	/* Foreground Configuration */
+	hdma2d.LayerCfg[1].AlphaMode      = DMA2D_NO_MODIF_ALPHA;
+	hdma2d.LayerCfg[1].InputAlpha     = 0xFF; /* fully opaque */
+	hdma2d.LayerCfg[1].InputColorMode = DMA2D_INPUT_RGB565;
+	hdma2d.LayerCfg[1].InputOffset    = 800 - 96;
+	hdma2d.LayerCfg[1].RedBlueSwap    = DMA2D_RB_REGULAR; /* No ForeGround Red/Blue swap */
+	hdma2d.LayerCfg[1].AlphaInverted  = DMA2D_REGULAR_ALPHA; /* No ForeGround Alpha inversion */
+
+	/* DMA2D Initialization */
+	if (HAL_DMA2D_Init(&hdma2d) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	if (HAL_DMA2D_ConfigLayer(&hdma2d, 1) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	if (HAL_DMA2D_Start_IT(&hdma2d, (uint32_t)get, (uint32_t)data[0], 96, 96) != HAL_OK)
+	{
+		Error_Handler();
+	}
+	status = tx_event_flags_get(&cm7_event_group, 0x20, TX_AND_CLEAR, &actual_events, TX_WAIT_FOREVER);
+	status = tx_mutex_put(&cm7_mutex_0);
+	if (status != TX_SUCCESS)
+	{
+		Error_Handler();
+	}
   return 0;
 }
 
@@ -196,9 +242,9 @@ int post_process(ai_i8* data[], int subImg)
   */
 	float *res = (float *)data[0];
 	int color = GX_COLOR_ID_BTN_BORDER;
-	if (res[0] >= 0.9) color = GX_COLOR_ID_SELECTED_TEXT; // white
-	if (res[1] >= 0.9) color = GX_COLOR_ID_BTN_LOWER; // green
-	if (res[2] >= 0.9) color = GX_COLOR_ID_BTN_UPPER; // red-ish
+	if (res[0] >= 0.7) color = GX_COLOR_ID_SELECTED_TEXT; // white
+	if (res[1] >= 0.7) color = GX_COLOR_ID_BTN_LOWER; // green
+	if (res[2] >= 0.7) color = GX_COLOR_ID_BTN_UPPER; // red-ish
 	//printf("Results %d : %f %f %f\n", subImg, res[0], res[1], res[2]);
 	btnColor[subImg] = color;
   return 0;
@@ -227,7 +273,7 @@ void MX_X_CUBE_AI_Process(void)
 
     do {
     	ULONG actual_events;
-    	/* Request that event flag 2 is set (camera dat aavailable). If it is set it should be cleared. */
+    	/* Request that event flag 2 is set (camera data available). If it is set it should be cleared. */
   		res = 0;
     	UINT status = tx_event_flags_get(&cm7_event_group, 0x4, TX_AND_CLEAR, &actual_events, TX_TIMER_TICKS_PER_SECOND/4);
     	if (status == TX_SUCCESS)

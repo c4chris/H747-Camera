@@ -65,6 +65,7 @@ extern DSI_HandleTypeDef hdsi;
 extern LTDC_HandleTypeDef hltdc;
 extern volatile uint32_t threadInitDone;
 extern volatile CM4_CM7_SharedDataTypeDef sharedData;
+extern volatile uint16_t cameraBuffer[];
 
 /* USER CODE END EC */
 

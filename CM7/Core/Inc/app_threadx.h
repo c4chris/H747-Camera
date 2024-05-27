@@ -43,6 +43,7 @@ extern "C" {
 /* USER CODE BEGIN ET */
 
 extern TX_EVENT_FLAGS_GROUP cm7_event_group;
+extern TX_MUTEX cm7_mutex_0;
 extern int btnColor[9];
 
 /* USER CODE END ET */
