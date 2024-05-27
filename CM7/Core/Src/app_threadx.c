@@ -706,6 +706,8 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 		{
 			Error_Handler();
 		}
+		/* Invalidate camera memory */
+		SCB_InvalidateDCache_by_Addr((void *)cameraBuffer, 800*96*sizeof(short));
 		/* Configure the DMA2D Mode, Color Mode and output offset */
 		hdma2d.Init.Mode          = DMA2D_M2M_PFC;
 		hdma2d.Init.ColorMode     = DMA2D_OUTPUT_ARGB8888; /* Output color out of PFC */
@@ -797,6 +799,8 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 		{
 			Error_Handler();
 		}
+		SCB_InvalidateDCache_by_Addr((void*)Buffers[1 - front_buffer], 800 * 480 * 4);
+		SCB_CleanDCache_by_Addr((void *)Buffers[front_buffer], 800 * 480 * 4);
 		/* Configure the DMA2D Mode, Color Mode and output offset */
 		hdma2d.Init.Mode          = DMA2D_M2M;
 		hdma2d.Init.ColorMode     = DMA2D_OUTPUT_ARGB8888; /* Output color out of PFC */
@@ -824,7 +828,7 @@ static void stm32h7_32argb_buffer_toggle(GX_CANVAS *canvas, GX_RECTANGLE *dirty_
 		{
 			Error_Handler();
 		}
-		if (HAL_DMA2D_Start_IT(&hdma2d, get, put, copy_width, copy_height) != HAL_OK)
+		if (HAL_DMA2D_Start_IT(&hdma2d, (uint32_t)get, (uint32_t)put, copy_width, copy_height) != HAL_OK)
 		{
 			Error_Handler();
 		}
